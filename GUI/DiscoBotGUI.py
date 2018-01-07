@@ -21,7 +21,7 @@ class DiscoBotGUI(tk.Frame):
         self.indicatorFrame = IndicatorFrame.IndicatorFrame(self, self.controller)
         
         
-        self.indicatorFrame.pack(side=tk.TOP)
+        self.indicatorFrame.pack(side=tk.TOP, anchor=tk.W)
         
         self.termFrame.pack(side=tk.LEFT)
         

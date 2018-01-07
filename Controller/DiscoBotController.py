@@ -85,6 +85,9 @@ class DiscoBotController:
         self.lastGimbalTime = time.time()
         
         self.rmbHeartbeatWarningLevel = "green"
+        self.rmbBatteryVoltage = 0.0
+        self.currentRssi = 0
+        self.currentSSID = 0
 
 
         self.motorRight = 0
@@ -269,9 +272,17 @@ class DiscoBotController:
         if self.returnBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
             self.rmbHeartbeatWarningLevel = "green"
-            self.putstring ("Good Heart --> ") 
-            self.putstring ( self.returnBuffer)
-            self.putstring('\n')
+#             self.putstring ("Good Heart --> ") 
+#             self.putstring ( self.returnBuffer)
+#             self.putstring('\n')
+        elif self.returnBuffer.startswith("<BAT,"):
+            tndx = self.returnBuffer.rfind(',')
+            self.rmbBatteryVoltage = self.returnBuffer[tndx+1:-1]
+        elif self.returnBuffer.startswith("<E-HB"):
+            self.currentRssi = self.returnBuffer[5:self.returnBuffer.rfind('>')]
+        elif self.returnBuffer.startswith("<E  NewClient @"):
+            self.currentSSID = self.returnBuffer[16 : self.returnBuffer.rfind(',')]
+            self.currentRssi = self.returnBuffer[self.returnBuffer.rfind(',') : self.returnBuffer.rfind('>')]
         else:
             self.putstring ("returnBuffer --> ") 
             self.putstring( self.returnBuffer)  
