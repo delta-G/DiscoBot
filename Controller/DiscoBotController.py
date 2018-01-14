@@ -16,7 +16,7 @@
 
 import xbox
 import socket
-from Controller import DiscoBotServo
+import DiscoBotServo
 import time
 import errno
 from __builtin__ import False
