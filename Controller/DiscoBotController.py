@@ -23,6 +23,11 @@ from __builtin__ import False
 from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
+import serial
+
+
+useSerial = True
+useWifi = False
 
 class DiscoBotController:
     
@@ -35,7 +40,23 @@ class DiscoBotController:
         
         return
     
-    
+    def initComs(self):
+        
+        if(useWifi):
+        
+            self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+#             self.sockOut.setblocking(0)
+        
+#             self.sockArgs = ('10.10.0.24' , 1234)
+#             self.sockArgs = ('192.168.4.1' , 1234)
+            self.sockArgs = ('192.168.1.75' , 1234)
+            
+        if(useSerial):
+            
+            self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
+            
+        
+        return
     
     def __init__(self, aRedirect = None):
         
@@ -65,14 +86,9 @@ class DiscoBotController:
                 
         self.putstring("Global Interface Initializing\n")
         
-        
+        self.initComs()
 
-        self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-#         self.sockOut.setblocking(0)
         
-#         self.sockArgs = ('10.10.0.24' , 1234)
-#         self.sockArgs = ('192.168.4.1' , 1234)
-        self.sockArgs = ('192.168.1.75' , 1234)
 
         self.joy = xbox.Joystick()
         
@@ -133,8 +149,9 @@ class DiscoBotController:
      
     def connectToBot(self):
         self.putstring("Connecting to Robot\n")
-        self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)        
-        self.sockOut.connect(self.sockArgs)
+        if(useWifi):
+            self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)        
+            self.sockOut.connect(self.sockArgs)
         self.socketConnected = True
         self.putstring ("Connected to Robot\n")   
         
@@ -142,9 +159,10 @@ class DiscoBotController:
     
     def killConnection(self):
         if(self.socketConnected):
-            self.putstring("Shutting Down Connection\n")
-            self.sockOut.shutdown(SHUT_RDWR)
-            self.sockOut.close()
+            if(useWifi):
+                self.putstring("Shutting Down Connection\n")
+                self.sockOut.shutdown(SHUT_RDWR)
+                self.sockOut.close()
             self.socketConnected = False
         else :
             self.putstring ("The connection is not open\n")
@@ -153,7 +171,11 @@ class DiscoBotController:
     
     def outPutRunner(self, cs):
         if self.socketConnected:
-            self.sockOut.send(cs)
+            if(useWifi):
+                self.sockOut.send(cs)
+            if(useSerial):
+                self.serOut.write(cs)
+                self.serOut.flush()
         self.putstring("COM-->" + str(cs) + '\n')
         
         return
@@ -241,7 +263,10 @@ class DiscoBotController:
         
         if self.socketConnected:
             try:
-                line_read = self.sockOut.recvfrom(1024, MSG_DONTWAIT)[0]
+                if(useWifi):
+                    line_read = self.sockOut.recvfrom(1024, MSG_DONTWAIT)[0]
+                if(useSerial):
+                    line_read = self.serOut.read(self.serOut.in_waiting)
         
             except socket.error, e:
                 err = e.args[0]
@@ -264,7 +289,8 @@ class DiscoBotController:
                             self.returnBuffer += str(c)                            
                         if c == '>':
                             self.parseReturnString()
-                            self.receivingReturn = False                        
+                            self.receivingReturn = False    
+                            print self.returnBuffer                    
         return
     
     
@@ -658,3 +684,109 @@ class DiscoBotController:
         self.armCommandSender(self.PAN)
         self.armCommandSender(self.TILT)
         return        
+    
+    
+    def sendRawController(self):
+        
+        ###  Need to send as ascii hexadecimal 14 integers.  
+#             uint16_t checkBytes;
+#             uint16_t buttonState;
+#             uint8_t leftTrigger;
+#             uint8_t rightTrigger;
+#             int16_t hatValues[4];
+
+        ###  Let's start by getting everything packed up into 16 bit ints
+        checkBytes = 0x140D
+        
+#         enum ButtonMaskEnum {
+#         UP = 0x0100,
+#         RIGHT = 0x0800,
+#         DOWN = 0x0200,
+#         LEFT = 0x0400,
+#         BACK = 0x2000,
+#         START = 0x1000,
+#         L3 = 0x4000,
+#         R3 = 0x8000,
+#         L2 = 0,
+#         R2 = 0,
+#         L1 = 0x0001,
+#         R1 = 0x0002,
+# 
+#         B = 0x0020,
+#         A = 0x0010,
+#         X = 0x0040,
+#         Y = 0x0080,
+# 
+#         XBOX = 0x0004,
+#         SYNC = 0x0008,
+# };
+        ### That's for ButtonState
+        buttonStateInt = 0
+        if(self.joy.dpadUp()):
+            buttonStateInt &= 0x0100
+        if(self.joy.dpadRight()):
+            buttonStateInt &= 0x0800
+        if(self.joy.dpadDown()):
+            buttonStateInt &= 0x0200
+        if(self.joy.dpadLeft()):
+            buttonStateInt &= 0x0400
+        
+        if(self.joy.Back()):
+            buttonStateInt &= 0x2000
+        if(self.joy.Start()):
+            buttonStateInt &= 0x1000
+        if(self.joy.leftThumbstick()):
+            buttonStateInt &= 0x4000
+        if(self.joy.rightThumbstick()):
+            buttonStateInt &= 0x8000
+            
+        if(self.joy.leftBumper()):
+            buttonStateInt &= 0x0001
+        if(self.joy.rightBumper()):
+            buttonStateInt &= 0x0002
+            
+        if(self.joy.B()):
+            buttonStateInt &= 0x0020
+        if(self.joy.A()):
+            buttonStateInt &= 0x0010
+        if(self.joy.X()):
+            buttonStateInt &= 0x0040
+        if(self.joy.Y()):
+            buttonStateInt &= 0x0080
+        
+            
+        if(self.joy.Guide()):
+            buttonStateInt &= 0x0004
+            
+        leftTrigByte = self.joy.leftTrigger() * 255
+        rightTrigByte = self.joy.rightTrigger() * 255
+        
+        ###  Hat Values
+#         enum HatEnum {
+#         LeftHatX = 0,
+#         LeftHatY = 1,
+#         RightHatX = 2,
+#         RightHatY = 3,
+# };
+
+        leftHatX = self.joy.leftX(1000) * 32767
+        leftHatY = self.joy.leftY(1000) * 32767
+        rightHatX = self.joy.rightX(1000) * 32767
+        rightHatY = self.joy.rightY(1000) * 32767
+        
+                ###  Need to send as ascii hexadecimal 14 integers.  
+#             uint16_t checkBytes;
+#             uint16_t buttonState;
+#             uint8_t leftTrigger;
+#             uint8_t rightTrigger;
+#             int16_t hatValues[4];
+
+        messtr = "<X,%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X>" %(checkBytes, buttonStateInt, leftTrigByte, rightTrigByte, leftHatX & (2**16-1), leftHatY & (2**16-1), rightHatX & (2**16-1), rightHatY & (2**16-1))
+
+        print "Raw Controller Message"
+        print messtr
+        
+        self.outPutRunner(messtr)
+
+        
+        return
