@@ -102,6 +102,8 @@ class DiscoBotController:
         
         self.rmbHeartbeatWarningLevel = "green"
         self.rmbBatteryVoltage = 0.0
+        self.leftMotorCount = 0;
+        self.rightMotorCount = 0;
         self.currentRssi = 0
         self.currentSSID = 0
 
@@ -155,6 +157,8 @@ class DiscoBotController:
         self.socketConnected = True
         self.putstring ("Connected to Robot\n")   
         
+        self.outPutRunner("<ESTART><ECONNECT><B,HB>")
+        
         return    
     
     def killConnection(self):
@@ -200,7 +204,7 @@ class DiscoBotController:
             return False                
 ### REQUEST HEARTBEAT        
         if time.time() - self.lastRMBhbRequest >= 2:
-            self.outPutRunner("<B,HB>")
+            self.outPutRunner("<B,HB><R,M>")
             self.lastRMBhbRequest = time.time()
 ### CONTROLLER LOOP        
         if time.time() - self.lastRunTime >= 0.02:
@@ -304,6 +308,13 @@ class DiscoBotController:
         elif self.returnBuffer.startswith("<BAT,"):
             tndx = self.returnBuffer.rfind(',')
             self.rmbBatteryVoltage = self.returnBuffer[tndx+1:-1]
+        
+        elif self.returnBuffer.startswith("<Cnts,"):
+            tup = tuple(self.returnBuffer.split(','))
+            self.leftMotorCount = tup[1]
+            self.rightMotorCount = tup[2]
+            
+        
         elif self.returnBuffer.startswith("<E-HB"):
             self.currentRssi = self.returnBuffer[5:self.returnBuffer.rfind('>')]
         elif self.returnBuffer.startswith("<E  NewClient @"):

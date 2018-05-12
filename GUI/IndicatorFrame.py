@@ -1,6 +1,7 @@
 
 
 import Tkinter as tk
+import ttk
 
 class IndicatorFrame(tk.Frame):
     
@@ -24,6 +25,22 @@ class IndicatorFrame(tk.Frame):
         self.rsLabel = IndicatorLabel(self, text="RSSI")
         self.rsLabel.pack(side=tk.LEFT)
         
+        self.lmLabel = IndicatorLabel(self, text="LCnt")
+        self.lmLabel.pack(side=tk.LEFT)
+        
+        self.rmLabel = IndicatorLabel(self, text="RCnt")
+        self.rmLabel.pack(side=tk.LEFT)
+        
+        self.stickGaugeFrame = tk.Frame(self)
+        
+        
+        
+        self.leftStickGauge = ttk.Progressbar(self.stickGaugeFrame, orient="horizontal", length=200, mode="determinate")
+        self.rightStickGauge = ttk.Progressbar(self.stickGaugeFrame, orient="horizontal", length=200, mode="determinate")
+        self.leftStickGauge.pack(side=tk.TOP)
+        self.rightStickGauge.pack(side=tk.TOP)
+        
+        self.stickGaugeFrame.pack(side=tk.LEFT)
         
         return
     
@@ -32,6 +49,15 @@ class IndicatorFrame(tk.Frame):
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
         self.bvLabel.config(text=" RMB-Bat \n" + str(self.controller.rmbBatteryVoltage))
         self.rsLabel.config(text=" RMB-RSSI \n" + str(self.controller.currentRssi))
+        self.lmLabel.config(text=" LCnt  \n" + str(self.controller.leftMotorCount))
+        self.rmLabel.config(text=" RCnt  \n" + str(self.controller.rightMotorCount))
+        
+        ltamt = self.controller.joy.leftY() + 1
+        rtamt = self.controller.joy.rightY() + 1
+        
+        self.leftStickGauge["value"] = (ltamt /2) * 100
+        self.rightStickGauge["value"] = (rtamt /2) * 100
+        
         return
     
 
@@ -54,4 +80,5 @@ class IndicatorLabel(tk.Label):
         
         
         return
+   
    
