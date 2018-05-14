@@ -208,47 +208,48 @@ class DiscoBotController:
             self.lastRMBhbRequest = time.time()
 ### CONTROLLER LOOP        
         if time.time() - self.lastRunTime >= 0.02:
-### JOY A            
-            joyA = self.joy.A()
-            if(joyA and not self.lastA):
-                self.requestFromESP('B')
-            self.lastA = joyA
-### JOY B            
-            joyB = self.joy.B()
-            if(joyB and not self.lastB):
-                self.killConnection()
-            self.lastB = joyB
-### JOY Y            
-            joyY = self.joy.Y()        
-            if (joyY and not self.lastY):
-                self.controlMode += 1
-                self.controlMode %= 2
-                if(self.controlMode == 0):
-                    self.putstring("Drive Mode Activated\n")
-                elif(self.controlMode == 1):
-                    self.putstring("Arm Mode Activated\n")
-            self.lastY = joyY
-### JOY X
-            joyX = self.joy.X()
-            if (joyX and not self.lastX):
-                self.outPutRunner("<EW>")
-            self.lastX = joyX
-###  JOY GDUIE
-            joyG = self.joy.Guide()
-            if (joyG and not self.lastGuide):
-                self.commandMode()
-            self.lastGuide = joyG
-
-                
-                
-            
-### END CONTROLLER LOOP
-            
-            if(self.controlMode == 0):
-                self.driveMode()
-            elif(self.controlMode == 1):
-                self.armMode()
-                
+# ### JOY A            
+#             joyA = self.joy.A()
+#             if(joyA and not self.lastA):
+#                 self.requestFromESP('B')
+#             self.lastA = joyA
+# ### JOY B            
+#             joyB = self.joy.B()
+#             if(joyB and not self.lastB):
+#                 self.killConnection()
+#             self.lastB = joyB
+# ### JOY Y            
+#             joyY = self.joy.Y()        
+#             if (joyY and not self.lastY):
+#                 self.controlMode += 1
+#                 self.controlMode %= 2
+#                 if(self.controlMode == 0):
+#                     self.putstring("Drive Mode Activated\n")
+#                 elif(self.controlMode == 1):
+#                     self.putstring("Arm Mode Activated\n")
+#             self.lastY = joyY
+# ### JOY X
+#             joyX = self.joy.X()
+#             if (joyX and not self.lastX):
+#                 self.outPutRunner("<EW>")
+#             self.lastX = joyX
+# ###  JOY GDUIE
+#             joyG = self.joy.Guide()
+#             if (joyG and not self.lastGuide):
+#                 self.commandMode()
+#             self.lastGuide = joyG
+# 
+#                 
+#                 
+#             
+# ### END CONTROLLER LOOP
+#             
+#             if(self.controlMode == 0):
+#                 self.driveMode()
+#             elif(self.controlMode == 1):
+#                 self.armMode()
+            if self.socketConnected:    
+                self.sendRawController()
             self.lastRunTime = time.time()
         
         self.listenForESP()
@@ -792,12 +793,39 @@ class DiscoBotController:
 #             uint8_t rightTrigger;
 #             int16_t hatValues[4];
 
-        messtr = "<X,%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X>" %(checkBytes, buttonStateInt, leftTrigByte, rightTrigByte, leftHatX & (2**16-1), leftHatY & (2**16-1), rightHatX & (2**16-1), rightHatY & (2**16-1))
+        messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
 
-        print "Raw Controller Message"
-        print messtr
+        newmess = "<X,"
         
-        self.outPutRunner(messtr)
+        
+        
+        newmess += messtr[2] + messtr[3]
+        newmess += messtr[0] + messtr[1]
+        
+        newmess += messtr[6] + messtr[7]
+        newmess += messtr[4] + messtr[5]
+        
+        newmess += messtr[8] + messtr[9]
+        newmess += messtr[10] + messtr[11]
+        
+        newmess += messtr[14] + messtr[15]
+        newmess += messtr[12] + messtr[13]
+        
+        newmess += messtr[18] + messtr[19]
+        newmess += messtr[16] + messtr[17]
+        
+        newmess += messtr[22] + messtr[23]
+        newmess += messtr[20] + messtr[21]
+        
+        newmess += messtr[26] + messtr[27]
+        newmess += messtr[24] + messtr[25]
+        
+        newmess += ">"
+        
+        print "Raw Controller Message"
+        print newmess
+        
+        self.outPutRunner(newmess)
 
         
         return
