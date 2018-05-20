@@ -15,12 +15,12 @@ gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
 controller.setRedirect(gui.termFrame.redirect)
 
-def pyBotRunner():
-    
-    controller.runInterface()
-    gui.refresh()
-    root.after(1, pyBotRunner)
-    return
+# def pyBotRunner():
+#     
+#     controller.runInterface()
+#     gui.refresh()
+#     root.after(1, pyBotRunner)
+#     return
 
 
 try:
@@ -32,14 +32,22 @@ try:
         
     
     
-    root.after(1, pyBotRunner)
-    root.mainloop()
+#     root.after(1, pyBotRunner)
+#     root.mainloop()
+    
+    while (controller.runInterface()):
+        gui.refresh()
+        root.update_idletasks()
+        root.update()
+        time.sleep(0.001)
+        
 
 
 finally:
     #Always close out so that xboxdrv subprocess ends
     controller.joy.close()
     os.system('pkill -9 xboxdrv')
+    
     print "Done."
     
 

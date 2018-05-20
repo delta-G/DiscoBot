@@ -102,8 +102,10 @@ class DiscoBotController:
         
         self.rmbHeartbeatWarningLevel = "green"
         self.rmbBatteryVoltage = 0.0
-        self.leftMotorCount = 0;
-        self.rightMotorCount = 0;
+        self.leftMotorCount = 0
+        self.rightMotorCount = 0
+        self.leftMotorOut = 0
+        self.rightMotorOut = 0
         self.currentRssi = 0
         self.currentSSID = 0
 
@@ -180,7 +182,8 @@ class DiscoBotController:
             if(useSerial):
                 self.serOut.write(cs)
                 self.serOut.flush()
-        self.putstring("COM-->" + str(cs) + '\n')
+        if not str(cs).startswith("<X,0D14"):
+            self.putstring("COM-->" + str(cs) + '\n')
         
         return
     
@@ -204,7 +207,7 @@ class DiscoBotController:
             return False                
 ### REQUEST HEARTBEAT        
         if time.time() - self.lastRMBhbRequest >= 2:
-            self.outPutRunner("<B,HB><R,M>")
+            self.outPutRunner("<B,HB><R,S>")
             self.lastRMBhbRequest = time.time()
 ### CONTROLLER LOOP        
         if time.time() - self.lastRunTime >= 0.02:
@@ -314,6 +317,11 @@ class DiscoBotController:
             tup = tuple(self.returnBuffer.split(','))
             self.leftMotorCount = tup[1]
             self.rightMotorCount = tup[2]
+        
+        elif self.returnBuffer.startswith("<Spd,"):
+            tup = tuple(self.returnBuffer.split(','))
+            self.leftMotorOut = tup[1]
+            self.rightMotorOut = tup[2]
             
         
         elif self.returnBuffer.startswith("<E-HB"):
@@ -822,8 +830,8 @@ class DiscoBotController:
         
         newmess += ">"
         
-        print "Raw Controller Message"
-        print newmess
+#         print "Raw Controller Message"
+#         print newmess
         
         self.outPutRunner(newmess)
 

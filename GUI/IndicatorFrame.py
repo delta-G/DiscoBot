@@ -25,10 +25,10 @@ class IndicatorFrame(tk.Frame):
         self.rsLabel = IndicatorLabel(self, text="RSSI")
         self.rsLabel.pack(side=tk.LEFT)
         
-        self.lmLabel = IndicatorLabel(self, text="LCnt")
+        self.lmLabel = IndicatorLabel(self, text="LOut")
         self.lmLabel.pack(side=tk.LEFT)
         
-        self.rmLabel = IndicatorLabel(self, text="RCnt")
+        self.rmLabel = IndicatorLabel(self, text="ROut")
         self.rmLabel.pack(side=tk.LEFT)
         
         self.stickGaugeFrame = tk.Frame(self)
@@ -49,8 +49,8 @@ class IndicatorFrame(tk.Frame):
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
         self.bvLabel.config(text=" RMB-Bat \n" + str(self.controller.rmbBatteryVoltage))
         self.rsLabel.config(text=" RMB-RSSI \n" + str(self.controller.currentRssi))
-        self.lmLabel.config(text=" LCnt  \n" + str(self.controller.leftMotorCount))
-        self.rmLabel.config(text=" RCnt  \n" + str(self.controller.rightMotorCount))
+        self.lmLabel.config(text=" LCnt  \n" + str(self.controller.leftMotorOut))
+        self.rmLabel.config(text=" RCnt  \n" + str(self.controller.rightMotorOut))
         
         ltamt = self.controller.joy.leftY() + 1
         rtamt = self.controller.joy.rightY() + 1
