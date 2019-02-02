@@ -73,7 +73,7 @@ class DiscoBotController:
 ******* pyBot  Copyright (C) 2016  David C.  ************************
 **  This program comes with ABSOLUTELY NO WARRANTY; *****************
 **  This is free software, and you are welcome to redistribute it  **
-**  under certain conditions; type `show c' for details.  ***********
+**  under certain conditions; ***************************************
 *********************************************************************
 *********************************************************************
 
@@ -106,8 +106,14 @@ class DiscoBotController:
         self.rightMotorCount = 0
         self.leftMotorOut = 0
         self.rightMotorOut = 0
+        self.leftMotorSpeed = 0
+        self.rightMotorSpeed = 0
         self.currentRssi = 0
         self.currentSSID = 0
+        
+        self.showCommands = False
+        self.showReturns = False
+        self.showDebug = False
 
 
         self.motorRight = 0
@@ -127,6 +133,7 @@ class DiscoBotController:
         self.controlMode = 0
         self.lastRunTime = 0
         self.lastRMBhbRequest = 0
+        self.lastRMBmotorRequest = 0
 
         self.BASE = 0
         self.SHOULDER = 1
@@ -182,8 +189,9 @@ class DiscoBotController:
             if(useSerial):
                 self.serOut.write(cs)
                 self.serOut.flush()
-        if not str(cs).startswith("<X,0D14"):
-            self.putstring("COM-->" + str(cs) + '\n')
+        if self.showCommands:
+            if not str(cs).startswith("<X,0D14"):
+                self.putstring("COM--> " + str(cs) + '\n')
         
         return
     
@@ -207,8 +215,12 @@ class DiscoBotController:
             return False                
 ### REQUEST HEARTBEAT        
         if time.time() - self.lastRMBhbRequest >= 2:
-            self.outPutRunner("<B,HB><R,S>")
+            self.outPutRunner("<R,HB>")
             self.lastRMBhbRequest = time.time()
+        if time.time() - self.lastRMBmotorRequest >= 0.5:
+            self.outPutRunner("<R,M>")
+            self.lastRMBmotorRequest = time.time()
+            
 ### CONTROLLER LOOP        
         if time.time() - self.lastRunTime >= 0.02:
 # ### JOY A            
@@ -287,7 +299,6 @@ class DiscoBotController:
                     self.putstring (err)
                     self.putstring ('\n')
             else:
-#                 print "ENTERED ELSE"
                 for c in line_read:                        
                     if c == '<':
                         self.returnBuffer = ""
@@ -298,7 +309,8 @@ class DiscoBotController:
                         if c == '>':
                             self.parseReturnString()
                             self.receivingReturn = False    
-                            print self.returnBuffer                    
+                            if self.showReturns:
+                                self.putstring("RET--> " + self.returnBuffer + '\n')                   
         return
     
     
@@ -318,17 +330,24 @@ class DiscoBotController:
             self.leftMotorCount = tup[1]
             self.rightMotorCount = tup[2]
         
-        elif self.returnBuffer.startswith("<Spd,"):
+        elif self.returnBuffer.startswith("<Out,"):
             tup = tuple(self.returnBuffer.split(','))
             self.leftMotorOut = tup[1]
             self.rightMotorOut = tup[2]
-            
+        elif self.returnBuffer.startswith("<Spd,"):
+            tup = tuple(self.returnBuffer.split(','))
+            self.leftMotorSpeed = tup[1]
+            self.rightMotorSpeed = tup[2]
         
         elif self.returnBuffer.startswith("<E-HB"):
             self.currentRssi = self.returnBuffer[5:self.returnBuffer.rfind('>')]
         elif self.returnBuffer.startswith("<E  NewClient @"):
             self.currentSSID = self.returnBuffer[16 : self.returnBuffer.rfind(',')]
             self.currentRssi = self.returnBuffer[self.returnBuffer.rfind(',') : self.returnBuffer.rfind('>')]
+        elif self.returnBuffer.startswith("<##"):
+            if self.showDebug:
+                self.putstring(self.returnBuffer)
+            pass
         else:
             self.putstring ("returnBuffer --> ") 
             self.putstring( self.returnBuffer)  

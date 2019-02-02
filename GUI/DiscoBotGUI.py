@@ -3,6 +3,7 @@ import Tkinter as tk
 import ServoPane
 import TermFrame
 import IndicatorFrame
+import SelectFrame
 
 class DiscoBotGUI(tk.Frame):
     
@@ -14,18 +15,28 @@ class DiscoBotGUI(tk.Frame):
         
         self.parent.config(padx=10, pady=10)
         
+        self.topFrame = tk.Frame(self)
+        
         self.servoPane = ServoPane.ServoPane(self, self.controller.armServos)        
         
-        self.termFrame = TermFrame.TermFrame(self)        
+               
         
-        self.indicatorFrame = IndicatorFrame.IndicatorFrame(self, self.controller)
+        self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self.controller)
+        
+        self.seletFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)
+        
+        self.termFrame = TermFrame.TermFrame(self) 
         
         
-        self.indicatorFrame.pack(side=tk.TOP, anchor=tk.W)
+        self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.W)
+        self.seletFrame.pack(side=tk.LEFT)
+        self.topFrame.pack(side=tk.TOP, anchor=tk.W)
         
         self.termFrame.pack(side=tk.LEFT)
         
         self.servoPane.pack(side=tk.TOP)
+        
+        
         
                 
         self.pack()
@@ -34,7 +45,8 @@ class DiscoBotGUI(tk.Frame):
     
     def refresh(self):
         self.servoPane.updateData()
-        self.indicatorFrame.check()
+        self.indicatorFrame.check()        
         
+        return
 
 
