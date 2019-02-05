@@ -24,6 +24,7 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
+from gtk.keysyms import function
 
 
 useSerial = True
@@ -825,7 +826,8 @@ class DiscoBotController:
         newmess = "<X,"
         
         
-        
+        ###    TODO:  This should be in a Indian Switcher function
+             
         newmess += messtr[2] + messtr[3]
         newmess += messtr[0] + messtr[1]
         

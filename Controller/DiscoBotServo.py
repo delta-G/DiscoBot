@@ -32,7 +32,7 @@ class DiscoBotServo:
         
         return
     
-    ### Takes angle in radians
+    ### Takes angle in radians    //  This is messed up from when I switched from degrees to microseconds. 
     def angleToMicroseconds(self, aAngle):
         return ((aAngle / math.pi) * (self.maximum - self.minimum)) + self.minimum
     
