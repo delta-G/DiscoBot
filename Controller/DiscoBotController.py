@@ -211,7 +211,7 @@ class DiscoBotController:
         if(self.joy.Start() and not self.socketConnected):
             
             self.connectToBot()
-            
+### Back Button or lost connection ends program
         if self.joy.Back() or not self.joy.connected():
             return False                
 ### REQUEST HEARTBEAT        
