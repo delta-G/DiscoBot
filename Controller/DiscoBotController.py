@@ -27,8 +27,8 @@ import serial
 from gtk.keysyms import function
 
 
-useSerial = True
-useWifi = False
+useSerial = False
+useWifi = True
 
 class DiscoBotController:
     
