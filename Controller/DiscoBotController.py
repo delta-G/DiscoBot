@@ -166,8 +166,8 @@ class DiscoBotController:
             self.sockOut.connect(self.sockArgs)
         self.socketConnected = True
         self.putstring ("Connected to Robot\n")   
-        
-        self.outPutRunner("<ESTART><ECONNECT><B,HB>")
+        if(useSerial):
+            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
         
         return    
     
@@ -191,8 +191,8 @@ class DiscoBotController:
                 self.serOut.write(cs)
                 self.serOut.flush()
         if self.showCommands:
-            if not str(cs).startswith("<X,0D14"):
-                self.putstring("COM--> " + str(cs) + '\n')
+#             if not str(cs).startswith("<X,0D14"):
+            self.putstring("COM--> " + str(cs) + '\n')
         
         return
     
@@ -736,7 +736,7 @@ class DiscoBotController:
 #             int16_t hatValues[4];
 
         ###  Let's start by getting everything packed up into 16 bit ints
-        checkBytes = 0x140D
+        checkBytes = 0x0D14
         
 #         enum ButtonMaskEnum {
 #         UP = 0x0100,
@@ -763,40 +763,40 @@ class DiscoBotController:
         ### That's for ButtonState
         buttonStateInt = 0
         if(self.joy.dpadUp()):
-            buttonStateInt &= 0x0100
+            buttonStateInt |= 0x0100
         if(self.joy.dpadRight()):
-            buttonStateInt &= 0x0800
+            buttonStateInt |= 0x0800
         if(self.joy.dpadDown()):
-            buttonStateInt &= 0x0200
+            buttonStateInt |= 0x0200
         if(self.joy.dpadLeft()):
-            buttonStateInt &= 0x0400
+            buttonStateInt |= 0x0400
         
         if(self.joy.Back()):
-            buttonStateInt &= 0x2000
+            buttonStateInt |= 0x2000
         if(self.joy.Start()):
-            buttonStateInt &= 0x1000
+            buttonStateInt |= 0x1000
         if(self.joy.leftThumbstick()):
-            buttonStateInt &= 0x4000
+            buttonStateInt |= 0x4000
         if(self.joy.rightThumbstick()):
-            buttonStateInt &= 0x8000
+            buttonStateInt |= 0x8000
             
         if(self.joy.leftBumper()):
-            buttonStateInt &= 0x0001
+            buttonStateInt |= 0x0001
         if(self.joy.rightBumper()):
-            buttonStateInt &= 0x0002
+            buttonStateInt |= 0x0002
             
         if(self.joy.B()):
-            buttonStateInt &= 0x0020
+            buttonStateInt |= 0x0020
         if(self.joy.A()):
-            buttonStateInt &= 0x0010
+            buttonStateInt |= 0x0010
         if(self.joy.X()):
-            buttonStateInt &= 0x0040
+            buttonStateInt |= 0x0040
         if(self.joy.Y()):
-            buttonStateInt &= 0x0080
+            buttonStateInt |= 0x0080
         
             
         if(self.joy.Guide()):
-            buttonStateInt &= 0x0004
+            buttonStateInt |= 0x0004
             
         leftTrigByte = self.joy.leftTrigger() * 255
         rightTrigByte = self.joy.rightTrigger() * 255
@@ -823,7 +823,7 @@ class DiscoBotController:
 
         messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
 
-        newmess = "<X,"
+        newmess = "<X"
         
         
         ###    TODO:  This should be in a Indian Switcher function

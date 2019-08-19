@@ -1,6 +1,7 @@
 
 
 import Tkinter as tk
+import ComSenderField
 
 class TermFrame(tk.Frame):
     
@@ -17,6 +18,9 @@ class TermFrame(tk.Frame):
         asCheck.select()
         
         asCheck.pack(side=tk.TOP)
+        
+        self.comsend = ComSenderField.ComSenderField(self, self.parent.controller)
+        self.comsend.pack(side=tk.TOP)
         
         self.log = tk.Text(self, width=60, height=20, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.log.yview)
