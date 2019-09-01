@@ -27,8 +27,8 @@ import serial
 from gtk.keysyms import function
 
 
-useSerial = False
-useWifi = True
+useSerial = True
+useWifi = not useSerial
 
 class DiscoBotController:
     
@@ -54,7 +54,7 @@ class DiscoBotController:
             
         if(useSerial):
             
-            self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
+            self.serOut = serial.Serial('/dev/ttyACM0', 115200)
             
         
         return
@@ -152,7 +152,13 @@ class DiscoBotController:
                           DiscoBotServo.DiscoBotServo("grip", 2000, 1680, 2400), 
                           DiscoBotServo.DiscoBotServo("pan", 1500, 1000, 2400), 
                           DiscoBotServo.DiscoBotServo("tilt", 1500, 1000, 2400)]
+
+        self.servoInfo = []
+        for x in range(8):
+            self.servoInfo.append([0,0,0])
+        
         return
+            
     
     def setRedirect(self, aRedirect):
         self.printRedirect = aRedirect
@@ -223,7 +229,7 @@ class DiscoBotController:
             self.lastRMBmotorRequest = time.time()
             
 ### CONTROLLER LOOP        
-        if time.time() - self.lastRunTime >= 0.02:
+        if time.time() - self.lastRunTime >= 0.1:
 # ### JOY A            
 #             joyA = self.joy.A()
 #             if(joyA and not self.lastA):
@@ -264,8 +270,8 @@ class DiscoBotController:
 #                 self.driveMode()
 #             elif(self.controlMode == 1):
 #                 self.armMode()
-            if self.socketConnected:    
-                self.sendRawController()
+#             if self.socketConnected:    
+#                 self.sendRawController()
             self.lastRunTime = time.time()
         
         self.listenForESP()
@@ -340,6 +346,19 @@ class DiscoBotController:
             self.leftMotorSpeed = tup[1]
             self.rightMotorSpeed = tup[2]
         
+        elif self.returnBuffer.startswith(("<p,")):
+            tup = tuple(self.returnBuffer.split(','))
+            for t in tup:
+                self.servoInfo[t[0]][0] = t[1]
+        elif self.returnBuffer.startswith(("<t,")):
+            tup = tuple(self.returnBuffer.split(','))
+            for t in tup:
+                self.servoInfo[t[0]][1] = t[1]
+        elif self.returnBuffer.startswith(("<s,")):
+            tup = tuple(self.returnBuffer.split(','))
+            for t in tup:
+                self.servoInfo[t[0]][2] = t[1]
+                    
         elif self.returnBuffer.startswith("<E-HB"):
             self.currentRssi = self.returnBuffer[5:self.returnBuffer.rfind('>')]
         elif self.returnBuffer.startswith("<E  NewClient @"):
