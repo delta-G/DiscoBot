@@ -24,11 +24,11 @@ controller.setRedirect(gui.termFrame.redirect)
 
 
 try:
-    #Valid connect may require joystick input to occur
-    print "Waiting for Joystick to connect"
-    while not controller.joy.connected():
-        time.sleep(0.10)
-        
+#     #Valid connect may require joystick input to occur
+#     print "Waiting for Joystick to connect"
+#     while not controller.joy.connected():
+#         time.sleep(0.10)
+#         
         
     
     
@@ -45,7 +45,8 @@ try:
 
 finally:
     #Always close out so that xboxdrv subprocess ends
-    controller.joy.close()
+    if controller.joyConnected:
+        controller.joy.close()
     os.system('pkill -9 xboxdrv')
     
     print "Done."

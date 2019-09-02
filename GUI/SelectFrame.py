@@ -28,6 +28,15 @@ class SelectFrame(tk.Frame):
             
         return
     
+    def propController(self):        
+        self.controller.connectJoystick()    
+        return 
+    
+    def propCommsInit(self):        
+        self.controller.initComs()
+        return
+    
+    
     
     def __init__(self, aParent, aController):
         
@@ -42,10 +51,15 @@ class SelectFrame(tk.Frame):
         self.comCheck = tk.Checkbutton(self, text="Commands", variable=self.showCommands, command=self.propCom)
         self.retCheck = tk.Checkbutton(self, text="Return", variable=self.showReturns, command=self.propRet)
         self.debCheck = tk.Checkbutton(self, text="Debug", variable=self.showDebug, command=self.propDeb)
+        self.controllerConnectButton = tk.Button(self, text="Control", command=self.propController)
+        self.comConnectButton = tk.Button(self, text="Comms", command=self.propCommsInit)
         
         self.comCheck.pack(side=tk.TOP)
         self.retCheck.pack(side=tk.TOP)
         self.debCheck.pack(side=tk.TOP)
+        self.controllerConnectButton.pack(side=tk.TOP)
+        self.comConnectButton.pack(side=tk.TOP)
+        
                 
         return
     

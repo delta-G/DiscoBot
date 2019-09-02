@@ -42,6 +42,8 @@ class DiscoBotController:
     
     def initComs(self):
         
+        self.commsOn = True
+        
         if(useWifi):
         
             self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
@@ -86,11 +88,11 @@ class DiscoBotController:
                 
         self.putstring("Global Interface Initializing\n")
         
-        self.initComs()
+#         self.initComs()
 
         
 
-        self.joy = xbox.Joystick()
+        
         
         self.putstring ("Controller attached!\n")
 
@@ -114,6 +116,9 @@ class DiscoBotController:
         self.showCommands = False
         self.showReturns = False
         self.showDebug = False
+        
+        self.joyConnected = False
+        self.commsOn = False
 
 
         self.motorRight = 0
@@ -163,16 +168,28 @@ class DiscoBotController:
         self.printRedirect = aRedirect
         return
      
+    def connectJoystick(self):
+        
+        self.joy = xbox.Joystick()
+        self.joyConnected = True
+        #Valid connect may require joystick input to occur
+        print "Waiting for Joystick to connect"
+        while not self.joy.connected():
+            time.sleep(0.10)        
+        
+        return
+    
      
     def connectToBot(self):
-        self.putstring("Connecting to Robot\n")
-        if(useWifi):
-            self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)        
-            self.sockOut.connect(self.sockArgs)
-        self.socketConnected = True
-        self.putstring ("Connected to Robot\n")   
-        if(useSerial):
-            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
+        if self.commsOn:
+            self.putstring("Connecting to Robot\n")
+            if(useWifi):
+                self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)        
+                self.sockOut.connect(self.sockArgs)
+            self.socketConnected = True
+            self.putstring ("Connected to Robot\n")   
+            if(useSerial):
+                self.outPutRunner("<ESTART><ECONNECT><B,HB>")
         
         return    
     
@@ -213,65 +230,67 @@ class DiscoBotController:
     
     def runInterface(self):       
         
-        if(self.joy.Start() and not self.socketConnected):
-            
-            self.connectToBot()
-### Back Button or lost connection ends program
-        if self.joy.Back() or not self.joy.connected():
-            return False                
-### REQUEST HEARTBEAT        
-        if time.time() - self.lastRMBhbRequest >= 2:
-#             self.outPutRunner("<R,HB>")
-            self.lastRMBhbRequest = time.time()
-        if time.time() - self.lastRMBmotorRequest >= 0.5:
-#             self.outPutRunner("<R,M>")
-            self.lastRMBmotorRequest = time.time()
-            
-### CONTROLLER LOOP        
-        if time.time() - self.lastRunTime >= 0.2:
-# ### JOY A            
-#             joyA = self.joy.A()
-#             if(joyA and not self.lastA):
-#                 self.requestFromESP('B')
-#             self.lastA = joyA
-# ### JOY B            
-#             joyB = self.joy.B()
-#             if(joyB and not self.lastB):
-#                 self.killConnection()
-#             self.lastB = joyB
-# ### JOY Y            
-#             joyY = self.joy.Y()        
-#             if (joyY and not self.lastY):
-#                 self.controlMode += 1
-#                 self.controlMode %= 2
-#                 if(self.controlMode == 0):
-#                     self.putstring("Drive Mode Activated\n")
-#                 elif(self.controlMode == 1):
-#                     self.putstring("Arm Mode Activated\n")
-#             self.lastY = joyY
-# ### JOY X
-#             joyX = self.joy.X()
-#             if (joyX and not self.lastX):
-#                 self.outPutRunner("<EW>")
-#             self.lastX = joyX
-# ###  JOY GDUIE
-#             joyG = self.joy.Guide()
-#             if (joyG and not self.lastGuide):
-#                 self.commandMode()
-#             self.lastGuide = joyG
-# 
-#                 
-#                 
-#             
-# ### END CONTROLLER LOOP
-#             
-#             if(self.controlMode == 0):
-#                 self.driveMode()
-#             elif(self.controlMode == 1):
-#                 self.armMode()
-            if self.socketConnected:    
-                self.sendRawController()
-            self.lastRunTime = time.time()
+        if(self.joyConnected):
+        
+            if(self.joy.Start() and not self.socketConnected):
+                
+                self.connectToBot()
+    ### Back Button or lost connection ends program
+            if self.joy.Back() or not self.joy.connected():
+                return False                
+    ### REQUEST HEARTBEAT        
+            if time.time() - self.lastRMBhbRequest >= 2:
+    #             self.outPutRunner("<R,HB>")
+                self.lastRMBhbRequest = time.time()
+            if time.time() - self.lastRMBmotorRequest >= 0.5:
+    #             self.outPutRunner("<R,M>")
+                self.lastRMBmotorRequest = time.time()
+                
+    ### CONTROLLER LOOP        
+            if time.time() - self.lastRunTime >= 0.2:
+    # ### JOY A            
+    #             joyA = self.joy.A()
+    #             if(joyA and not self.lastA):
+    #                 self.requestFromESP('B')
+    #             self.lastA = joyA
+    # ### JOY B            
+    #             joyB = self.joy.B()
+    #             if(joyB and not self.lastB):
+    #                 self.killConnection()
+    #             self.lastB = joyB
+    # ### JOY Y            
+    #             joyY = self.joy.Y()        
+    #             if (joyY and not self.lastY):
+    #                 self.controlMode += 1
+    #                 self.controlMode %= 2
+    #                 if(self.controlMode == 0):
+    #                     self.putstring("Drive Mode Activated\n")
+    #                 elif(self.controlMode == 1):
+    #                     self.putstring("Arm Mode Activated\n")
+    #             self.lastY = joyY
+    # ### JOY X
+    #             joyX = self.joy.X()
+    #             if (joyX and not self.lastX):
+    #                 self.outPutRunner("<EW>")
+    #             self.lastX = joyX
+    # ###  JOY GDUIE
+    #             joyG = self.joy.Guide()
+    #             if (joyG and not self.lastGuide):
+    #                 self.commandMode()
+    #             self.lastGuide = joyG
+    # 
+    #                 
+    #                 
+    #             
+    # ### END CONTROLLER LOOP
+    #             
+    #             if(self.controlMode == 0):
+    #                 self.driveMode()
+    #             elif(self.controlMode == 1):
+    #                 self.armMode()
+                if self.socketConnected:    
+                    self.sendRawController()
+                self.lastRunTime = time.time()
         
 #         self.listenForESP()
         self.listenForRawSerial()
