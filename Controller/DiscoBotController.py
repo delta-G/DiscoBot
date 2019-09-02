@@ -24,7 +24,6 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
-from gtk.keysyms import function
 
 
 useSerial = True
@@ -222,14 +221,14 @@ class DiscoBotController:
             return False                
 ### REQUEST HEARTBEAT        
         if time.time() - self.lastRMBhbRequest >= 2:
-            self.outPutRunner("<R,HB>")
+#             self.outPutRunner("<R,HB>")
             self.lastRMBhbRequest = time.time()
         if time.time() - self.lastRMBmotorRequest >= 0.5:
-            self.outPutRunner("<R,M>")
+#             self.outPutRunner("<R,M>")
             self.lastRMBmotorRequest = time.time()
             
 ### CONTROLLER LOOP        
-        if time.time() - self.lastRunTime >= 0.1:
+        if time.time() - self.lastRunTime >= 0.2:
 # ### JOY A            
 #             joyA = self.joy.A()
 #             if(joyA and not self.lastA):
@@ -270,11 +269,13 @@ class DiscoBotController:
 #                 self.driveMode()
 #             elif(self.controlMode == 1):
 #                 self.armMode()
-#             if self.socketConnected:    
-#                 self.sendRawController()
+            if self.socketConnected:    
+                self.sendRawController()
             self.lastRunTime = time.time()
         
-        self.listenForESP()
+#         self.listenForESP()
+        self.listenForRawSerial()
+            
         
         if (time.time() - self.lastRMBheartBeat >= 10) and (time.time() - self.RMBheartBeatWarningTime >= 10):
             self.putstring ("*****   MISSING RMB HEARTBEAT "),
@@ -285,6 +286,60 @@ class DiscoBotController:
             
         return True
     
+    def handleRawDataDump(self):
+        while self.serOut.inWaiting() < 11:
+            pass
+        self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
+        self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.leftMotorOut = ord(self.serOut.read())
+        self.rightMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.rightMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.rightMotorOut = ord(self.serOut.read())
+        
+        
+        return 
+    
+    
+    def listenForRawSerial(self):
+        
+        if self.socketConnected:
+            try:
+                if(useSerial):
+                    while self.serOut.inWaiting():
+                        c = self.serOut.read()
+                        ###  If we are at the first character and it 
+                        ###  is the control code
+                        if (self.returnBuffer == "<") and c == 'd':
+                            self.handleRawDataDump()
+                            self.returnBuffer = ""
+                            self.receivingReturn = False                          
+                        if c == '<':
+                            self.returnBuffer = ""
+                            self.receivingReturn = True                            
+                        if self.receivingReturn == True:
+                            if c != None:
+                                self.returnBuffer += str(c)                            
+                            if c == '>':
+                                self.parseReturnString()
+                                self.receivingReturn = False    
+                                if self.showReturns:
+                                    self.putstring("RET--> " + self.returnBuffer + '\n')
+                                    
+                        
+            except socket.error, e:
+                err = e.args[0]
+                if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
+#                     self.putstring("EAGAIN or EWOULDBLOCK")
+                    pass
+                else:
+                    # a REAL error occurred
+                    self.putstring("Bad Error in linstenForESP")
+                    self.putstring (err)
+                    self.putstring ('\n')
+        
+        
+        return 
     
     def listenForESP(self):        
         
@@ -839,6 +894,25 @@ class DiscoBotController:
 #             uint8_t leftTrigger;
 #             uint8_t rightTrigger;
 #             int16_t hatValues[4];
+
+#         outputMessage = bytearray(16);
+#         outputMessage[0] = 0x3C; ## '<'
+#         outputMessage[1] = 0x14;
+#         outputMessage[2] = 0x0D;
+#         outputMessage[3] = ((int)(buttonStateInt) >> 8) & 0xFF;
+#         outputMessage[4] = ((int)(buttonStateInt)) & 0xFF;
+#         outputMessage[5] = ((int)(leftTrigByte)) & 0xFF;
+#         outputMessage[6] = ((int)(rightTrigByte)) & 0xFF;
+#         outputMessage[7] = ((int)(leftHatX) >> 8) & 0xFF;
+#         outputMessage[8] = ((int)(leftHatX)) & 0xFF;
+#         outputMessage[9] = ((int)(leftHatY) >> 8) & 0xFF;
+#         outputMessage[10] = ((int)(leftHatY)) & 0xFF;
+#         outputMessage[11] = ((int)(rightHatX) >> 8) & 0xFF;
+#         outputMessage[12] = ((int)(rightHatX)) & 0xFF;
+#         outputMessage[13] = ((int)(rightHatY) >> 8) & 0xFF;
+#         outputMessage[14] = ((int)(rightHatY)) & 0xFF; 
+#         outputMessage[15] = 0x3E;  ## '>'
+        
 
         messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
 
