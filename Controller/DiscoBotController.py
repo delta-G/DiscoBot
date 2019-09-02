@@ -158,8 +158,8 @@ class DiscoBotController:
                           DiscoBotServo.DiscoBotServo("tilt", 1500, 1000, 2400)]
 
         self.servoInfo = []
-        for x in range(8):
-            self.servoInfo.append([0,0,0])
+        for i in range(8):
+            self.servoInfo.append([1500,100,1234])
         
         return
             
@@ -306,8 +306,12 @@ class DiscoBotController:
         return True
     
     def handleRawDataDump(self):
-        while self.serOut.inWaiting() < 11:
+        
+#         self.putstring("***  RAW_DATA  ***")
+        
+        while self.serOut.inWaiting() < 12:
             pass
+        numBytesToRead = ord(self.serOut.read())
         self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
         self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
         self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
@@ -317,6 +321,33 @@ class DiscoBotController:
         self.rightMotorOut = ord(self.serOut.read())
         
         
+        return 
+    
+    def handleArmDump(self):
+        
+#         self.putstring("*** ARM_DUMP ***")
+        
+        while self.serOut.inWaiting() < 19:
+            pass
+        numBytesToRead = ord(self.serOut.read())
+        whichSet = self.serOut.read()
+        
+        dataPoints = []
+        
+        for i in range(8):
+            dp = ((ord(self.serOut.read()) & 0xFF) << 8)
+            dp |= ord(self.serOut.read()) & 0xFF
+            dataPoints.append(dp)
+        
+        if whichSet == 'p':
+            for i in range(8):
+                self.servoInfo[i][0] = dataPoints[i]
+        elif whichSet == 's':
+            for i in range(8):
+                self.servoInfo[i][1] = dataPoints[i]
+        elif whichSet == 't':
+            for i in range(8):
+                self.servoInfo[i][2] = dataPoints[i]               
         return 
     
     
@@ -329,10 +360,16 @@ class DiscoBotController:
                         c = self.serOut.read()
                         ###  If we are at the first character and it 
                         ###  is the control code
-                        if (self.returnBuffer == "<") and c == 'd':
-                            self.handleRawDataDump()
-                            self.returnBuffer = ""
-                            self.receivingReturn = False                          
+                        if (self.returnBuffer == "<"):
+                            if ord(c) == 0x13:
+                                self.handleRawDataDump()
+                                self.returnBuffer = ""
+                                self.receivingReturn = False
+                            elif ord(c) == 0x12:
+                                self.handleArmDump()
+                                self.returnBuffer = ""
+                                self.receivingReturn = False                                
+                                                  
                         if c == '<':
                             self.returnBuffer = ""
                             self.receivingReturn = True                            
