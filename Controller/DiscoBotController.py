@@ -24,6 +24,8 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
+from gtk import FALSE
+from numpy import False_
 
 
 useSerial = True
@@ -42,22 +44,30 @@ class DiscoBotController:
     
     def initComs(self):
         
-        self.commsOn = True
-        
-        if(useWifi):
-        
-            self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-#             self.sockOut.setblocking(0)
-        
-#             self.sockArgs = ('10.10.0.24' , 1234)
-#             self.sockArgs = ('192.168.4.1' , 1234)
-            self.sockArgs = ('192.168.1.75' , 1234)
+        if not self.commsOn:
+            try:
             
-        if(useSerial):
+                if(useWifi):
+                
+                    self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+        #             self.sockOut.setblocking(0)
+                
+        #             self.sockArgs = ('10.10.0.24' , 1234)
+        #             self.sockArgs = ('192.168.4.1' , 1234)
+                    self.sockArgs = ('192.168.1.75' , 1234)
+                    
+                if(useSerial):
+                    
+                    self.serOut = serial.Serial('/dev/ttyACM0', 115200)
+    
+            except Exception as ex:
+                self.commsOn=False
+                self.putstring(ex)  
+                self.putstring('\n') 
             
-            self.serOut = serial.Serial('/dev/ttyACM0', 115200)
+            else:
+                self.commsOn = True
             
-        
         return
     
     def __init__(self, aRedirect = None):
@@ -94,7 +104,6 @@ class DiscoBotController:
 
         
         
-        self.putstring ("Controller attached!\n")
 
         self.returnBuffer = ""
         self.receivingReturn = False
@@ -170,12 +179,22 @@ class DiscoBotController:
      
     def connectJoystick(self):
         
-        self.joy = xbox.Joystick()
-        self.joyConnected = True
-        #Valid connect may require joystick input to occur
-        print "Waiting for Joystick to connect"
-        while not self.joy.connected():
-            time.sleep(0.10)        
+        if not self.joyConnected:
+        
+            try:
+                self.joy = xbox.Joystick()
+                #Valid connect may require joystick input to occur
+                print "Waiting for Joystick to connect"
+                while not self.joy.connected():
+                    time.sleep(0.10)   
+            
+            except Exception as ex:
+                self.joyConnected = False
+                self.putstring(ex)  
+                self.putstring('\n') 
+                
+            else:        
+                self.joyConnected = True 
         
         return
     

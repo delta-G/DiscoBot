@@ -45,7 +45,17 @@ class DiscoBotGUI(tk.Frame):
     
     def refresh(self):
         self.servoPane.updateData()
-        self.indicatorFrame.check()        
+        self.indicatorFrame.check()
+        if(self.controller.joyConnected):
+            self.seletFrame.controllerConnectButton.config(bg="green")
+        else:            
+            self.seletFrame.controllerConnectButton.config(bg="red")
+                
+        if(self.controller.commsOn):
+            self.seletFrame.comConnectButton.config(bg="green")
+        else:            
+            self.seletFrame.comConnectButton.config(bg="red")
+        
         
         return
 
