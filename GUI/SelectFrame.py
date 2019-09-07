@@ -51,8 +51,8 @@ class SelectFrame(tk.Frame):
         self.comCheck = tk.Checkbutton(self, text="Commands", variable=self.showCommands, command=self.propCom)
         self.retCheck = tk.Checkbutton(self, text="Return", variable=self.showReturns, command=self.propRet)
         self.debCheck = tk.Checkbutton(self, text="Debug", variable=self.showDebug, command=self.propDeb)
-        self.controllerConnectButton = tk.Button(self, text="Control", command=self.propController)
-        self.comConnectButton = tk.Button(self, text="Comms", command=self.propCommsInit)
+        self.controllerConnectButton = tk.Button(self, text="Control", bg="red", command=self.propController)
+        self.comConnectButton = tk.Button(self, text="Comms", bg="red", command=self.propCommsInit)
         
         self.comCheck.pack(side=tk.TOP)
         self.retCheck.pack(side=tk.TOP)
