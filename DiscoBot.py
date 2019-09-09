@@ -9,6 +9,7 @@ import GUI.DiscoBotGUI
 
 root = tk.Tk()
 
+
 controller = Controller.DiscoBotController.DiscoBotController()
 
 gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
