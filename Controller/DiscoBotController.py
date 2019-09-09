@@ -46,7 +46,7 @@ class DiscoBotController:
         
         if not self.commsOn:
             try:
-            
+
                 if(useWifi):
                 
                     self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
@@ -64,7 +64,8 @@ class DiscoBotController:
                 self.commsOn=False
                 self.putstring(ex)  
                 self.putstring('\n') 
-            
+                self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+    #             self.sockOut.setblocking(0)
             else:
                 self.commsOn = True
             
@@ -178,7 +179,7 @@ class DiscoBotController:
         return
      
     def connectJoystick(self):
-        
+
         if not self.joyConnected:
         
             try:
