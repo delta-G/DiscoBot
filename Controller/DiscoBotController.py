@@ -58,7 +58,7 @@ class DiscoBotController:
                     
                 if(useSerial):
                     
-                    self.serOut = serial.Serial('/dev/ttyACM0', 115200)
+                    self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
     
             except Exception as ex:
                 self.commsOn=False
