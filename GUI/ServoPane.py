@@ -6,7 +6,7 @@ import Tkinter as tk
 class ServoPane(tk.Frame):
     
     
-    def __init__(self, aParent, servoList):
+    def __init__(self, aParent, jointList):
         
         self.parent = aParent
         tk.Frame.__init__(self, self.parent, padx=5, pady=5)
@@ -15,8 +15,8 @@ class ServoPane(tk.Frame):
         
         count = 0
         
-        for servo in servoList:
-            tmp = OneServo(self, servo, count)
+        for joint in jointList:
+            tmp = OneServo(self, joint.name, count)
             self.labels.append(tmp)
             tmp.pack()       
             count += 1 
@@ -32,18 +32,16 @@ class ServoPane(tk.Frame):
 
 class OneServo(tk.Frame):
     
-    def __init__(self, aParent, aServo, aNum):
+    def __init__(self, aParent, aName, aNum):
         
         self.number = aNum
         self.parent = aParent
         tk.Frame.__init__(self, self.parent, bd=1, relief=tk.SUNKEN)
-        
-        self.servo=aServo
                 
-        self.servoLabel = tk.Label(self, text=str(self.servo.name)+' -- ', pady=5, width=12, font="Verdana 12")
-        self.positionLabel = tk.Label(self, text=str(self.servo.position), pady=5, width=5, font="Verdana 12 bold")
-        self.speedLabel = tk.Label(self, text=str(self.servo.position), pady=5, width=5, font="Verdana 12 bold")
-        self.targetLabel = tk.Label(self, text=str(self.servo.position), pady=5, width=5, font="Verdana 12 bold")
+        self.servoLabel = tk.Label(self, text=str(aName)+' -- ', pady=5, width=12, font="Verdana 12")
+        self.positionLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold")
+        self.speedLabel = tk.Label(self, text=str(100), pady=5, width=5, font="Verdana 12 bold")
+        self.targetLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold")
         self.servoLabel.pack(side=tk.LEFT)
         self.positionLabel.pack(side=tk.LEFT)
         self.speedLabel.pack(side=tk.LEFT)     

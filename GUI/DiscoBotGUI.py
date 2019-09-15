@@ -5,6 +5,8 @@ import TermFrame
 import IndicatorFrame
 import SelectFrame
 
+import ArmGraphicFrame
+
 class DiscoBotGUI(tk.Frame):
     
     def __init__(self, aParent, aController):
@@ -17,7 +19,7 @@ class DiscoBotGUI(tk.Frame):
         
         self.topFrame = tk.Frame(self)
         
-        self.servoPane = ServoPane.ServoPane(self, self.controller.armServos)        
+        self.servoPane = ServoPane.ServoPane(self, self.controller.armJoints)        
         
                
         
@@ -27,9 +29,15 @@ class DiscoBotGUI(tk.Frame):
         
         self.termFrame = TermFrame.TermFrame(self) 
         
+        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.topFrame, self.controller)
+        
         
         self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.W)
         self.seletFrame.pack(side=tk.LEFT)
+        self.armGraphicFrame.pack(side=tk.LEFT)
+        
+        
+        
         self.topFrame.pack(side=tk.TOP, anchor=tk.W)
         
         self.termFrame.pack(side=tk.LEFT)
@@ -46,6 +54,7 @@ class DiscoBotGUI(tk.Frame):
     def refresh(self):
         self.servoPane.updateData()
         self.indicatorFrame.check()
+        self.armGraphicFrame.drawArm()
         if(self.controller.joyConnected):
             self.seletFrame.controllerConnectButton.config(bg="green")
         else:            

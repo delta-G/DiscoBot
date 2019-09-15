@@ -1,7 +1,6 @@
 
 
 import Tkinter as tk
-import ttk
 
 class IndicatorFrame(tk.Frame):
     
@@ -81,7 +80,14 @@ class IndicatorFrame(tk.Frame):
     def check(self):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
-        self.bvLabel.config(text="RMB-Bat" + str(self.controller.rmbBatteryVoltage))
+        self.hbLabel.config(text="HB - " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI) + "\n" + "{:.3f}".format(self.controller.turnAroundTime * 1000))
+        self.bvLabel.config(text="RMB-Bat" + str(self.controller.rmbBatteryVoltage)+ "\n" + self.controller.getDriveModeFromStatusByte())
+        if self.controller.rmbBatteryVoltage < 6.5:
+            self.bvLabel.config(bg="Red")
+        elif self.controller.rmbBatteryVoltage < 7.4:
+            self.bvLabel.config(bg="Yellow")
+        else: 
+            self.bvLabel.config(bg="Green")
 #         self.rsLabel.config(text=" RMB-RSSI \n" + str(self.controller.currentRssi))
 
         self.ltLabel.config(text=" LTic \n" + str(self.controller.leftMotorCount))

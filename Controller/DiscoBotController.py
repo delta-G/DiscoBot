@@ -16,7 +16,7 @@
 
 import xbox
 import socket
-import DiscoBotServo
+import DiscoBotJoint
 import time
 import errno
 from __builtin__ import False
@@ -112,6 +112,15 @@ class DiscoBotController:
         self.RMBheartBeatWarningTime = time.time()
         self.lastGimbalTime = time.time()
         
+        self.lastXboxSendTime = 0
+        self.responseReceived = False       
+        self.turnAroundTime = 0.0 
+        
+        self.lastBotSNR = 0
+        self.lastBotRSSI = 0
+        
+        self.botStatusByte = 0
+        
         self.rmbHeartbeatWarningLevel = "green"
         self.rmbBatteryVoltage = 0.0
         self.leftMotorCount = 0
@@ -146,7 +155,6 @@ class DiscoBotController:
         self.lastThumbR = 0
         self.lastThumbL = 0
         self.controlMode = 0
-        self.lastRunTime = 0
         self.lastRMBhbRequest = 0
         self.lastRMBmotorRequest = 0
 
@@ -158,14 +166,15 @@ class DiscoBotController:
         self.GRIP = 5
         self.PAN = 7
         self.TILT = 6
-        self.armServos = [DiscoBotServo.DiscoBotServo("base", 1500, 544, 2400), 
-                          DiscoBotServo.DiscoBotServo("shoulder" , 1214, 544, 2400), 
-                          DiscoBotServo.DiscoBotServo("elbow" , 1215, 544, 2400), 
-                          DiscoBotServo.DiscoBotServo("wrist" , 2000, 544, 2400), 
-                          DiscoBotServo.DiscoBotServo("rotate", 1500, 544, 2400), 
-                          DiscoBotServo.DiscoBotServo("grip", 2000, 1680, 2400), 
-                          DiscoBotServo.DiscoBotServo("pan", 1500, 1000, 2400), 
-                          DiscoBotServo.DiscoBotServo("tilt", 1500, 1000, 2400)]
+        
+        self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 544, -0.34907, 2400, 3.31631),
+                          DiscoBotJoint.DiscoBotJoint("shoulder", 105, 0, 544, -0.087266, 2400, 2.91470),
+                          DiscoBotJoint.DiscoBotJoint("elbow", 98, 0, 544, 2.96706, 2400, -0.13963),
+                          DiscoBotJoint.DiscoBotJoint("wrist", 158, 32, 605, -1.16937, 2400, 2.12930),
+                          DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
+                          DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
+                          DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, -1.57, 2350, 3.1415),
+                          DiscoBotJoint.DiscoBotJoint("tilt", 0, 0, 600, 0.87, 1470, -0.35)]
 
         self.servoInfo = []
         for i in range(8):
@@ -238,14 +247,14 @@ class DiscoBotController:
         
         return
     
-    def moveToByAngle(self, aTup):
-        i = 0
-        for servo in self.armServos:
-            servo.moveToImmediate(servo.angleToMicroseconds(aTup[i]))
-            self.armCommandSender(i)
-            i += 1
-         
-        return
+#     def moveToByAngle(self, aTup):
+#         i = 0
+#         for servo in self.armServos:
+#             servo.moveToImmediate(servo.angleToMicroseconds(aTup[i]))
+#             self.armCommandSender(i)
+#             i += 1
+#          
+#         return
     
     
     def runInterface(self):       
@@ -267,50 +276,12 @@ class DiscoBotController:
                 self.lastRMBmotorRequest = time.time()
                 
     ### CONTROLLER LOOP        
-            if time.time() - self.lastRunTime >= 0.2:
-    # ### JOY A            
-    #             joyA = self.joy.A()
-    #             if(joyA and not self.lastA):
-    #                 self.requestFromESP('B')
-    #             self.lastA = joyA
-    # ### JOY B            
-    #             joyB = self.joy.B()
-    #             if(joyB and not self.lastB):
-    #                 self.killConnection()
-    #             self.lastB = joyB
-    # ### JOY Y            
-    #             joyY = self.joy.Y()        
-    #             if (joyY and not self.lastY):
-    #                 self.controlMode += 1
-    #                 self.controlMode %= 2
-    #                 if(self.controlMode == 0):
-    #                     self.putstring("Drive Mode Activated\n")
-    #                 elif(self.controlMode == 1):
-    #                     self.putstring("Arm Mode Activated\n")
-    #             self.lastY = joyY
-    # ### JOY X
-    #             joyX = self.joy.X()
-    #             if (joyX and not self.lastX):
-    #                 self.outPutRunner("<EW>")
-    #             self.lastX = joyX
-    # ###  JOY GDUIE
-    #             joyG = self.joy.Guide()
-    #             if (joyG and not self.lastGuide):
-    #                 self.commandMode()
-    #             self.lastGuide = joyG
-    # 
-    #                 
-    #                 
-    #             
-    # ### END CONTROLLER LOOP
-    #             
-    #             if(self.controlMode == 0):
-    #                 self.driveMode()
-    #             elif(self.controlMode == 1):
-    #                 self.armMode()
+            if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
+   
                 if self.socketConnected:    
                     self.sendRawController()
-                self.lastRunTime = time.time()
+                    self.lastXboxSendTime = time.time()
+                    self.responseReceived = False
         
 #         self.listenForESP()
         self.listenForRawSerial()
@@ -329,9 +300,10 @@ class DiscoBotController:
         
 #         self.putstring("***  RAW_DATA  ***")
         
-        while self.serOut.inWaiting() < 12:
+        while self.serOut.inWaiting() < 15:
             pass
         numBytesToRead = ord(self.serOut.read())
+        self.botStatusByte = ord(self.serOut.read())
         self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
         self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
         self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
@@ -339,9 +311,26 @@ class DiscoBotController:
         self.rightMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
         self.rightMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
         self.rightMotorOut = ord(self.serOut.read())
+        self.lastBotSNR = ord(self.serOut.read())
+        self.lastBotRSSI = -(ord(self.serOut.read()))
         
         
         return 
+    
+    def getDriveModeFromStatusByte(self):
+        
+        retval = ""
+        
+        mb = self.botStatusByte & 3
+        if mb == 1:
+            retval = "DRIVE"
+        elif mb == 2:
+            retval = "ARM"
+        elif mb == 3:
+            retval = "MINE"            
+        
+        return retval
+    
     
     def handleArmDump(self):
         
@@ -385,10 +374,14 @@ class DiscoBotController:
                                 self.handleRawDataDump()
                                 self.returnBuffer = ""
                                 self.receivingReturn = False
+                                self.responseReceived = True
+                                self.turnAroundTime = time.time() - self.lastXboxSendTime
                             elif ord(c) == 0x12:
                                 self.handleArmDump()
                                 self.returnBuffer = ""
-                                self.receivingReturn = False                                
+                                self.receivingReturn = False    
+                                self.responseReceived = True   
+                                self.turnAroundTime = time.time() - self.lastXboxSendTime                         
                                                   
                         if c == '<':
                             self.returnBuffer = ""
@@ -412,8 +405,7 @@ class DiscoBotController:
                     # a REAL error occurred
                     self.putstring("Bad Error in linstenForESP")
                     self.putstring (err)
-                    self.putstring ('\n')
-        
+                    self.putstring ('\n')        
         
         return 
     
@@ -548,332 +540,332 @@ class DiscoBotController:
         
         return
 
-##########################
-###########DRIVE MODES
-##########################       
-    def driveMode(self):
-        
-        self.dpadGimbal()
-        
-        leftBump = self.joy.leftBumper()
-        rightBump = self.joy.rightBumper()
-        leftTrigger = self.joy.leftTrigger()
-        rightTrigger = self.joy.rightTrigger()
-        
-        self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
-        if(leftBump):
-            self.armServos[self.BASE].increment(1.0)
-            self.armCommandSender(self.BASE)
-        elif(rightBump):
-            self.armServos[self.BASE].increment(-1.0)
-            self.armCommandSender(self.BASE)
-        
-        leftY = self.joy.leftY()
-        rightY = self.joy.rightY()
-        
-        ml = 0
-        mr = 0
-        
-        
-        if (leftY > 0) :
-            ml = 1
-        elif (leftY < 0) :
-            ml = -1;
-        else: 
-            ml = 0    
-        
-        if rightY > 0 :
-            mr = 1
-        elif rightY < 0 :
-            mr = -1;
-        else: 
-            mr = 0
-            
-        if ml != self.motorLeft:
-            self.motorLeft = ml
-            commandString = ""
-            commandString += "<"
-            commandString += "ML"
-            commandString += ","
-            commandString += str(self.motorLeft)
-            commandString += ">"
-            self.outPutRunner(commandString)
-        
-        if mr != self.motorRight:
-            self.motorRight = mr
-            commandString = ""
-            commandString += "<"
-            commandString += "MR"
-            commandString += ","
-            commandString += str(self.motorRight)
-            commandString += ">"
-            self.outPutRunner(commandString)   
-            
-        return
-    
-    def armModeHelper(self, stickPosition , servo, invert = False):
-        if stickPosition != 0:
-            if invert:
-                stickPosition = -stickPosition
-
-            self.armServos[servo].increment(stickPosition)
-#             if(stickPosition > 0):
-#                 self.armServos[servo].increase()
-#                 self.armCommandSender(servo)
-#             elif(stickPosition < 0):
-#                 self.armServos[servo].decrease()
-            self.armCommandSender(servo)
-                
-            return True
-        
-        return False
-    
-    def armCommandSender(self, servo):
-        commandString = ""
-        commandString += "<S"
-        commandString += str(servo)
-        commandString += ","
-        commandString += str(self.armServos[servo].position)
-        commandString += ">"
-        self.outPutRunner(commandString)
-        
-        return
-    
-    def stickGimbal(self, panVal, tiltVal):
-        
-        if time.time() - self.lastGimbalTime >= 0.2:
-            self.lastGimbalTime = time.time()
-            
-            self.armModeHelper(panVal, self.PAN)
-            self.armModeHelper(tiltVal, self.TILT)            
-        
-        return
-    
-    def dpadGimbal(self):
-        
-        self.gimbalStepSize = 1
-        
-        if time.time() - self.lastGimbalTime >= 0.2:
-            self.lastGimbalTime = time.time()
-        
-        
-            dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
-        
-            ## Nothing Pressed
-            if(dpad == 0):
-                pass
-            ## UP 
-            elif(dpad == 1):
-                self.armServos[self.TILT].increment(-self.gimbalStepSize)
-                self.armCommandSender(self.TILT)
-                
-            ## RIGHT
-            elif(dpad == 2):
-                self.armServos[self.PAN].increment(-self.gimbalStepSize)
-                self.armCommandSender(self.PAN)
-            ## UP / RIGHT
-            elif(dpad == 3):
-                self.armServos[self.TILT].increment(-self.gimbalStepSize)
-                self.armServos[self.PAN].increment(-self.gimbalStepSize)
-                self.armCommandSender(self.TILT)
-                self.armCommandSender(self.PAN)
-            ## LEFT
-            elif(dpad == 4):
-                self.armServos[self.PAN].increment(self.gimbalStepSize)
-                self.armCommandSender(self.PAN)
-            ## UP / LEFT
-            elif(dpad == 5):
-                self.armServos[self.TILT].increment(-self.gimbalStepSize)
-                self.armServos[self.PAN].increment(self.gimbalStepSize)
-                self.armCommandSender(self.TILT)
-                self.armCommandSender(self.PAN)
-            ## DOWN
-            elif(dpad == 8):
-                self.armServos[self.TILT].increment(self.gimbalStepSize)
-                self.armCommandSender(self.TILT)
-            ## DOWN / RIGHT
-            elif(dpad == 10):
-                self.armServos[self.TILT].increment(self.gimbalStepSize)
-                self.armServos[self.PAN].increment(-self.gimbalStepSize)
-                self.armCommandSender(self.PAN)
-                self.armCommandSender(self.TILT)
-            ## DOWN / LEFT
-            elif(dpad == 12):
-                self.armServos[self.TILT].increment(self.gimbalStepSize)
-                self.armServos[self.PAN].increment(self.gimbalStepSize)
-                self.armCommandSender(self.PAN)
-                self.armCommandSender(self.TILT)
-            else:
-                pass        
-        
-        
-        
-        
-        return
-    
-        
-    def dpadMotor(self):
-        
-        ml = 0
-        mr = 0
-        
-        dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
-        
-        ## Nothing Pressed
-        if(dpad == 0):
-            ml = 0
-            mr = 0
-        ## UP 
-        elif(dpad == 1):
-            ml = 1
-            mr  = 1
-        ## RIGHT
-        elif(dpad == 2):
-            ml = 1
-            mr  = -1
-        ## UP / RIGHT
-        elif(dpad == 3):
-            ml = 1
-            mr  = 0
-        ## LEFT
-        elif(dpad == 4):
-            ml = -1
-            mr  = 1
-        ## UP / LEFT
-        elif(dpad == 5):
-            ml = 0
-            mr  = 1
-        ## DOWN
-        elif(dpad == 8):
-            ml = -1
-            mr  = -1
-        ## DOWN / RIGHT
-        elif(dpad == 10):
-            ml = -1
-            mr  = 0
-        ## DOWN / LEFT
-        elif(dpad == 12):
-            ml = 0
-            mr  = -1
-        else:
-            ml = 0
-            mr = 0
-        
-        
-        if ml != self.motorLeft:
-            self.motorLeft = ml
-            commandString = ""
-            commandString += "<"
-            commandString += "ML"
-            commandString += ","
-            commandString += str(self.motorLeft)
-            commandString += ">"
-            self.outPutRunner(commandString)
-        
-        if mr != self.motorRight:
-            self.motorRight = mr
-            commandString = ""
-            commandString += "<"
-            commandString += "MR"
-            commandString += ","
-            commandString += str(self.motorRight)
-            commandString += ">"
-            self.outPutRunner(commandString)   
-        
-        return
-        
-    def armMode(self):
-        
-        self.dpadMotor()
-        
-        deadZ = 1000
-            
-        thumbR = self.joy.rightThumbstick()
-        thumbL = self.joy.leftThumbstick()
-        leftX = self.joy.leftX(deadZ);
-        leftY = self.joy.leftY(deadZ);
-        rightX = self.joy.rightX(deadZ);
-        rightY = self.joy.rightY(deadZ);
-        leftBump = self.joy.leftBumper()
-        rightBump = self.joy.rightBumper()
-        leftTrigger = self.joy.leftTrigger()
-        rightTrigger = self.joy.rightTrigger()   
-        
-        
-        self.armModeHelper(rightX, self.ROTATE)
-        self.armModeHelper(rightY, self.WRIST, self.invertWrist)
-        self.armModeHelper(leftX, self.SHOULDER, self.invertShoulder)
-        self.armModeHelper(leftY, self.ELBOW, self.invertElbow)
-        self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
-        if(leftBump):
-            self.armServos[self.BASE].increment(0.1)
-            self.armCommandSender(self.BASE)
-        elif(rightBump):
-            self.armServos[self.BASE].increment(-0.1)
-            self.armCommandSender(self.BASE)
-        
-        if thumbR and not self.lastThumbR:
-            self.invertElbow = not self.invertElbow
-            self.invertWrist = not self.invertWrist
-        self.lastThumbR = thumbR
-        
-        if thumbL and not self.lastThumbL:
-            self.invertShoulder = not self.invertShoulder
-        self.lastThumbL = thumbL
-        
-        
-        return
-        
-    
-    
-    def sittingHome(self):
-        
-#         self.outPutRunner("<S1,1500><S2,1500>,<S3,2000>")
-        self.armServos[self.SHOULDER].moveToImmediate(1500)
-        self.armCommandSender(self.SHOULDER)
-        self.armServos[self.ELBOW].moveToImmediate(1500)
-        self.armCommandSender(self.ELBOW)
-        self.armServos[self.WRIST].moveToImmediate(2000)
-        self.armCommandSender(self.WRIST)
-        time.sleep(0.5)
-#         self.outPutRunner("<S1,1950><S2,1950>")
-        self.armServos[self.SHOULDER].moveToImmediate(1950)
-        self.armServos[self.ELBOW].moveToImmediate(1950)
-        self.armServos[self.WRIST].moveToImmediate(1400)
-        self.armCommandSender(self.SHOULDER)
-        self.armCommandSender(self.ELBOW)
-        self.armCommandSender(self.WRIST)
-        time.sleep(0.2)
-#         self.outPutRunner("<S1,2400><S2,2400>")
-        self.armServos[self.SHOULDER].moveToImmediate(2400)
-        self.armServos[self.ELBOW].moveToImmediate(2400)
-        self.armCommandSender(self.SHOULDER)
-        self.armCommandSender(self.ELBOW)
-        time.sleep(0.1)
-#         self.outPutRunner("<S7,1350><S6,1050><S3,1400>")
-        self.armServos[self.PAN].moveToImmediate(1350)
-        self.armServos[self.TILT].moveToImmediate(1050)
-        self.armServos[self.WRIST].moveToImmediate(1400)
-        self.armCommandSender(self.PAN)
-        self.armCommandSender(self.TILT)
-        self.armCommandSender(self.WRIST)
-        return
-    
-   
-    def standingHome(self):
-        
-        self.armServos[self.SHOULDER].moveToImmediate(1080)
-        self.armCommandSender(self.SHOULDER)
-        self.armServos[self.ELBOW].moveToImmediate(880)
-        self.armCommandSender(self.ELBOW)
-        self.armServos[self.WRIST].moveToImmediate(895)
-        self.armCommandSender(self.WRIST)
-
-        self.armServos[self.PAN].moveToImmediate(1350)
-        self.armServos[self.TILT].moveToImmediate(1220)
-        self.armCommandSender(self.PAN)
-        self.armCommandSender(self.TILT)
-        return        
+# ##########################
+# ###########DRIVE MODES
+# ##########################       
+#     def driveMode(self):
+#         
+#         self.dpadGimbal()
+#         
+#         leftBump = self.joy.leftBumper()
+#         rightBump = self.joy.rightBumper()
+#         leftTrigger = self.joy.leftTrigger()
+#         rightTrigger = self.joy.rightTrigger()
+#         
+#         self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
+#         if(leftBump):
+#             self.armServos[self.BASE].increment(1.0)
+#             self.armCommandSender(self.BASE)
+#         elif(rightBump):
+#             self.armServos[self.BASE].increment(-1.0)
+#             self.armCommandSender(self.BASE)
+#         
+#         leftY = self.joy.leftY()
+#         rightY = self.joy.rightY()
+#         
+#         ml = 0
+#         mr = 0
+#         
+#         
+#         if (leftY > 0) :
+#             ml = 1
+#         elif (leftY < 0) :
+#             ml = -1;
+#         else: 
+#             ml = 0    
+#         
+#         if rightY > 0 :
+#             mr = 1
+#         elif rightY < 0 :
+#             mr = -1;
+#         else: 
+#             mr = 0
+#             
+#         if ml != self.motorLeft:
+#             self.motorLeft = ml
+#             commandString = ""
+#             commandString += "<"
+#             commandString += "ML"
+#             commandString += ","
+#             commandString += str(self.motorLeft)
+#             commandString += ">"
+#             self.outPutRunner(commandString)
+#         
+#         if mr != self.motorRight:
+#             self.motorRight = mr
+#             commandString = ""
+#             commandString += "<"
+#             commandString += "MR"
+#             commandString += ","
+#             commandString += str(self.motorRight)
+#             commandString += ">"
+#             self.outPutRunner(commandString)   
+#             
+#         return
+#     
+#     def armModeHelper(self, stickPosition , servo, invert = False):
+#         if stickPosition != 0:
+#             if invert:
+#                 stickPosition = -stickPosition
+# 
+#             self.armServos[servo].increment(stickPosition)
+# #             if(stickPosition > 0):
+# #                 self.armServos[servo].increase()
+# #                 self.armCommandSender(servo)
+# #             elif(stickPosition < 0):
+# #                 self.armServos[servo].decrease()
+#             self.armCommandSender(servo)
+#                 
+#             return True
+#         
+#         return False
+#     
+#     def armCommandSender(self, servo):
+#         commandString = ""
+#         commandString += "<S"
+#         commandString += str(servo)
+#         commandString += ","
+#         commandString += str(self.armServos[servo].position)
+#         commandString += ">"
+#         self.outPutRunner(commandString)
+#         
+#         return
+#     
+#     def stickGimbal(self, panVal, tiltVal):
+#         
+#         if time.time() - self.lastGimbalTime >= 0.2:
+#             self.lastGimbalTime = time.time()
+#             
+#             self.armModeHelper(panVal, self.PAN)
+#             self.armModeHelper(tiltVal, self.TILT)            
+#         
+#         return
+#     
+#     def dpadGimbal(self):
+#         
+#         self.gimbalStepSize = 1
+#         
+#         if time.time() - self.lastGimbalTime >= 0.2:
+#             self.lastGimbalTime = time.time()
+#         
+#         
+#             dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
+#         
+#             ## Nothing Pressed
+#             if(dpad == 0):
+#                 pass
+#             ## UP 
+#             elif(dpad == 1):
+#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
+#                 self.armCommandSender(self.TILT)
+#                 
+#             ## RIGHT
+#             elif(dpad == 2):
+#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
+#                 self.armCommandSender(self.PAN)
+#             ## UP / RIGHT
+#             elif(dpad == 3):
+#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
+#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
+#                 self.armCommandSender(self.TILT)
+#                 self.armCommandSender(self.PAN)
+#             ## LEFT
+#             elif(dpad == 4):
+#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
+#                 self.armCommandSender(self.PAN)
+#             ## UP / LEFT
+#             elif(dpad == 5):
+#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
+#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
+#                 self.armCommandSender(self.TILT)
+#                 self.armCommandSender(self.PAN)
+#             ## DOWN
+#             elif(dpad == 8):
+#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
+#                 self.armCommandSender(self.TILT)
+#             ## DOWN / RIGHT
+#             elif(dpad == 10):
+#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
+#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
+#                 self.armCommandSender(self.PAN)
+#                 self.armCommandSender(self.TILT)
+#             ## DOWN / LEFT
+#             elif(dpad == 12):
+#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
+#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
+#                 self.armCommandSender(self.PAN)
+#                 self.armCommandSender(self.TILT)
+#             else:
+#                 pass        
+#         
+#         
+#         
+#         
+#         return
+#     
+#         
+#     def dpadMotor(self):
+#         
+#         ml = 0
+#         mr = 0
+#         
+#         dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
+#         
+#         ## Nothing Pressed
+#         if(dpad == 0):
+#             ml = 0
+#             mr = 0
+#         ## UP 
+#         elif(dpad == 1):
+#             ml = 1
+#             mr  = 1
+#         ## RIGHT
+#         elif(dpad == 2):
+#             ml = 1
+#             mr  = -1
+#         ## UP / RIGHT
+#         elif(dpad == 3):
+#             ml = 1
+#             mr  = 0
+#         ## LEFT
+#         elif(dpad == 4):
+#             ml = -1
+#             mr  = 1
+#         ## UP / LEFT
+#         elif(dpad == 5):
+#             ml = 0
+#             mr  = 1
+#         ## DOWN
+#         elif(dpad == 8):
+#             ml = -1
+#             mr  = -1
+#         ## DOWN / RIGHT
+#         elif(dpad == 10):
+#             ml = -1
+#             mr  = 0
+#         ## DOWN / LEFT
+#         elif(dpad == 12):
+#             ml = 0
+#             mr  = -1
+#         else:
+#             ml = 0
+#             mr = 0
+#         
+#         
+#         if ml != self.motorLeft:
+#             self.motorLeft = ml
+#             commandString = ""
+#             commandString += "<"
+#             commandString += "ML"
+#             commandString += ","
+#             commandString += str(self.motorLeft)
+#             commandString += ">"
+#             self.outPutRunner(commandString)
+#         
+#         if mr != self.motorRight:
+#             self.motorRight = mr
+#             commandString = ""
+#             commandString += "<"
+#             commandString += "MR"
+#             commandString += ","
+#             commandString += str(self.motorRight)
+#             commandString += ">"
+#             self.outPutRunner(commandString)   
+#         
+#         return
+#         
+#     def armMode(self):
+#         
+#         self.dpadMotor()
+#         
+#         deadZ = 1000
+#             
+#         thumbR = self.joy.rightThumbstick()
+#         thumbL = self.joy.leftThumbstick()
+#         leftX = self.joy.leftX(deadZ);
+#         leftY = self.joy.leftY(deadZ);
+#         rightX = self.joy.rightX(deadZ);
+#         rightY = self.joy.rightY(deadZ);
+#         leftBump = self.joy.leftBumper()
+#         rightBump = self.joy.rightBumper()
+#         leftTrigger = self.joy.leftTrigger()
+#         rightTrigger = self.joy.rightTrigger()   
+#         
+#         
+#         self.armModeHelper(rightX, self.ROTATE)
+#         self.armModeHelper(rightY, self.WRIST, self.invertWrist)
+#         self.armModeHelper(leftX, self.SHOULDER, self.invertShoulder)
+#         self.armModeHelper(leftY, self.ELBOW, self.invertElbow)
+#         self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
+#         if(leftBump):
+#             self.armServos[self.BASE].increment(0.1)
+#             self.armCommandSender(self.BASE)
+#         elif(rightBump):
+#             self.armServos[self.BASE].increment(-0.1)
+#             self.armCommandSender(self.BASE)
+#         
+#         if thumbR and not self.lastThumbR:
+#             self.invertElbow = not self.invertElbow
+#             self.invertWrist = not self.invertWrist
+#         self.lastThumbR = thumbR
+#         
+#         if thumbL and not self.lastThumbL:
+#             self.invertShoulder = not self.invertShoulder
+#         self.lastThumbL = thumbL
+#         
+#         
+#         return
+#         
+#     
+#     
+#     def sittingHome(self):
+#         
+# #         self.outPutRunner("<S1,1500><S2,1500>,<S3,2000>")
+#         self.armServos[self.SHOULDER].moveToImmediate(1500)
+#         self.armCommandSender(self.SHOULDER)
+#         self.armServos[self.ELBOW].moveToImmediate(1500)
+#         self.armCommandSender(self.ELBOW)
+#         self.armServos[self.WRIST].moveToImmediate(2000)
+#         self.armCommandSender(self.WRIST)
+#         time.sleep(0.5)
+# #         self.outPutRunner("<S1,1950><S2,1950>")
+#         self.armServos[self.SHOULDER].moveToImmediate(1950)
+#         self.armServos[self.ELBOW].moveToImmediate(1950)
+#         self.armServos[self.WRIST].moveToImmediate(1400)
+#         self.armCommandSender(self.SHOULDER)
+#         self.armCommandSender(self.ELBOW)
+#         self.armCommandSender(self.WRIST)
+#         time.sleep(0.2)
+# #         self.outPutRunner("<S1,2400><S2,2400>")
+#         self.armServos[self.SHOULDER].moveToImmediate(2400)
+#         self.armServos[self.ELBOW].moveToImmediate(2400)
+#         self.armCommandSender(self.SHOULDER)
+#         self.armCommandSender(self.ELBOW)
+#         time.sleep(0.1)
+# #         self.outPutRunner("<S7,1350><S6,1050><S3,1400>")
+#         self.armServos[self.PAN].moveToImmediate(1350)
+#         self.armServos[self.TILT].moveToImmediate(1050)
+#         self.armServos[self.WRIST].moveToImmediate(1400)
+#         self.armCommandSender(self.PAN)
+#         self.armCommandSender(self.TILT)
+#         self.armCommandSender(self.WRIST)
+#         return
+#     
+#    
+#     def standingHome(self):
+#         
+#         self.armServos[self.SHOULDER].moveToImmediate(1080)
+#         self.armCommandSender(self.SHOULDER)
+#         self.armServos[self.ELBOW].moveToImmediate(880)
+#         self.armCommandSender(self.ELBOW)
+#         self.armServos[self.WRIST].moveToImmediate(895)
+#         self.armCommandSender(self.WRIST)
+# 
+#         self.armServos[self.PAN].moveToImmediate(1350)
+#         self.armServos[self.TILT].moveToImmediate(1220)
+#         self.armCommandSender(self.PAN)
+#         self.armCommandSender(self.TILT)
+#         return        
     
     
     def sendRawController(self):
