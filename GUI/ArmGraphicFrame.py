@@ -1,3 +1,18 @@
+#  DiscoBot  --  The Python control software for my robot
+#     Copyright (C) 2016  David C.
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import Tkinter as tk
@@ -10,30 +25,27 @@ class ArmGraphicFrame(tk.Frame):
         tk.Frame.__init__(self, self.parent)
         self.controller = aController
         
-        self.canvas = tk.Canvas(self, width=100, height=100)
+        self.canvasWidth = 250
+        self.canvasHeight = 200
         
-        self.canvas.pack()
+        self.canvas = tk.Canvas(self, width=self.canvasWidth, height=self.canvasHeight)
         
-        self.canvas.create_line(1,1,1,99)
-        self.canvas.create_line(1,99,99,99)
-        self.canvas.create_line(99,99,99,1)
-        self.canvas.create_line(99,1,1,1)
+        self.canvas.pack()    
         
-        
-        
-        self.canvas.create_line(25, 25, 75, 95)
      
     def squareCanvas(self):
-        self.canvas.create_line(1,1,1,99)
-        self.canvas.create_line(1,99,99,99)
-        self.canvas.create_line(99,99,99,1)
-        self.canvas.create_line(99,1,1,1)
+        w = (self.canvasWidth - 1)
+        h = (self.canvasHeight - 1)
+        self.canvas.create_line(1,1,1,h)
+        self.canvas.create_line(1,h,w,h)
+        self.canvas.create_line(w,h,w,1)
+        self.canvas.create_line(w,1,1,1)
         return
            
         
     def toCanvasCoords(self, aXYAtuple, aRatio):
         reX = aXYAtuple[0]
-        reY = (100 - aXYAtuple[1])
+        reY = (self.canvasHeight - aXYAtuple[1])
         
         return (reX, reY)
         
@@ -47,13 +59,13 @@ class ArmGraphicFrame(tk.Frame):
     ###  Draw arm with base at x,y of this tuple 
     def drawArm(self):
         
-        aXYAtuple = (50, 20, 1.5708)
+        aXYAtuple = (100, 50, 1.5708)
         
         totalHeightPossible = self.controller.armJoints[0].length + self.controller.armJoints[1].length + self.controller.armJoints[2].length + self.controller.armJoints[3].length
         
-        guiHeight = 100 - aXYAtuple[1]
+        guiHeight = self.canvas.winfo_height() - aXYAtuple[1]
         
-        sizeRatio = 1.0 * guiHeight / (2.0 * totalHeightPossible)
+        sizeRatio = 1.0 * guiHeight / (1.0 * totalHeightPossible)
         
         basePoint = (aXYAtuple[0], aXYAtuple[1], 1.5708)
         shoulderPoint = (aXYAtuple[0], (aXYAtuple[1] + (self.controller.armJoints[0].length * sizeRatio)), 1.5708)        
