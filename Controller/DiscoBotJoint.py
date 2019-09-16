@@ -1,4 +1,4 @@
-#  pyBot  --  The Python control software for my robot
+#  DiscoBot  --  The Python control software for my robot
 #     Copyright (C) 2016  David C.
 # 
 #     This program is free software: you can redistribute it and/or modify

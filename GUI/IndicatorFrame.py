@@ -1,3 +1,18 @@
+#  DiscoBot  --  The Python control software for my robot
+#     Copyright (C) 2016  David C.
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import Tkinter as tk
@@ -5,10 +20,11 @@ import Tkinter as tk
 class IndicatorFrame(tk.Frame):
     
     
-    def __init__(self, aParent, aController):
+    def __init__(self, aParent, aGui, aController):
         self.parent = aParent
         tk.Frame.__init__(self, self.parent)
         self.controller = aController
+        self.gui = aGui
         
         self.config(height=10, padx=5, pady=5)
         
@@ -21,9 +37,11 @@ class IndicatorFrame(tk.Frame):
         
         
         self.hbLabel = IndicatorLabel(self.firstFrame, text="HB")
+        self.hbLabel.config(width=10)
         self.hbLabel.pack(side=tk.TOP)
         
         self.bvLabel = IndicatorLabel(self.firstFrame, text="BAT")
+        self.bvLabel.config(width=10)
         self.bvLabel.pack(side=tk.TOP)      
         
 #         self.rsLabel = IndicatorLabel(self, text="RSSI")
@@ -79,15 +97,15 @@ class IndicatorFrame(tk.Frame):
     
     def check(self):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
-        self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
+        self.hbLabel.check(self.gui.colors[self.controller.rmbHeartbeatWarningLevel])
         self.hbLabel.config(text="HB - " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI) + "\n" + "{:.3f}".format(self.controller.turnAroundTime * 1000))
         self.bvLabel.config(text="RMB-Bat" + str(self.controller.rmbBatteryVoltage)+ "\n" + self.controller.getDriveModeFromStatusByte())
         if self.controller.rmbBatteryVoltage < 6.5:
-            self.bvLabel.config(bg="Red")
+            self.bvLabel.config(bg=self.gui.colors['red'])
         elif self.controller.rmbBatteryVoltage < 7.4:
-            self.bvLabel.config(bg="Yellow")
+            self.bvLabel.config(bg=self.gui.colors['yellow'])
         else: 
-            self.bvLabel.config(bg="Green")
+            self.bvLabel.config(bg=self.gui.colors['green'])
 #         self.rsLabel.config(text=" RMB-RSSI \n" + str(self.controller.currentRssi))
 
         self.ltLabel.config(text=" LTic \n" + str(self.controller.leftMotorCount))

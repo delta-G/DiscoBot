@@ -16,25 +16,8 @@ gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
 controller.setRedirect(gui.termFrame.redirect)
 
-# def pyBotRunner():
-#     
-#     controller.runInterface()
-#     gui.refresh()
-#     root.after(1, pyBotRunner)
-#     return
-
 
 try:
-#     #Valid connect may require joystick input to occur
-#     print "Waiting for Joystick to connect"
-#     while not controller.joy.connected():
-#         time.sleep(0.10)
-#         
-        
-    
-    
-#     root.after(1, pyBotRunner)
-#     root.mainloop()
     
     while (controller.runInterface()):
         gui.refresh()
