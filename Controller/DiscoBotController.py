@@ -276,8 +276,8 @@ class DiscoBotController:
                 self.lastRMBmotorRequest = time.time()
                 
     ### CONTROLLER LOOP        
-#             if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
-            if self.responseReceived:
+            if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
+#             if self.responseReceived:
    
                 if self.socketConnected:    
                     self.sendRawController()
