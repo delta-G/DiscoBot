@@ -24,8 +24,6 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
-from gtk import FALSE
-from numpy import False_
 
 
 useSerial = True
@@ -982,41 +980,61 @@ class DiscoBotController:
 #         outputMessage[14] = ((int)(rightHatY)) & 0xFF; 
 #         outputMessage[15] = 0x3E;  ## '>'
         
-
-        messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
-
-        newmess = "<X"
+        rawMessage = bytearray()
+        rawMessage.append(0x3C)                                         ##0
+        rawMessage.append(0x14)                                         ##1
+        rawMessage.append(16)                                           ##2
+        rawMessage.append(((int)(buttonStateInt) >> 8) & 0xFF)          ##3
+        rawMessage.append(((int)(buttonStateInt)) & 0xFF)               ##4
+        rawMessage.append(((int)(leftTrigByte)) & 0xFF)                 ##5
+        rawMessage.append(((int)(rightTrigByte)) & 0xFF)                ##6
+        rawMessage.append(((int)(leftHatX) >> 8) & 0xFF)                ##7
+        rawMessage.append(((int)(leftHatX)) & 0xFF)                     ##8
+        rawMessage.append(((int)(leftHatY) >> 8) & 0xFF)                ##9
+        rawMessage.append(((int)(leftHatY)) & 0xFF)                     ##10
+        rawMessage.append(((int)(rightHatX) >> 8) & 0xFF)               ##11
+        rawMessage.append(((int)(rightHatX)) & 0xFF)                    ##12
+        rawMessage.append(((int)(rightHatY) >> 8) & 0xFF)               ##13
+        rawMessage.append(((int)(rightHatY)) & 0xFF)                    ##14
+        rawMessage.append(0x3E)                                         ##15
+        
+        self.serOut.write(rawMessage)
         
         
-        ###    TODO:  This should be in a Indian Switcher function
-             
-        newmess += messtr[2] + messtr[3]
-        newmess += messtr[0] + messtr[1]
-        
-        newmess += messtr[6] + messtr[7]
-        newmess += messtr[4] + messtr[5]
-        
-        newmess += messtr[8] + messtr[9]
-        newmess += messtr[10] + messtr[11]
-        
-        newmess += messtr[14] + messtr[15]
-        newmess += messtr[12] + messtr[13]
-        
-        newmess += messtr[18] + messtr[19]
-        newmess += messtr[16] + messtr[17]
-        
-        newmess += messtr[22] + messtr[23]
-        newmess += messtr[20] + messtr[21]
-        
-        newmess += messtr[26] + messtr[27]
-        newmess += messtr[24] + messtr[25]
-        
-        newmess += ">"
-        
-#         print "Raw Controller Message"
-#         print newmess
-        
-        self.outPutRunner(newmess)
+#         messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
+# 
+#         newmess = "<X"
+#         
+#         
+#         ###    TODO:  This should be in a Indian Switcher function
+#              
+#         newmess += messtr[2] + messtr[3]
+#         newmess += messtr[0] + messtr[1]
+#         
+#         newmess += messtr[6] + messtr[7]
+#         newmess += messtr[4] + messtr[5]
+#         
+#         newmess += messtr[8] + messtr[9]
+#         newmess += messtr[10] + messtr[11]
+#         
+#         newmess += messtr[14] + messtr[15]
+#         newmess += messtr[12] + messtr[13]
+#         
+#         newmess += messtr[18] + messtr[19]
+#         newmess += messtr[16] + messtr[17]
+#         
+#         newmess += messtr[22] + messtr[23]
+#         newmess += messtr[20] + messtr[21]
+#         
+#         newmess += messtr[26] + messtr[27]
+#         newmess += messtr[24] + messtr[25]
+#         
+#         newmess += ">"
+#         
+# #         print "Raw Controller Message"
+# #         print newmess
+#         
+#         self.outPutRunner(newmess)
 
         
         return
