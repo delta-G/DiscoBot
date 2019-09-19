@@ -71,6 +71,7 @@ class ArmGraphicFrame(tk.Frame):
         shoulderPoint = (aXYAtuple[0], (aXYAtuple[1] + (self.controller.armJoints[0].length * sizeRatio)), 1.5708)        
         elbowPoint = self.controller.armJoints[1].findEndXYandApproach(shoulderPoint, self.controller.servoInfo[1][0], sizeRatio)
         wristPoint = self.controller.armJoints[2].findEndXYandApproach(elbowPoint, self.controller.servoInfo[2][0], sizeRatio)
+        gripperWristPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
         gripperTipPoint = self.controller.armJoints[3].findEndXYandApproach(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
         
         
@@ -80,15 +81,17 @@ class ArmGraphicFrame(tk.Frame):
         shoulderCoords = self.toCanvasCoords(shoulderPoint, sizeRatio)
         elbowCoords = self.toCanvasCoords(elbowPoint, sizeRatio)
         wristCoords = self.toCanvasCoords(wristPoint, sizeRatio)
+        gripperWristCoords = self.toCanvasCoords(gripperWristPoint, sizeRatio)
         gripperTipCoords = self.toCanvasCoords(gripperTipPoint, sizeRatio)       
         
         self.canvas.delete("all")
         
         self.squareCanvas()
         self.drawSegment(baseCoords, shoulderCoords, "black")
-        self.drawSegment(shoulderCoords, elbowCoords, "red")
-        self.drawSegment(elbowCoords, wristCoords, "blue")
-        self.drawSegment(wristCoords, gripperTipCoords, "green")
+        self.drawSegment(shoulderCoords, elbowCoords, "cyan")
+        self.drawSegment(elbowCoords, wristCoords, "red")
+        self.drawSegment(wristCoords, gripperWristCoords, "black")
+        self.drawSegment(gripperWristCoords, gripperTipCoords, "green")
         
         
         return 

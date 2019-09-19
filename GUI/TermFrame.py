@@ -20,28 +20,70 @@ import ComSenderField
 
 class TermFrame(tk.Frame):
     
+    
+    def propCom(self):
+        if(self.showCommands.get() == 0):
+            self.controller.showCommands = False
+        else:
+            self.controller.showCommands = True
+            
+        return
+    
+    def propRet(self):
+        if(self.showReturns.get() == 0):
+            self.controller.showReturns = False
+        else:
+            self.controller.showReturns = True
+            
+        return
+    
+    def propDeb(self):
+        if(self.showDebug.get() == 0):
+            self.controller.showDebug = False
+        else:
+            self.controller.showDebug = True
+            
+        return
+    
+    
+    
     def __init__(self, aParent):
         
         self.parent = aParent
         tk.Frame.__init__(self, self.parent)
         
-        self.scrollbar = tk.Scrollbar(self)
+        
+        self.logFrame = tk.Frame(self)
+        self.checkFrame = tk.Frame(self)
+        
+        self.scrollbar = tk.Scrollbar(self.logFrame)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         self.autoscroll = tk.IntVar()
-        asCheck = tk.Checkbutton(self.parent.seletFrame, variable=self.autoscroll, text='Auto-Scroll')
-        asCheck.select()
+        self.showCommands = tk.IntVar()
+        self.showReturns = tk.IntVar()
+        self.showDebug = tk.IntVar()
         
-        asCheck.pack(side=tk.TOP)
+        asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ')
+        asCheck.select()
+        self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom)
+        self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet)
+        self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb)
+        
+        asCheck.pack(side=tk.LEFT, anchor=tk.W)
+        self.comCheck.pack(side=tk.LEFT, anchor=tk.W)
+        self.retCheck.pack(side=tk.LEFT, anchor=tk.W)
+        self.debCheck.pack(side=tk.LEFT, anchor=tk.W)
         
         self.comsend = ComSenderField.ComSenderField(self, self.parent.controller)
         self.comsend.pack(side=tk.TOP)
         
-        self.log = tk.Text(self, width=60, height=20, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
+        self.log = tk.Text(self.logFrame, width=60, height=20, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.log.yview)
         self.log.pack()    
         
-        
+        self.logFrame.pack(side=tk.TOP)
+        self.checkFrame.pack(side=tk.TOP, anchor=tk.W)
         
         return
     

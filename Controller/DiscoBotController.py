@@ -119,6 +119,12 @@ class DiscoBotController:
         
         self.botStatusByte = 0
         
+        self.driveMode = ""
+        self.cameraPower = False
+        self.headlightPower = False
+        self.armPower = False
+        self.comPower = False
+        
         self.rmbHeartbeatWarningLevel = "green"
         self.rmbBatteryVoltage = 0.0
         self.leftMotorCount = 0
@@ -133,6 +139,7 @@ class DiscoBotController:
         self.showCommands = False
         self.showReturns = False
         self.showDebug = False
+        
         
         self.joyConnected = False
         self.commsOn = False
@@ -191,7 +198,7 @@ class DiscoBotController:
         
             try:
                 self.joy = xbox.Joystick()
-                #Valid connect may require joystick input to occur
+#                 Valid connect may require joystick input to occur
                 print "Waiting for Joystick to connect"
                 while not self.joy.connected():
                     time.sleep(0.10)   
@@ -263,7 +270,7 @@ class DiscoBotController:
                 
                 self.connectToBot()
     ### Back Button or lost connection ends program
-            if self.joy.Back() or not self.joy.connected():
+            if self.joy.Back():
                 return False                
     ### REQUEST HEARTBEAT        
             if time.time() - self.lastRMBhbRequest >= 2:
@@ -295,6 +302,12 @@ class DiscoBotController:
             
         return True
     
+    def make16bitSigned(self, aNum):
+        if((aNum > 32767) and (aNum < 65535)):
+            return (-65536 + aNum)
+        else:
+            return aNum
+    
     def handleRawDataDump(self):
         
 #         self.putstring("***  RAW_DATA  ***")
@@ -305,30 +318,53 @@ class DiscoBotController:
         self.botStatusByte = ord(self.serOut.read())
         self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
         self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
-        self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
+        self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())        
+        self.leftMotorSpeed = self.make16bitSigned(self.leftMotorSpeed)
         self.leftMotorOut = ord(self.serOut.read())
         self.rightMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
-        self.rightMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.rightMotorCount = self.make16bitSigned(self.rightMotorCount)
+        self.rightMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())        
+        self.rightMotorSpeed = self.make16bitSigned(self.rightMotorSpeed)
         self.rightMotorOut = ord(self.serOut.read())
         self.lastBotSNR = ord(self.serOut.read())
         self.lastBotRSSI = -(ord(self.serOut.read()))
         
+        self.readStatusByte()
+        
         
         return 
     
-    def getDriveModeFromStatusByte(self):
-        
-        retval = ""
-        
+    def readStatusByte(self):
         mb = self.botStatusByte & 3
         if mb == 1:
-            retval = "DRIVE"
+            self.driveMode = "DRIVE"
         elif mb == 2:
-            retval = "ARM"
+            self.driveMode = "ARM"
         elif mb == 3:
-            retval = "MINE"            
+            self.driveMode = "MINE"            
         
-        return retval
+        if(self.botStatusByte & 0x10):
+            self.cameraPower = True
+        else:
+            self.cameraPower = False
+            
+        if(self.botStatusByte & 0x20):
+            self.headlightPower = True
+        else:
+            self.headlightPower = False
+            
+        if(self.botStatusByte & 0x40):
+            self.armPower = True
+        else:
+            self.armPower = False
+            
+        if(self.botStatusByte & 0x80):
+            self.comPower = True
+        else:
+            self.comPower = False
+            
+        return
     
     
     def handleArmDump(self):

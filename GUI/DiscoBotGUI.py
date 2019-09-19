@@ -40,6 +40,8 @@ class DiscoBotGUI(tk.Frame):
             'yellow' : '#FFFF00'
             }
         
+        self.defaultFont = "Veranda 12 bold"
+        
         self.topFrame = tk.Frame(self)
         
         self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
@@ -62,10 +64,7 @@ class DiscoBotGUI(tk.Frame):
         
         self.termFrame.pack(side=tk.LEFT)
         
-        self.servoPane.pack(side=tk.TOP)
-        
-        
-        
+        self.servoPane.pack(side=tk.TOP)       
                 
         self.pack()
         return
@@ -75,15 +74,16 @@ class DiscoBotGUI(tk.Frame):
         self.servoPane.updateData()
         self.indicatorFrame.check()
         self.armGraphicFrame.drawArm()
+        self.seletFrame.update()
         if(self.controller.joyConnected):
-            self.seletFrame.controllerConnectButton.config(bg=self.colors['green'])
+            self.indicatorFrame.controllerConnectButton.config(bg=self.colors['green'])
         else:            
-            self.seletFrame.controllerConnectButton.config(bg=self.colors['red'])
+            self.indicatorFrame.controllerConnectButton.config(bg=self.colors['red'])
                 
         if(self.controller.commsOn):
-            self.seletFrame.comConnectButton.config(bg=self.colors['green'])
+            self.indicatorFrame.comConnectButton.config(bg=self.colors['green'])
         else:            
-            self.seletFrame.comConnectButton.config(bg=self.colors['red'])        
+            self.indicatorFrame.comConnectButton.config(bg=self.colors['red'])        
         return
 
 
