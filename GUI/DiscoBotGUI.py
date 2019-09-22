@@ -42,29 +42,37 @@ class DiscoBotGUI(tk.Frame):
         
         self.defaultFont = "Veranda 12 bold"
         
-        self.topFrame = tk.Frame(self)
+        self.leftSideFrame = tk.Frame(self)
+        self.rightSideFrame = tk.Frame(self)
+        
+                
+        self.topFrame = tk.Frame(self.leftSideFrame)
         
         self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
         
-        self.seletFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
+        self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
         
-        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.topFrame, self.controller)
+        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller)
         
-        self.termFrame = TermFrame.TermFrame(self) 
-        self.servoPane = ServoPane.ServoPane(self, self.controller.armJoints)  
+        self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self) 
+        self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
         
-        
+        #topFrame (part of leftSideFrame)
         self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.W)
-        self.seletFrame.pack(side=tk.LEFT)
+        self.selectFrame.pack(side=tk.LEFT)
         
         
-        
+        #leftSideFrame
         self.topFrame.pack(side=tk.TOP, anchor=tk.W)
-        self.armGraphicFrame.pack(side=tk.RIGHT)
         
         self.termFrame.pack(side=tk.LEFT)
         
-        self.servoPane.pack(side=tk.TOP)       
+        #rightSideFrame
+        self.armGraphicFrame.pack(side=tk.TOP, anchor=tk.N)        
+        self.servoPane.pack(side=tk.TOP)
+        
+        self.leftSideFrame.pack(side=tk.LEFT, anchor=tk.N)
+        self.rightSideFrame.pack(side=tk.LEFT, anchor=tk.N)     
                 
         self.pack()
         return
@@ -74,7 +82,7 @@ class DiscoBotGUI(tk.Frame):
         self.servoPane.updateData()
         self.indicatorFrame.check()
         self.armGraphicFrame.drawArm()
-        self.seletFrame.update()
+        self.selectFrame.update()
         if(self.controller.joyConnected):
             self.indicatorFrame.controllerConnectButton.config(bg=self.colors['green'])
         else:            

@@ -40,6 +40,7 @@ class IndicatorFrame(tk.Frame):
 #         self.ssidLabel.pack(side=tk.LEFT)
         
         self.firstFrame = tk.Frame(self)
+        self.firstFrame.config(padx=10, pady=10)
         
         self.firstFrame.pack(side = tk.LEFT)
         
@@ -69,6 +70,7 @@ class IndicatorFrame(tk.Frame):
 #         self.rsLabel.pack(side=tk.LEFT)
 
         self.secondFrame = tk.Frame(self)
+        self.secondFrame.config(padx=10, pady=10)
         self.secondFrame.pack(side = tk.LEFT)
 
         self.motorParamFrame = tk.Frame(self.secondFrame)

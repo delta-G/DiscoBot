@@ -118,12 +118,14 @@ class DiscoBotController:
         self.lastBotRSSI = 0
         
         self.botStatusByte = 0
+        self.armStatusByte = 0
         
         self.driveMode = ""
         self.cameraPower = False
         self.headlightPower = False
         self.armPower = False
         self.comPower = False
+        self.armServoPower = False
         
         self.rmbHeartbeatWarningLevel = "green"
         self.rmbBatteryVoltage = 0.0
@@ -244,8 +246,10 @@ class DiscoBotController:
             if(useWifi):
                 self.sockOut.send(cs)
             if(useSerial):
+                time.sleep(0.2)
                 self.serOut.write(cs)
                 self.serOut.flush()
+                time.sleep(0.2)
         if self.showCommands:
 #             if not str(cs).startswith("<X,0D14"):
             self.putstring("COM--> " + str(cs) + '\n')
@@ -371,9 +375,10 @@ class DiscoBotController:
         
 #         self.putstring("*** ARM_DUMP ***")
         
-        while self.serOut.inWaiting() < 19:
+        while self.serOut.inWaiting() < 20:
             pass
         numBytesToRead = ord(self.serOut.read())
+        self.armStatusByte = ord(self.serOut.read())
         whichSet = self.serOut.read()
         
         dataPoints = []
@@ -391,7 +396,13 @@ class DiscoBotController:
                 self.servoInfo[i][1] = dataPoints[i]
         elif whichSet == 't':
             for i in range(8):
-                self.servoInfo[i][2] = dataPoints[i]               
+                self.servoInfo[i][2] = dataPoints[i]   
+                
+        if(self.armStatusByte & 1):
+            self.armServoPower = True
+        else:
+            self.armServoPower = False
+                    
         return 
     
     

@@ -21,9 +21,10 @@ import time
 class ComSenderField(tk.Frame):
     
     def sendCommand(self):
-        time.sleep(0.2)
+#         outPutRunner sleeps for us now
+#         time.sleep(0.2)
         self.controller.outPutRunner(self.entry.get())
-        time.sleep(0.2)
+#         time.sleep(0.2)
     
     def __init__(self, aParent, aController):
         

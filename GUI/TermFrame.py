@@ -23,34 +23,36 @@ class TermFrame(tk.Frame):
     
     def propCom(self):
         if(self.showCommands.get() == 0):
-            self.controller.showCommands = False
+            self.parent.controller.showCommands = False
         else:
-            self.controller.showCommands = True
+            self.parent.controller.showCommands = True
             
         return
     
     def propRet(self):
         if(self.showReturns.get() == 0):
-            self.controller.showReturns = False
+            self.parent.controller.showReturns = False
         else:
-            self.controller.showReturns = True
+            self.parent.controller.showReturns = True
             
         return
     
     def propDeb(self):
         if(self.showDebug.get() == 0):
-            self.controller.showDebug = False
+            self.parent.controller.showDebug = False
         else:
-            self.controller.showDebug = True
+            self.parent.controller.showDebug = True
             
         return
     
     
     
-    def __init__(self, aParent):
+    def __init__(self, aParent, aGui):
         
         self.parent = aParent
         tk.Frame.__init__(self, self.parent)
+        
+        self.gui = aGui
         
         
         self.logFrame = tk.Frame(self)
@@ -75,7 +77,7 @@ class TermFrame(tk.Frame):
         self.retCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.debCheck.pack(side=tk.LEFT, anchor=tk.W)
         
-        self.comsend = ComSenderField.ComSenderField(self, self.parent.controller)
+        self.comsend = ComSenderField.ComSenderField(self, self.gui.controller)
         self.comsend.pack(side=tk.TOP)
         
         self.log = tk.Text(self.logFrame, width=60, height=20, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
