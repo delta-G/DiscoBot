@@ -84,6 +84,9 @@ class IndicatorFrame(tk.Frame):
         self.spdFrame = MotorParamFrame(self.motorParamFrame, "S")
         self.spdFrame.pack(side = tk.TOP)
         
+        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font="Verdana 12 bold", bd=1, relief=tk.SUNKEN)
+        self.throttleLabel.pack(side=tk.TOP)
+        
         self.connectButtonFrame = tk.Frame(self.secondFrame)
         self.connectButtonFrame.pack(side = tk.TOP)
         
@@ -94,47 +97,6 @@ class IndicatorFrame(tk.Frame):
         
         self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font="Verdana 12 bold", bd=1, relief=tk.SUNKEN)
         self.modeLabel.pack(side=tk.TOP)
-
-#         self.ltLabel = IndicatorLabel(self.ticFrame, text="LTic")
-#         self.ltLabel.pack(side=tk.TOP)
-#         
-#         self.rtLabel = IndicatorLabel(self.ticFrame, text="RTic")
-#         self.rtLabel.pack(side=tk.TOP)
-#         
-#         
-#         self.pwmFrame = tk.Frame(self)
-#         
-#         self.pwmFrame.pack(side = tk.LEFT)
-#         
-#         
-#         self.lmLabel = IndicatorLabel(self.pwmFrame, text="LOut")
-#         self.lmLabel.pack(side=tk.TOP)
-#         
-#         self.rmLabel = IndicatorLabel(self.pwmFrame, text="ROut")
-#         self.rmLabel.pack(side=tk.TOP)
-#         
-#         
-#         self.speedFrame = tk.Frame(self)
-#         
-#         self.speedFrame.pack(side = tk.LEFT)
-#         
-#         
-#         self.lspdLabel = IndicatorLabel(self.speedFrame, text="LSpd")
-#         self.lspdLabel.pack(side=tk.TOP)
-#         
-#         self.rspdLabel = IndicatorLabel(self.speedFrame, text="LSpd")
-#         self.rspdLabel.pack(side=tk.TOP)
-        
-#         self.stickGaugeFrame = tk.Frame(self)
-#         
-#         
-#         
-#         self.leftStickGauge = ttk.Progressbar(self.stickGaugeFrame, orient="horizontal", length=200, mode="determinate")
-#         self.rightStickGauge = ttk.Progressbar(self.stickGaugeFrame, orient="horizontal", length=200, mode="determinate")
-#         self.leftStickGauge.pack(side=tk.TOP)
-#         self.rightStickGauge.pack(side=tk.TOP)
-#         
-#         self.stickGaugeFrame.pack(side=tk.LEFT)
         
         return
     
@@ -154,30 +116,15 @@ class IndicatorFrame(tk.Frame):
         
 #         self.baseSigLabel.config(text="SNR - RSSI")
         self.botSigLabel.config(text="Bot " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI))
+        self.baseSigLabel.config(text="Base " + str(self.controller.lastBaseSNR) + " , " + str(self.controller.lastBaseRSSI))
         
         self.ticFrame.update(self.controller.leftMotorCount, self.controller.rightMotorCount)
         self.pwmFrame.update(self.controller.leftMotorOut, self.controller.rightMotorOut)
         self.spdFrame.update(self.controller.leftMotorSpeed, self.controller.rightMotorSpeed)
         
+        self.throttleLabel.config(text="THR: " + str(self.controller.throttleLevel))
+        
         self.modeLabel.config(text="Mode: " + self.controller.driveMode)
-
-
-        
-#         self.ltLabel.config(text=" LTic \n" + str(self.controller.leftMotorCount))
-#         self.rtLabel.config(text=" RTic \n" + str(self.controller.rightMotorCount))
-# 
-# 
-#         self.lmLabel.config(text=" LPwm \n" + str(self.controller.leftMotorOut))
-#         self.rmLabel.config(text=" RPwm \n" + str(self.controller.rightMotorOut))
-#         
-#         self.lspdLabel.config(text=" LSpd \n" + str(self.controller.leftMotorSpeed))
-#         self.rspdLabel.config(text=" RSpd \n" + str(self.controller.rightMotorSpeed))
-        
-#         ltamt = self.controller.joy.leftY() + 1
-#         rtamt = self.controller.joy.rightY() + 1
-#         
-#         self.leftStickGauge["value"] = (ltamt /2) * 100
-#         self.rightStickGauge["value"] = (rtamt /2) * 100
         
         return
     

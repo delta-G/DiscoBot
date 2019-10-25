@@ -117,6 +117,9 @@ class DiscoBotController:
         self.lastBotSNR = 0
         self.lastBotRSSI = 0
         
+        self.lastBaseSNR = 0
+        self.lastBaseRSSI = 0
+        
         self.botStatusByte = 0
         self.armStatusByte = 0
         
@@ -149,6 +152,7 @@ class DiscoBotController:
 
         self.motorRight = 0
         self.motorLeft = 0
+        self.throttleLevel = 0
         
         self.invertShoulder = True
         self.invertElbow = True
@@ -274,6 +278,8 @@ class DiscoBotController:
                 
                 self.connectToBot()
     ### Back Button or lost connection ends program
+            if(self.joy.Start() and self.socketConnected):
+                self.sendRawController()
             if self.joy.Back():
                 return False                
     ### REQUEST HEARTBEAT        
@@ -316,10 +322,11 @@ class DiscoBotController:
         
 #         self.putstring("***  RAW_DATA  ***")
         
-        while self.serOut.inWaiting() < 15:
+        while self.serOut.inWaiting() < 18:
             pass
         numBytesToRead = ord(self.serOut.read())
         self.botStatusByte = ord(self.serOut.read())
+        self.throttleLevel = ord(self.serOut.read())
         self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
         self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
         self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
@@ -333,6 +340,8 @@ class DiscoBotController:
         self.rightMotorOut = ord(self.serOut.read())
         self.lastBotSNR = ord(self.serOut.read())
         self.lastBotRSSI = -(ord(self.serOut.read()))
+        self.lastBaseSNR = ord(self.serOut.read())
+        self.lastBaseRSSI = -(ord(self.serOut.read()))
         
         self.readStatusByte()
         
@@ -586,337 +595,12 @@ class DiscoBotController:
         
         return
 
-# ##########################
-# ###########DRIVE MODES
-# ##########################       
-#     def driveMode(self):
-#         
-#         self.dpadGimbal()
-#         
-#         leftBump = self.joy.leftBumper()
-#         rightBump = self.joy.rightBumper()
-#         leftTrigger = self.joy.leftTrigger()
-#         rightTrigger = self.joy.rightTrigger()
-#         
-#         self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
-#         if(leftBump):
-#             self.armServos[self.BASE].increment(1.0)
-#             self.armCommandSender(self.BASE)
-#         elif(rightBump):
-#             self.armServos[self.BASE].increment(-1.0)
-#             self.armCommandSender(self.BASE)
-#         
-#         leftY = self.joy.leftY()
-#         rightY = self.joy.rightY()
-#         
-#         ml = 0
-#         mr = 0
-#         
-#         
-#         if (leftY > 0) :
-#             ml = 1
-#         elif (leftY < 0) :
-#             ml = -1;
-#         else: 
-#             ml = 0    
-#         
-#         if rightY > 0 :
-#             mr = 1
-#         elif rightY < 0 :
-#             mr = -1;
-#         else: 
-#             mr = 0
-#             
-#         if ml != self.motorLeft:
-#             self.motorLeft = ml
-#             commandString = ""
-#             commandString += "<"
-#             commandString += "ML"
-#             commandString += ","
-#             commandString += str(self.motorLeft)
-#             commandString += ">"
-#             self.outPutRunner(commandString)
-#         
-#         if mr != self.motorRight:
-#             self.motorRight = mr
-#             commandString = ""
-#             commandString += "<"
-#             commandString += "MR"
-#             commandString += ","
-#             commandString += str(self.motorRight)
-#             commandString += ">"
-#             self.outPutRunner(commandString)   
-#             
-#         return
-#     
-#     def armModeHelper(self, stickPosition , servo, invert = False):
-#         if stickPosition != 0:
-#             if invert:
-#                 stickPosition = -stickPosition
-# 
-#             self.armServos[servo].increment(stickPosition)
-# #             if(stickPosition > 0):
-# #                 self.armServos[servo].increase()
-# #                 self.armCommandSender(servo)
-# #             elif(stickPosition < 0):
-# #                 self.armServos[servo].decrease()
-#             self.armCommandSender(servo)
-#                 
-#             return True
-#         
-#         return False
-#     
-#     def armCommandSender(self, servo):
-#         commandString = ""
-#         commandString += "<S"
-#         commandString += str(servo)
-#         commandString += ","
-#         commandString += str(self.armServos[servo].position)
-#         commandString += ">"
-#         self.outPutRunner(commandString)
-#         
-#         return
-#     
-#     def stickGimbal(self, panVal, tiltVal):
-#         
-#         if time.time() - self.lastGimbalTime >= 0.2:
-#             self.lastGimbalTime = time.time()
-#             
-#             self.armModeHelper(panVal, self.PAN)
-#             self.armModeHelper(tiltVal, self.TILT)            
-#         
-#         return
-#     
-#     def dpadGimbal(self):
-#         
-#         self.gimbalStepSize = 1
-#         
-#         if time.time() - self.lastGimbalTime >= 0.2:
-#             self.lastGimbalTime = time.time()
-#         
-#         
-#             dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
-#         
-#             ## Nothing Pressed
-#             if(dpad == 0):
-#                 pass
-#             ## UP 
-#             elif(dpad == 1):
-#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
-#                 self.armCommandSender(self.TILT)
-#                 
-#             ## RIGHT
-#             elif(dpad == 2):
-#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
-#                 self.armCommandSender(self.PAN)
-#             ## UP / RIGHT
-#             elif(dpad == 3):
-#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
-#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
-#                 self.armCommandSender(self.TILT)
-#                 self.armCommandSender(self.PAN)
-#             ## LEFT
-#             elif(dpad == 4):
-#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
-#                 self.armCommandSender(self.PAN)
-#             ## UP / LEFT
-#             elif(dpad == 5):
-#                 self.armServos[self.TILT].increment(-self.gimbalStepSize)
-#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
-#                 self.armCommandSender(self.TILT)
-#                 self.armCommandSender(self.PAN)
-#             ## DOWN
-#             elif(dpad == 8):
-#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
-#                 self.armCommandSender(self.TILT)
-#             ## DOWN / RIGHT
-#             elif(dpad == 10):
-#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
-#                 self.armServos[self.PAN].increment(-self.gimbalStepSize)
-#                 self.armCommandSender(self.PAN)
-#                 self.armCommandSender(self.TILT)
-#             ## DOWN / LEFT
-#             elif(dpad == 12):
-#                 self.armServos[self.TILT].increment(self.gimbalStepSize)
-#                 self.armServos[self.PAN].increment(self.gimbalStepSize)
-#                 self.armCommandSender(self.PAN)
-#                 self.armCommandSender(self.TILT)
-#             else:
-#                 pass        
-#         
-#         
-#         
-#         
-#         return
-#     
-#         
-#     def dpadMotor(self):
-#         
-#         ml = 0
-#         mr = 0
-#         
-#         dpad = ((self.joy.dpadDown() << 3) | (self.joy.dpadLeft() << 2) | (self.joy.dpadRight() << 1) | (self.joy.dpadUp()))
-#         
-#         ## Nothing Pressed
-#         if(dpad == 0):
-#             ml = 0
-#             mr = 0
-#         ## UP 
-#         elif(dpad == 1):
-#             ml = 1
-#             mr  = 1
-#         ## RIGHT
-#         elif(dpad == 2):
-#             ml = 1
-#             mr  = -1
-#         ## UP / RIGHT
-#         elif(dpad == 3):
-#             ml = 1
-#             mr  = 0
-#         ## LEFT
-#         elif(dpad == 4):
-#             ml = -1
-#             mr  = 1
-#         ## UP / LEFT
-#         elif(dpad == 5):
-#             ml = 0
-#             mr  = 1
-#         ## DOWN
-#         elif(dpad == 8):
-#             ml = -1
-#             mr  = -1
-#         ## DOWN / RIGHT
-#         elif(dpad == 10):
-#             ml = -1
-#             mr  = 0
-#         ## DOWN / LEFT
-#         elif(dpad == 12):
-#             ml = 0
-#             mr  = -1
-#         else:
-#             ml = 0
-#             mr = 0
-#         
-#         
-#         if ml != self.motorLeft:
-#             self.motorLeft = ml
-#             commandString = ""
-#             commandString += "<"
-#             commandString += "ML"
-#             commandString += ","
-#             commandString += str(self.motorLeft)
-#             commandString += ">"
-#             self.outPutRunner(commandString)
-#         
-#         if mr != self.motorRight:
-#             self.motorRight = mr
-#             commandString = ""
-#             commandString += "<"
-#             commandString += "MR"
-#             commandString += ","
-#             commandString += str(self.motorRight)
-#             commandString += ">"
-#             self.outPutRunner(commandString)   
-#         
-#         return
-#         
-#     def armMode(self):
-#         
-#         self.dpadMotor()
-#         
-#         deadZ = 1000
-#             
-#         thumbR = self.joy.rightThumbstick()
-#         thumbL = self.joy.leftThumbstick()
-#         leftX = self.joy.leftX(deadZ);
-#         leftY = self.joy.leftY(deadZ);
-#         rightX = self.joy.rightX(deadZ);
-#         rightY = self.joy.rightY(deadZ);
-#         leftBump = self.joy.leftBumper()
-#         rightBump = self.joy.rightBumper()
-#         leftTrigger = self.joy.leftTrigger()
-#         rightTrigger = self.joy.rightTrigger()   
-#         
-#         
-#         self.armModeHelper(rightX, self.ROTATE)
-#         self.armModeHelper(rightY, self.WRIST, self.invertWrist)
-#         self.armModeHelper(leftX, self.SHOULDER, self.invertShoulder)
-#         self.armModeHelper(leftY, self.ELBOW, self.invertElbow)
-#         self.armModeHelper(rightTrigger - leftTrigger, self.GRIP)
-#         if(leftBump):
-#             self.armServos[self.BASE].increment(0.1)
-#             self.armCommandSender(self.BASE)
-#         elif(rightBump):
-#             self.armServos[self.BASE].increment(-0.1)
-#             self.armCommandSender(self.BASE)
-#         
-#         if thumbR and not self.lastThumbR:
-#             self.invertElbow = not self.invertElbow
-#             self.invertWrist = not self.invertWrist
-#         self.lastThumbR = thumbR
-#         
-#         if thumbL and not self.lastThumbL:
-#             self.invertShoulder = not self.invertShoulder
-#         self.lastThumbL = thumbL
-#         
-#         
-#         return
-#         
-#     
-#     
-#     def sittingHome(self):
-#         
-# #         self.outPutRunner("<S1,1500><S2,1500>,<S3,2000>")
-#         self.armServos[self.SHOULDER].moveToImmediate(1500)
-#         self.armCommandSender(self.SHOULDER)
-#         self.armServos[self.ELBOW].moveToImmediate(1500)
-#         self.armCommandSender(self.ELBOW)
-#         self.armServos[self.WRIST].moveToImmediate(2000)
-#         self.armCommandSender(self.WRIST)
-#         time.sleep(0.5)
-# #         self.outPutRunner("<S1,1950><S2,1950>")
-#         self.armServos[self.SHOULDER].moveToImmediate(1950)
-#         self.armServos[self.ELBOW].moveToImmediate(1950)
-#         self.armServos[self.WRIST].moveToImmediate(1400)
-#         self.armCommandSender(self.SHOULDER)
-#         self.armCommandSender(self.ELBOW)
-#         self.armCommandSender(self.WRIST)
-#         time.sleep(0.2)
-# #         self.outPutRunner("<S1,2400><S2,2400>")
-#         self.armServos[self.SHOULDER].moveToImmediate(2400)
-#         self.armServos[self.ELBOW].moveToImmediate(2400)
-#         self.armCommandSender(self.SHOULDER)
-#         self.armCommandSender(self.ELBOW)
-#         time.sleep(0.1)
-# #         self.outPutRunner("<S7,1350><S6,1050><S3,1400>")
-#         self.armServos[self.PAN].moveToImmediate(1350)
-#         self.armServos[self.TILT].moveToImmediate(1050)
-#         self.armServos[self.WRIST].moveToImmediate(1400)
-#         self.armCommandSender(self.PAN)
-#         self.armCommandSender(self.TILT)
-#         self.armCommandSender(self.WRIST)
-#         return
-#     
-#    
-#     def standingHome(self):
-#         
-#         self.armServos[self.SHOULDER].moveToImmediate(1080)
-#         self.armCommandSender(self.SHOULDER)
-#         self.armServos[self.ELBOW].moveToImmediate(880)
-#         self.armCommandSender(self.ELBOW)
-#         self.armServos[self.WRIST].moveToImmediate(895)
-#         self.armCommandSender(self.WRIST)
-# 
-#         self.armServos[self.PAN].moveToImmediate(1350)
-#         self.armServos[self.TILT].moveToImmediate(1220)
-#         self.armCommandSender(self.PAN)
-#         self.armCommandSender(self.TILT)
-#         return        
+      
     
     
     def sendRawController(self):
         
-        ###  Need to send as ascii hexadecimal 14 integers.  
+        ###  Need to send as 14 integers.  
 #             uint16_t checkBytes;
 #             uint16_t buttonState;
 #             uint8_t leftTrigger;
@@ -1002,30 +686,12 @@ class DiscoBotController:
         rightHatX = self.joy.rightX(1000) * 32767
         rightHatY = self.joy.rightY(1000) * 32767
         
-                ###  Need to send as ascii hexadecimal 14 integers.  
+                ###  Need to send as 14 integers.  
 #             uint16_t checkBytes;
 #             uint16_t buttonState;
 #             uint8_t leftTrigger;
 #             uint8_t rightTrigger;
 #             int16_t hatValues[4];
-
-#         outputMessage = bytearray(16);
-#         outputMessage[0] = 0x3C; ## '<'
-#         outputMessage[1] = 0x14;
-#         outputMessage[2] = 0x0D;
-#         outputMessage[3] = ((int)(buttonStateInt) >> 8) & 0xFF;
-#         outputMessage[4] = ((int)(buttonStateInt)) & 0xFF;
-#         outputMessage[5] = ((int)(leftTrigByte)) & 0xFF;
-#         outputMessage[6] = ((int)(rightTrigByte)) & 0xFF;
-#         outputMessage[7] = ((int)(leftHatX) >> 8) & 0xFF;
-#         outputMessage[8] = ((int)(leftHatX)) & 0xFF;
-#         outputMessage[9] = ((int)(leftHatY) >> 8) & 0xFF;
-#         outputMessage[10] = ((int)(leftHatY)) & 0xFF;
-#         outputMessage[11] = ((int)(rightHatX) >> 8) & 0xFF;
-#         outputMessage[12] = ((int)(rightHatX)) & 0xFF;
-#         outputMessage[13] = ((int)(rightHatY) >> 8) & 0xFF;
-#         outputMessage[14] = ((int)(rightHatY)) & 0xFF; 
-#         outputMessage[15] = 0x3E;  ## '>'
         
         rawMessage = bytearray()
         rawMessage.append(0x3C)                                         ##0
@@ -1046,42 +712,5 @@ class DiscoBotController:
         rawMessage.append(0x3E)                                         ##15
         
         self.serOut.write(rawMessage)
-        
-        
-#         messtr = "%0.4X%0.4X%0.2X%0.2X%0.4X%0.4X%0.4X%0.4X" %((int)(checkBytes), (int)(buttonStateInt), (int)(leftTrigByte), (int)(rightTrigByte), (int)(leftHatX) & (2**16-1), (int)(leftHatY) & (2**16-1), (int)(rightHatX) & (2**16-1), (int)(rightHatY) & (2**16-1))
-# 
-#         newmess = "<X"
-#         
-#         
-#         ###    TODO:  This should be in a Indian Switcher function
-#              
-#         newmess += messtr[2] + messtr[3]
-#         newmess += messtr[0] + messtr[1]
-#         
-#         newmess += messtr[6] + messtr[7]
-#         newmess += messtr[4] + messtr[5]
-#         
-#         newmess += messtr[8] + messtr[9]
-#         newmess += messtr[10] + messtr[11]
-#         
-#         newmess += messtr[14] + messtr[15]
-#         newmess += messtr[12] + messtr[13]
-#         
-#         newmess += messtr[18] + messtr[19]
-#         newmess += messtr[16] + messtr[17]
-#         
-#         newmess += messtr[22] + messtr[23]
-#         newmess += messtr[20] + messtr[21]
-#         
-#         newmess += messtr[26] + messtr[27]
-#         newmess += messtr[24] + messtr[25]
-#         
-#         newmess += ">"
-#         
-# #         print "Raw Controller Message"
-# #         print newmess
-#         
-#         self.outPutRunner(newmess)
-
         
         return

@@ -16,6 +16,7 @@
 
 
 import Tkinter as tk
+import math
 
 class ArmGraphicFrame(tk.Frame):
     
@@ -67,16 +68,30 @@ class ArmGraphicFrame(tk.Frame):
         
         sizeRatio = 1.0 * guiHeight / (1.0 * totalHeightPossible)
         
+        largestX = 0
+        
         basePoint = (aXYAtuple[0], aXYAtuple[1], 1.5708)
-        shoulderPoint = (aXYAtuple[0], (aXYAtuple[1] + (self.controller.armJoints[0].length * sizeRatio)), 1.5708)        
+        if(abs(basePoint[0]) > largestX):
+            largestX = abs(basePoint[0])
+        shoulderPoint = (aXYAtuple[0], (aXYAtuple[1] + (self.controller.armJoints[0].length * sizeRatio)), 1.5708)         
+        if(abs(shoulderPoint[0]) > largestX):
+            largestX = abs(shoulderPoint[0])       
         elbowPoint = self.controller.armJoints[1].findEndXYandApproach(shoulderPoint, self.controller.servoInfo[1][0], sizeRatio)
+        if(abs(elbowPoint[0]) > largestX):
+            largestX = abs(elbowPoint[0])
         wristPoint = self.controller.armJoints[2].findEndXYandApproach(elbowPoint, self.controller.servoInfo[2][0], sizeRatio)
+        if(abs(wristPoint[0]) > largestX):
+            largestX = abs(wristPoint[0])
         gripperWristPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
+        if(abs(gripperWristPoint[0]) > largestX):
+            largestX = abs(gripperWristPoint[0])
         gripperTipPoint = self.controller.armJoints[3].findEndXYandApproach(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
+        if(abs(gripperTipPoint[0]) > largestX):
+            largestX = abs(gripperTipPoint[0])
         
+        baseAngle = (self.controller.armJoints[0].microsToAngle(self.controller.servoInfo[0][0])) + math.pi
         
-        
-        
+                
         baseCoords = self.toCanvasCoords(basePoint, sizeRatio)
         shoulderCoords = self.toCanvasCoords(shoulderPoint, sizeRatio)
         elbowCoords = self.toCanvasCoords(elbowPoint, sizeRatio)
@@ -93,6 +108,19 @@ class ArmGraphicFrame(tk.Frame):
         self.drawSegment(wristCoords, gripperWristCoords, "black")
         self.drawSegment(gripperWristCoords, gripperTipCoords, "green")
         
+        self.canvas.create_oval(200, 150, 250, 200, outline="black", width=2)
+        self.canvas.create_oval(224, 174, 226, 176, outline="black", width=2)        
+        circleRatio = 25.0 / (totalHeightPossible - self.controller.armJoints[0].length)
+        
+        segmentLength = largestX * circleRatio
+        
+        xVal = (segmentLength * (math.cos(baseAngle))) + 225
+        yVal = (segmentLength * (math.sin(baseAngle))) + 175
+        
+        
+        
+        
+        self.drawSegment((225 , 175), (xVal, yVal), "magenta")
         
         return 
             
