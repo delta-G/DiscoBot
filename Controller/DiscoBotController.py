@@ -458,7 +458,7 @@ class DiscoBotController:
                     pass
                 else:
                     # a REAL error occurred
-                    self.putstring("Bad Error in linstenForESP")
+                    self.putstring("Bad Error in linstenForRawSerial")
                     self.putstring (err)
                     self.putstring ('\n')        
         
@@ -549,6 +549,10 @@ class DiscoBotController:
         else:
             self.putstring ("returnBuffer --> ") 
             self.putstring( self.returnBuffer)  
+            for c in self.returnBuffer:
+                if ord(c) < 33:
+                    self.putstring(ord(c))
+                    self.putstring(',')
             self.putstring('\n')      
         return        
     
@@ -607,8 +611,7 @@ class DiscoBotController:
 #             uint8_t rightTrigger;
 #             int16_t hatValues[4];
 
-        ###  Let's start by getting everything packed up into 16 bit ints
-        checkBytes = 0x0D14
+
         
 #         enum ButtonMaskEnum {
 #         UP = 0x0100,

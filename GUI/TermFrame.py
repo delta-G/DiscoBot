@@ -23,36 +23,37 @@ class TermFrame(tk.Frame):
     
     def propCom(self):
         if(self.showCommands.get() == 0):
-            self.parent.controller.showCommands = False
+            self.controller.showCommands = False
         else:
-            self.parent.controller.showCommands = True
+            self.controller.showCommands = True
             
         return
     
     def propRet(self):
         if(self.showReturns.get() == 0):
-            self.parent.controller.showReturns = False
+            self.controller.showReturns = False
         else:
-            self.parent.controller.showReturns = True
+            self.controller.showReturns = True
             
         return
     
     def propDeb(self):
         if(self.showDebug.get() == 0):
-            self.parent.controller.showDebug = False
+            self.controller.showDebug = False
         else:
-            self.parent.controller.showDebug = True
+            self.controller.showDebug = True
             
         return
     
     
     
-    def __init__(self, aParent, aGui):
+    def __init__(self, aParent, aGui, aController):
         
         self.parent = aParent
         tk.Frame.__init__(self, self.parent)
         
         self.gui = aGui
+        self.controller = aController
         
         
         self.logFrame = tk.Frame(self)

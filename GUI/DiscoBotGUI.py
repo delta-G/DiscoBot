@@ -54,7 +54,7 @@ class DiscoBotGUI(tk.Frame):
         
         self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller)
         
-        self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self) 
+        self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
         self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
         
         #topFrame (part of leftSideFrame)
