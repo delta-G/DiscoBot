@@ -2,15 +2,26 @@
 import os
 import time
 import Tkinter as tk
+import time
 
 import Controller.DiscoBotController
 
 import GUI.DiscoBotGUI
 
+
+logFile = open("robotLogFile.txt", "w")
+
+logFile.write("DiscoBot Log File Start:\n")
+logFile.write(str(time.time()))
+logFile.write('\n')
+
+
+
+
 root = tk.Tk()
 
 
-controller = Controller.DiscoBotController.DiscoBotController()
+controller = Controller.DiscoBotController.DiscoBotController(None, logFile)
 
 gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
@@ -29,6 +40,7 @@ try:
 
 finally:
     #Always close out so that xboxdrv subprocess ends
+    logFile.close()
     if controller.joyConnected:
         controller.joy.close()
     os.system('pkill -9 xboxdrv')

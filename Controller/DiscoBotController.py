@@ -24,6 +24,7 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
+from scipy.fftpack.pseudo_diffs import cs_diff
 
 
 useSerial = True
@@ -35,6 +36,8 @@ class DiscoBotController:
         
         if self.printRedirect is not None:
             self.printRedirect(aString)
+        if self.logFile is not None:
+            self.logFile.write(str(aString))
         
         print aString,
         
@@ -62,14 +65,14 @@ class DiscoBotController:
                 self.commsOn=False
                 self.putstring(ex)  
                 self.putstring('\n') 
-                self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+#                 self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
     #             self.sockOut.setblocking(0)
             else:
                 self.commsOn = True
             
         return
     
-    def __init__(self, aRedirect = None):
+    def __init__(self, aRedirect = None, aLogFile = None):
         
         print """ 
         ***********************
@@ -94,6 +97,7 @@ class DiscoBotController:
         self.socketConnected = False 
         
         self.printRedirect = aRedirect
+        self.logFile = aLogFile
                 
         self.putstring("Global Interface Initializing\n")
         
@@ -158,6 +162,7 @@ class DiscoBotController:
         self.invertElbow = True
         self.invertWrist = False
         
+        self.lastStart = 0
         self.lastY = 0
         self.lastA = 0
         self.lastB = 0
@@ -245,6 +250,10 @@ class DiscoBotController:
                 
         return
     
+    def sendToLog(self, cs):
+        if self.logFile is not None:
+            self.logFile.write(cs)
+    
     def outPutRunner(self, cs):
         if self.socketConnected:
             if(useWifi):
@@ -257,6 +266,8 @@ class DiscoBotController:
         if self.showCommands:
 #             if not str(cs).startswith("<X,0D14"):
             self.putstring("COM--> " + str(cs) + '\n')
+        
+        self.sendToLog("OUT--> " + str(cs) + "\n")
         
         return
     
@@ -273,13 +284,15 @@ class DiscoBotController:
     def runInterface(self):       
         
         if(self.joyConnected):
+            if not self.joy.Start():
+                self.lastStart = False
         
-            if(self.joy.Start() and not self.socketConnected):
-                
+            if(self.joy.Start() and not self.socketConnected):                
                 self.connectToBot()
     ### Back Button or lost connection ends program
-            if(self.joy.Start() and self.socketConnected):
+            if(self.joy.Start() and self.socketConnected and not self.lastStart):
                 self.sendRawController()
+                self.lastStart = True
             if self.joy.Back():
                 return False                
     ### REQUEST HEARTBEAT        
@@ -291,8 +304,8 @@ class DiscoBotController:
                 self.lastRMBmotorRequest = time.time()
                 
     ### CONTROLLER LOOP        
-            if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
-#             if self.responseReceived:
+#             if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
+            if self.responseReceived:
    
                 if self.socketConnected:    
                     self.sendRawController()
@@ -321,30 +334,45 @@ class DiscoBotController:
     def handleRawDataDump(self):
         
 #         self.putstring("***  RAW_DATA  ***")
+        self.sendToLog("DUMP--> ")
         
-        while self.serOut.inWaiting() < 18:
+        while self.serOut.inWaiting() < 19:
             pass
-        numBytesToRead = ord(self.serOut.read())
-        self.botStatusByte = ord(self.serOut.read())
-        self.throttleLevel = ord(self.serOut.read())
-        self.rmbBatteryVoltage = ord(self.serOut.read()) / 10.0
-        self.leftMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        
+        dumpMessage = bytearray()
+        dumpMessage.append(ord('<'))
+        dumpMessage.append(0x13)
+        
+        
+        for i in range(19):
+            dumpMessage.append(ord(self.serOut.read()))
+        
+#         numBytesToRead = dumpMessage[2]
+        self.botStatusByte = dumpMessage[3]
+        self.throttleLevel = dumpMessage[4]
+        self.rmbBatteryVoltage = dumpMessage[5] / 10.0
+        self.leftMotorCount = (dumpMessage[6] << 8) + dumpMessage[7]
         self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
-        self.leftMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())        
+        self.leftMotorSpeed = (dumpMessage[8] << 8) + dumpMessage[9]        
         self.leftMotorSpeed = self.make16bitSigned(self.leftMotorSpeed)
-        self.leftMotorOut = ord(self.serOut.read())
-        self.rightMotorCount = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())
+        self.leftMotorOut = dumpMessage[10]
+        self.rightMotorCount = (dumpMessage[11] << 8) + dumpMessage[12]
         self.rightMotorCount = self.make16bitSigned(self.rightMotorCount)
-        self.rightMotorSpeed = (ord(self.serOut.read()) << 8) + ord(self.serOut.read())        
+        self.rightMotorSpeed = (dumpMessage[13] << 8) + dumpMessage[14]        
         self.rightMotorSpeed = self.make16bitSigned(self.rightMotorSpeed)
-        self.rightMotorOut = ord(self.serOut.read())
-        self.lastBotSNR = ord(self.serOut.read())
-        self.lastBotRSSI = -(ord(self.serOut.read()))
-        self.lastBaseSNR = ord(self.serOut.read())
-        self.lastBaseRSSI = -(ord(self.serOut.read()))
+        self.rightMotorOut = dumpMessage[15]
+        self.lastBotSNR = dumpMessage[16]
+        self.lastBotRSSI = -dumpMessage[17]
+        self.lastBaseSNR = dumpMessage[18]
+        self.lastBaseRSSI = -dumpMessage[19]
         
         self.readStatusByte()
         
+        for val in dumpMessage:
+            self.sendToLog(hex(val))
+            self.sendToLog(' ')
+            
+        self.sendToLog('\n')
         
         return 
     
@@ -383,18 +411,28 @@ class DiscoBotController:
     def handleArmDump(self):
         
 #         self.putstring("*** ARM_DUMP ***")
+        self.sendToLog("ARM--> "  + "\n")
         
         while self.serOut.inWaiting() < 20:
             pass
-        numBytesToRead = ord(self.serOut.read())
-        self.armStatusByte = ord(self.serOut.read())
-        whichSet = self.serOut.read()
+        
+        dumpMessage = bytearray()
+        dumpMessage.append(ord('<'))
+        dumpMessage.append(0x12)        
+        
+        for i in range(20):
+            dumpMessage.append(ord(self.serOut.read()))
+        
+        
+        numBytesToRead = dumpMessage[2]
+        self.armStatusByte = dumpMessage[3]
+        whichSet = dumpMessage[4]
         
         dataPoints = []
         
         for i in range(8):
-            dp = ((ord(self.serOut.read()) & 0xFF) << 8)
-            dp |= ord(self.serOut.read()) & 0xFF
+            dp = ((dumpMessage[5+(2*i)] & 0xFF) << 8)
+            dp |= dumpMessage[6+(2*i)] & 0xFF
             dataPoints.append(dp)
         
         if whichSet == 'p':
@@ -449,6 +487,7 @@ class DiscoBotController:
                                 self.receivingReturn = False    
                                 if self.showReturns:
                                     self.putstring("RET--> " + self.returnBuffer + '\n')
+                                self.sendToLog("RET--> " + self.returnBuffer + "\n")
                                     
                         
             except socket.error, e:
@@ -715,5 +754,10 @@ class DiscoBotController:
         rawMessage.append(0x3E)                                         ##15
         
         self.serOut.write(rawMessage)
+        self.logFile.write("RAW -->")
+        for val in rawMessage:
+            self.logFile.write(hex(val))
+            self.logFile.write(" ")
+        self.logFile.write("\n")
         
         return
