@@ -39,7 +39,7 @@ finally:
     #Always close out so that xboxdrv subprocess ends
     if logFile is not None:
         logFile.close()
-    if controller.joyConnected:
+    if controller.joy is not None:
         controller.joy.close()
     os.system('pkill -9 xboxdrv')
     

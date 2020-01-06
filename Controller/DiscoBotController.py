@@ -99,21 +99,17 @@ class DiscoBotController:
         self.printRedirect = aRedirect
         self.logFile = aLogFile
                 
-        self.putstring("Global Interface Initializing\n")
+        self.putstring("Global Interface Initializing\n")   
         
-#         self.initComs()
-
+        self.joy = None
         
-
-        
-        
-
+### Serial Recv variables
         self.returnBuffer = ""
         self.receivingReturn = False
         self.lastRMBheartBeat = time.time()
         self.RMBheartBeatWarningTime = time.time()
         self.lastGimbalTime = time.time()
-        
+### Comms Variables
         self.lastXboxSendTime = 0
         self.responseReceived = False       
         self.turnAroundTime = 0.0 
@@ -123,7 +119,7 @@ class DiscoBotController:
         
         self.lastBaseSNR = 0
         self.lastBaseRSSI = 0
-        
+### Robot Variables
         self.botStatusByte = 0
         self.armStatusByte = 0
         
@@ -145,12 +141,11 @@ class DiscoBotController:
         self.currentRssi = 0
         self.currentSSID = 0
         
+### Vars for GUI
         self.showCommands = False
         self.showReturns = False
         self.showDebug = False
         
-        
-        self.joyConnected = False
         self.commsOn = False
 
 
@@ -204,24 +199,14 @@ class DiscoBotController:
         return
      
     def connectJoystick(self):
-
-        if not self.joyConnected:
-        
+        if self.joy == None:
             try:
-                self.joy = xbox.Joystick()
-#                 Valid connect may require joystick input to occur
-                print "Waiting for Joystick to connect"
-                while not self.joy.connected():
-                    time.sleep(0.10)   
-            
+                self.joy = xbox.Joystick()            
             except Exception as ex:
-                self.joyConnected = False
+                self.joy = None
                 self.putstring(ex)  
-                self.putstring('\n') 
-                
-            else:        
-                self.joyConnected = True 
-        
+                self.putstring('\n')
+                        
         return
     
      
@@ -282,26 +267,26 @@ class DiscoBotController:
     
     
     def runInterface(self):       
-        
-        if(self.joyConnected):
-            if not self.joy.Start():
-                self.lastStart = False
-        
-            if(self.joy.Start() and not self.socketConnected):                
-                self.connectToBot()
-    ### Back Button or lost connection ends program
-            if(self.joy.Start() and self.socketConnected and not self.lastStart):
-                self.sendRawController()
-                self.lastStart = True
-            if self.joy.Back():
-                return False                
+        if self.joy is not None:
+            if(self.joy.connected()):
+                if not self.joy.Start():
+                    self.lastStart = False
+            
+                if(self.joy.Start() and not self.socketConnected):                
+                    self.connectToBot()
+        ### Back Button or lost connection ends program
+                if(self.joy.Start() and self.socketConnected and not self.lastStart):
+                    self.sendRawController()
+                    self.lastStart = True
+                if self.joy.Back():
+                    return False                
     ### REQUEST HEARTBEAT        
-            if time.time() - self.lastRMBhbRequest >= 2:
-    #             self.outPutRunner("<R,HB>")
-                self.lastRMBhbRequest = time.time()
-            if time.time() - self.lastRMBmotorRequest >= 0.5:
-    #             self.outPutRunner("<R,M>")
-                self.lastRMBmotorRequest = time.time()
+#             if time.time() - self.lastRMBhbRequest >= 2:
+#     #             self.outPutRunner("<R,HB>")
+#                 self.lastRMBhbRequest = time.time()
+#             if time.time() - self.lastRMBmotorRequest >= 0.5:
+#     #             self.outPutRunner("<R,M>")
+#                 self.lastRMBmotorRequest = time.time()
                 
     ### CONTROLLER LOOP        
 #             if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):

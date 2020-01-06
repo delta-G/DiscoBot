@@ -83,7 +83,7 @@ class DiscoBotGUI(tk.Frame):
         self.indicatorFrame.check()
         self.armGraphicFrame.drawArm()
         self.selectFrame.update()
-        if(self.controller.joyConnected):
+        if(self.controller.joy is not None) and (self.controller.joy.connected()):
             self.indicatorFrame.controllerConnectButton.config(bg=self.colors['green'])
         else:            
             self.indicatorFrame.controllerConnectButton.config(bg=self.colors['red'])
