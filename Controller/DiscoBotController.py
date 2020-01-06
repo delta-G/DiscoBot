@@ -234,21 +234,11 @@ class DiscoBotController:
                 self.serOut.flush()
                 time.sleep(0.2)
         if self.showCommands:
-#             if not str(cs).startswith("<X,0D14"):
             self.putstring("COM--> " + str(cs) + '\n')
         
         self.sendToLog("OUT--> " + str(cs) + "\n")
         
         return
-    
-#     def moveToByAngle(self, aTup):
-#         i = 0
-#         for servo in self.armServos:
-#             servo.moveToImmediate(servo.angleToMicroseconds(aTup[i]))
-#             self.armCommandSender(i)
-#             i += 1
-#          
-#         return
     
     
     def runInterface(self):       
@@ -265,24 +255,16 @@ class DiscoBotController:
                     self.lastStart = True
                 if self.joy.Back():
                     return False                
-    ### REQUEST HEARTBEAT        
-#             if time.time() - self.lastRMBhbRequest >= 2:
-#     #             self.outPutRunner("<R,HB>")
-#                 self.lastRMBhbRequest = time.time()
-#             if time.time() - self.lastRMBmotorRequest >= 0.5:
-#     #             self.outPutRunner("<R,M>")
-#                 self.lastRMBmotorRequest = time.time()
-                
+              
     ### CONTROLLER LOOP        
-#             if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
-            if self.responseReceived:
-   
-                if self.socketConnected:    
-                    self.sendRawController()
-                    self.lastXboxSendTime = time.time()
-                    self.responseReceived = False
+#                 if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
+                if self.responseReceived:
+       
+                    if self.socketConnected:    
+                        self.sendRawController()
+                        self.lastXboxSendTime = time.time()
+                        self.responseReceived = False
         
-#         self.listenForESP()
         self.listenForRawSerial()
             
         
@@ -303,7 +285,6 @@ class DiscoBotController:
     
     def handleRawDataDump(self):
         
-#         self.putstring("***  RAW_DATA  ***")
         self.sendToLog("DUMP--> ")
         
         while self.serOut.inWaiting() < 19:
@@ -317,7 +298,6 @@ class DiscoBotController:
         for i in range(19):
             dumpMessage.append(ord(self.serOut.read()))
         
-#         numBytesToRead = dumpMessage[2]
         self.botStatusByte = dumpMessage[3]
         self.throttleLevel = dumpMessage[4]
         self.rmbBatteryVoltage = dumpMessage[5] / 10.0
@@ -380,7 +360,6 @@ class DiscoBotController:
     
     def handleArmDump(self):
         
-#         self.putstring("*** ARM_DUMP ***")
         self.sendToLog("ARM--> "  + "\n")
         
         while self.serOut.inWaiting() < 20:
@@ -394,7 +373,6 @@ class DiscoBotController:
             dumpMessage.append(ord(self.serOut.read()))
         
         
-        numBytesToRead = dumpMessage[2]
         self.armStatusByte = dumpMessage[3]
         whichSet = dumpMessage[4]
         
@@ -473,46 +451,11 @@ class DiscoBotController:
         
         return 
     
-    def listenForESP(self):        
-        
-        if self.socketConnected:
-            try:
-                if(useSerial):
-                    line_read = self.serOut.read(self.serOut.in_waiting)
-        
-            except socket.error, e:
-                err = e.args[0]
-                if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
-#                     self.putstring("EAGAIN or EWOULDBLOCK")
-                    pass
-                else:
-                    # a REAL error occurred
-                    self.putstring("Bad Error in linstenForESP")
-                    self.putstring (err)
-                    self.putstring ('\n')
-            else:
-                for c in line_read:                        
-                    if c == '<':
-                        self.returnBuffer = ""
-                        self.receivingReturn = True                            
-                    if self.receivingReturn == True:
-                        if c != None:
-                            self.returnBuffer += str(c)                            
-                        if c == '>':
-                            self.parseReturnString()
-                            self.receivingReturn = False    
-                            if self.showReturns:
-                                self.putstring("RET--> " + self.returnBuffer + '\n')                   
-        return
-    
     
     def parseReturnString(self):
         if self.returnBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
             self.rmbHeartbeatWarningLevel = "green"
-#             self.putstring ("Good Heart --> ") 
-#             self.putstring ( self.returnBuffer)
-#             self.putstring('\n')
         elif self.returnBuffer.startswith("<BAT,"):
             tndx = self.returnBuffer.rfind(',')
             self.rmbBatteryVoltage = self.returnBuffer[tndx+1:-1]
@@ -561,52 +504,7 @@ class DiscoBotController:
                     self.putstring(ord(c))
                     self.putstring(',')
             self.putstring('\n')      
-        return        
-    
-    
-    def requestFromESP(self, reqStr):
-        
-        commandString = ""
-        commandString += "<"
-        commandString += "R,"
-        commandString += reqStr
-        commandString += ">"
-        self.outPutRunner(commandString)        
-        return    
-    
-    def commandMode(self):
-        
-        while (self.joy.Guide()):
-            
-#             leftX = self.joy.leftY()
-            leftY = self.joy.leftY()
-#             rightX = self.joy.rightY()            
-#             rightY = self.joy.rightY()
-
-            if(self.joy.X()):
-                self.outPutRunner("<V1>")
-                return
-            if(self.joy.A()):
-                self.outPutRunner("<V0>")
-                return
-            if(self.joy.leftBumper()):
-                self.outPutRunner("<H1>")
-                return
-            if(self.joy.rightBumper()):
-                self.outPutRunner("<H0>")
-                return
-                
-            
-            if (leftY < -0):
-                self.sittingHome()
-                return
-            if (leftY > 0):
-                self.standingHome()
-                return
-        
-        return
-
-      
+        return              
     
     
     def sendRawController(self):
@@ -722,10 +620,11 @@ class DiscoBotController:
         rawMessage.append(0x3E)                                         ##15
         
         self.serOut.write(rawMessage)
-        self.logFile.write("RAW -->")
-        for val in rawMessage:
-            self.logFile.write(hex(val))
-            self.logFile.write(" ")
-        self.logFile.write("\n")
+        if self.logFile is not None:
+            self.logFile.write("RAW -->")
+            for val in rawMessage:
+                self.logFile.write(hex(val))
+                self.logFile.write(" ")
+            self.logFile.write("\n")
         
         return
