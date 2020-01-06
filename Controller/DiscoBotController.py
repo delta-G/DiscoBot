@@ -24,8 +24,6 @@ from _socket import MSG_DONTWAIT
 from _socket import SHUT_RDWR
 
 import serial
-from scipy.fftpack.pseudo_diffs import cs_diff
-
 
 useSerial = True
 useWifi = not useSerial
@@ -47,16 +45,7 @@ class DiscoBotController:
         
         if not self.commsOn:
             try:
-
-                if(useWifi):
-                
-                    self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-        #             self.sockOut.setblocking(0)
-                
-        #             self.sockArgs = ('10.10.0.24' , 1234)
-        #             self.sockArgs = ('192.168.4.1' , 1234)
-                    self.sockArgs = ('192.168.1.75' , 1234)
-                    
+                                    
                 if(useSerial):
                     
                     self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
@@ -178,6 +167,7 @@ class DiscoBotController:
         self.PAN = 7
         self.TILT = 6
         
+        #########   DiscoBotJoint   ( name , length, offset, minMicros, minAngle, maxMicros, maxAngle)
         self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 544, -0.34907, 2400, 3.31631),
                           DiscoBotJoint.DiscoBotJoint("shoulder", 105, 0, 544, -0.087266, 2400, 2.91470),
                           DiscoBotJoint.DiscoBotJoint("elbow", 98, 0, 544, 2.96706, 2400, -0.13963),
@@ -213,9 +203,7 @@ class DiscoBotController:
     def connectToBot(self):
         if self.commsOn:
             self.putstring("Connecting to Robot\n")
-            if(useWifi):
-                self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)        
-                self.sockOut.connect(self.sockArgs)
+            ###TODO:   WHAT GOES HERE????
             self.socketConnected = True
             self.putstring ("Connected to Robot\n")   
             if(useSerial):
@@ -225,24 +213,21 @@ class DiscoBotController:
     
     def killConnection(self):
         if(self.socketConnected):
-            if(useWifi):
-                self.putstring("Shutting Down Connection\n")
-                self.sockOut.shutdown(SHUT_RDWR)
-                self.sockOut.close()
-            self.socketConnected = False
+            self.putstring ("Closing Connection\n")
+            ###  TODO:  WHAT GOES HERE???            
         else :
-            self.putstring ("The connection is not open\n")
-                
+            self.putstring ("The connection is not open\n")                
         return
+    
+    
     
     def sendToLog(self, cs):
         if self.logFile is not None:
             self.logFile.write(cs)
     
+    
     def outPutRunner(self, cs):
         if self.socketConnected:
-            if(useWifi):
-                self.sockOut.send(cs)
             if(useSerial):
                 time.sleep(0.2)
                 self.serOut.write(cs)
@@ -492,8 +477,6 @@ class DiscoBotController:
         
         if self.socketConnected:
             try:
-                if(useWifi):
-                    line_read = self.sockOut.recvfrom(1024, MSG_DONTWAIT)[0]
                 if(useSerial):
                     line_read = self.serOut.read(self.serOut.in_waiting)
         
