@@ -88,7 +88,7 @@ class DiscoBotGUI(tk.Frame):
         else:            
             self.indicatorFrame.controllerConnectButton.config(bg=self.colors['red'])
                 
-        if(self.controller.commsOn):
+        if(self.controller.comms.commsOn):
             self.indicatorFrame.comConnectButton.config(bg=self.colors['green'])
         else:            
             self.indicatorFrame.comConnectButton.config(bg=self.colors['red'])        

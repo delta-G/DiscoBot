@@ -111,7 +111,6 @@ class IndicatorFrame(tk.Frame):
             self.bvLabel.config(bg=self.gui.colors['yellow'])
         else: 
             self.bvLabel.config(bg=self.gui.colors['green'])
-#         self.rsLabel.config(text=" RMB-RSSI \n" + str(self.controller.currentRssi))
 
         
 #         self.baseSigLabel.config(text="SNR - RSSI")

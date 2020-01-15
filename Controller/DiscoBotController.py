@@ -25,6 +25,8 @@ from _socket import SHUT_RDWR
 
 import serial
 
+import DiscoBotComms
+
 useSerial = True
 useWifi = not useSerial
 
@@ -41,25 +43,14 @@ class DiscoBotController:
         
         return
     
+    
     def initComs(self):
         
-        if not self.commsOn:
-            try:
-                                    
-                if(useSerial):
-                    
-                    self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
-    
-            except Exception as ex:
-                self.commsOn=False
-                self.putstring(ex)  
-                self.putstring('\n') 
-#                 self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-    #             self.sockOut.setblocking(0)
-            else:
-                self.commsOn = True
+        self.comms.initComms()
             
         return
+    
+    
     
     def __init__(self, aRedirect = None, aLogFile = None):
         
@@ -85,6 +76,8 @@ class DiscoBotController:
         
         self.socketConnected = False 
         
+        self.comms = DiscoBotComms.DiscoBotComms(self, self.returnParser)
+        
         self.printRedirect = aRedirect
         self.logFile = aLogFile
                 
@@ -93,11 +86,9 @@ class DiscoBotController:
         self.joy = None
         
 ### Serial Recv variables
-        self.returnBuffer = ""
-        self.receivingReturn = False
         self.lastRMBheartBeat = time.time()
         self.RMBheartBeatWarningTime = time.time()
-        self.lastGimbalTime = time.time()
+#         self.lastGimbalTime = time.time()
 ### Comms Variables
         self.lastXboxSendTime = 0
         self.responseReceived = False       
@@ -127,15 +118,13 @@ class DiscoBotController:
         self.rightMotorOut = 0
         self.leftMotorSpeed = 0
         self.rightMotorSpeed = 0
-        self.currentRssi = 0
-        self.currentSSID = 0
         
 ### Vars for GUI
         self.showCommands = False
         self.showReturns = False
         self.showDebug = False
         
-        self.commsOn = False
+#         self.commsOn = False
 
 
         self.motorRight = 0
@@ -201,13 +190,12 @@ class DiscoBotController:
     
      
     def connectToBot(self):
-        if self.commsOn:
+        if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")
             ###TODO:   WHAT GOES HERE????
             self.socketConnected = True
-            self.putstring ("Connected to Robot\n")   
-            if(useSerial):
-                self.outPutRunner("<ESTART><ECONNECT><B,HB>")
+            self.putstring ("Connected to Robot\n") 
+            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
         
         return    
     
@@ -221,25 +209,29 @@ class DiscoBotController:
     
     
     
-    def sendToLog(self, cs):
+    def sendToLog(self, cs, level = 0):
         if self.logFile is not None:
-            self.logFile.write(cs)
+            self.logFile.write(str(time.time()))
+            self.logFile.write(" :")
+            self.logFile.write(str(level))
+            self.logFile.write(": ")
+            self.logFile.write(str(cs))
     
     
     def outPutRunner(self, cs):
         if self.socketConnected:
-            if(useSerial):
-                time.sleep(0.2)
-                self.serOut.write(cs)
-                self.serOut.flush()
-                time.sleep(0.2)
+            self.comms.send(cs)
         if self.showCommands:
-            self.putstring("COM--> " + str(cs) + '\n')
-        
-        self.sendToLog("OUT--> " + str(cs) + "\n")
-        
+            self.putstring("COM--> " + str(cs) + '\n')        
+        self.sendToLog("OUT--> " + str(cs) + "\n")        
         return
     
+    
+    #*****************************************#
+    ###########################################
+    ###########  runInterface  ################
+    ###########################################
+    #*****************************************#
     
     def runInterface(self):       
         if self.joy is not None:
@@ -265,7 +257,8 @@ class DiscoBotController:
                         self.lastXboxSendTime = time.time()
                         self.responseReceived = False
         
-        self.listenForRawSerial()
+    ### COMMS WITH ROBOT
+        self.comms.runComms()
             
         
         if (time.time() - self.lastRMBheartBeat >= 10) and (time.time() - self.RMBheartBeatWarningTime >= 10):
@@ -277,26 +270,26 @@ class DiscoBotController:
             
         return True
     
+    
+    
+    
+    ###########   Parsers and Functional Code:  
+    
+    ###########   Should probably move to a new class to clean up
+    
+    
+    
     def make16bitSigned(self, aNum):
         if((aNum > 32767) and (aNum < 65535)):
             return (-65536 + aNum)
         else:
             return aNum
     
-    def handleRawDataDump(self):
+    def handleRawDataDump(self, aByteArray):
         
         self.sendToLog("DUMP--> ")
         
-        while self.serOut.inWaiting() < 19:
-            pass
-        
-        dumpMessage = bytearray()
-        dumpMessage.append(ord('<'))
-        dumpMessage.append(0x13)
-        
-        
-        for i in range(19):
-            dumpMessage.append(ord(self.serOut.read()))
+        dumpMessage = aByteArray
         
         self.botStatusByte = dumpMessage[3]
         self.throttleLevel = dumpMessage[4]
@@ -358,21 +351,11 @@ class DiscoBotController:
         return
     
     
-    def handleArmDump(self):
+    def handleArmDump(self, aByteArray):
         
         self.sendToLog("ARM--> "  + "\n")
-        
-        while self.serOut.inWaiting() < 20:
-            pass
-        
-        dumpMessage = bytearray()
-        dumpMessage.append(ord('<'))
-        dumpMessage.append(0x12)        
-        
-        for i in range(20):
-            dumpMessage.append(ord(self.serOut.read()))
-        
-        
+       
+        dumpMessage = aByteArray
         self.armStatusByte = dumpMessage[3]
         whichSet = dumpMessage[4]
         
@@ -401,110 +384,79 @@ class DiscoBotController:
         return 
     
     
-    def listenForRawSerial(self):
-        
-        if self.socketConnected:
-            try:
-                if(useSerial):
-                    while self.serOut.inWaiting():
-                        c = self.serOut.read()
-                        ###  If we are at the first character and it 
-                        ###  is the control code
-                        if (self.returnBuffer == "<"):
-                            if ord(c) == 0x13:
-                                self.handleRawDataDump()
-                                self.returnBuffer = ""
-                                self.receivingReturn = False
-                                self.responseReceived = True
-                                self.turnAroundTime = time.time() - self.lastXboxSendTime
-                            elif ord(c) == 0x12:
-                                self.handleArmDump()
-                                self.returnBuffer = ""
-                                self.receivingReturn = False    
-                                self.responseReceived = True   
-                                self.turnAroundTime = time.time() - self.lastXboxSendTime                         
-                                                  
-                        if c == '<':
-                            self.returnBuffer = ""
-                            self.receivingReturn = True                            
-                        if self.receivingReturn == True:
-                            if c != None:
-                                self.returnBuffer += str(c)                            
-                            if c == '>':
-                                self.parseReturnString()
-                                self.receivingReturn = False    
-                                if self.showReturns:
-                                    self.putstring("RET--> " + self.returnBuffer + '\n')
-                                self.sendToLog("RET--> " + self.returnBuffer + "\n")
-                                    
-                        
-            except socket.error, e:
-                err = e.args[0]
-                if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
-#                     self.putstring("EAGAIN or EWOULDBLOCK")
-                    pass
-                else:
-                    # a REAL error occurred
-                    self.putstring("Bad Error in linstenForRawSerial")
-                    self.putstring (err)
-                    self.putstring ('\n')        
-        
-        return 
     
     
-    def parseReturnString(self):
-        if self.returnBuffer == "<RMB HBoR>":
+    
+    def parseReturnString(self, aBuffer):
+        if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
             self.rmbHeartbeatWarningLevel = "green"
-        elif self.returnBuffer.startswith("<BAT,"):
-            tndx = self.returnBuffer.rfind(',')
-            self.rmbBatteryVoltage = self.returnBuffer[tndx+1:-1]
+        elif aBuffer.startswith("<BAT,"):
+            tndx = aBuffer.rfind(',')
+            self.rmbBatteryVoltage = aBuffer[tndx+1:-1]
         
-        elif self.returnBuffer.startswith("<Cnts,"):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith("<Cnts,"):
+            tup = tuple(aBuffer.split(','))
             self.leftMotorCount = tup[1]
             self.rightMotorCount = tup[2]
         
-        elif self.returnBuffer.startswith("<Out,"):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith("<Out,"):
+            tup = tuple(aBuffer.split(','))
             self.leftMotorOut = tup[1]
             self.rightMotorOut = tup[2]
-        elif self.returnBuffer.startswith("<Spd,"):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith("<Spd,"):
+            tup = tuple(aBuffer.split(','))
             self.leftMotorSpeed = tup[1]
             self.rightMotorSpeed = tup[2]
         
-        elif self.returnBuffer.startswith(("<p,")):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith(("<p,")):
+            tup = tuple(aBuffer.split(','))
             for t in tup:
                 self.servoInfo[t[0]][0] = t[1]
-        elif self.returnBuffer.startswith(("<t,")):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith(("<t,")):
+            tup = tuple(aBuffer.split(','))
             for t in tup:
                 self.servoInfo[t[0]][1] = t[1]
-        elif self.returnBuffer.startswith(("<s,")):
-            tup = tuple(self.returnBuffer.split(','))
+        elif aBuffer.startswith(("<s,")):
+            tup = tuple(aBuffer.split(','))
             for t in tup:
                 self.servoInfo[t[0]][2] = t[1]
                     
-        elif self.returnBuffer.startswith("<E-HB"):
-            self.currentRssi = self.returnBuffer[5:self.returnBuffer.rfind('>')]
-        elif self.returnBuffer.startswith("<E  NewClient @"):
-            self.currentSSID = self.returnBuffer[16 : self.returnBuffer.rfind(',')]
-            self.currentRssi = self.returnBuffer[self.returnBuffer.rfind(',') : self.returnBuffer.rfind('>')]
-        elif self.returnBuffer.startswith("<##"):
+        elif aBuffer.startswith("<E-HB"):
+            self.currentRssi = aBuffer[5:aBuffer.rfind('>')]
+        elif aBuffer.startswith("<E  NewClient @"):
+            self.currentSSID = aBuffer[16 : aBuffer.rfind(',')]
+            self.currentRssi = aBuffer[aBuffer.rfind(',') : aBuffer.rfind('>')]
+        elif aBuffer.startswith("<##"):
             if self.showDebug:
-                self.putstring(self.returnBuffer)
+                self.putstring(aBuffer)
             pass
         else:
             self.putstring ("returnBuffer --> ") 
-            self.putstring( self.returnBuffer)  
-            for c in self.returnBuffer:
+            self.putstring( aBuffer)  
+            for c in aBuffer:
                 if ord(c) < 33:
                     self.putstring(ord(c))
                     self.putstring(',')
             self.putstring('\n')      
         return              
+    
+    def returnParser(self, aByteArray):
+        
+        if (aByteArray[0] == ord('<')):
+            if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14) and (aByteArray[aByteArray[3] - 1] == ord('>')):
+                if aByteArray[1] == 0x13:
+                    self.handleRawDataDump(aByteArray)
+                elif aByteArray[1] == 0x12:
+                    self.handleArmDump(aByteArray)
+                self.turnAroundTime = time.time() - self.lastXboxSendTime
+            
+            else:
+                self.parseReturnString(aByteArray.decode("ascii"))
+                        
+        return 
+    
+    
     
     
     def sendRawController(self):
@@ -619,7 +571,7 @@ class DiscoBotController:
         rawMessage.append(((int)(rightHatY)) & 0xFF)                    ##14
         rawMessage.append(0x3E)                                         ##15
         
-        self.serOut.write(rawMessage)
+        self.comms.send(rawMessage)
         if self.logFile is not None:
             self.logFile.write("RAW -->")
             for val in rawMessage:
