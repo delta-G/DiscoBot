@@ -15,15 +15,8 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import xbox
-import socket
 import DiscoBotJoint
 import time
-import errno
-from __builtin__ import False
-from _socket import MSG_DONTWAIT
-from _socket import SHUT_RDWR
-
-import serial
 
 import DiscoBotComms
 
@@ -202,7 +195,8 @@ class DiscoBotController:
     def killConnection(self):
         if(self.socketConnected):
             self.putstring ("Closing Connection\n")
-            ###  TODO:  WHAT GOES HERE???            
+            ###  TODO:  WHAT GOES HERE??? 
+            self.socketConnected = False           
         else :
             self.putstring ("The connection is not open\n")                
         return
@@ -246,11 +240,12 @@ class DiscoBotController:
                     self.sendRawController()
                     self.lastStart = True
                 if self.joy.Back():
+                    self.killConnection()
                     return False                
               
     ### CONTROLLER LOOP        
-#                 if ((time.time() - self.lastXboxSendTime >= 0.2) or (self.responseReceived)):
-                if self.responseReceived:
+                if ((time.time() - self.lastXboxSendTime >= 0.35) or (self.responseReceived)):
+#                 if self.responseReceived:
        
                     if self.socketConnected:    
                         self.sendRawController()

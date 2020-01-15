@@ -60,10 +60,13 @@ class DiscoBotComms:
                         self.receivingReturn = False
                         self.inputBuffer.append(ord(c))
                         
-                        if len(self.inputBuffer) == self.inputBuffer[2] and self.inputBuffer[-1] == '>':
-                            self.returnParser(self.inputBuffer)
-                            self.inputBuffer = bytearray()                            
-                    
+                        if len(self.inputBuffer) == self.inputBuffer[2]:
+                            if self.inputBuffer[-1] == '>':
+                                self.returnParser(self.inputBuffer)
+                                self.inputBuffer = bytearray()
+                            else:
+                                self.inputBuffer = bytearray()
+                                                    
                     elif c == '<':
                         self.inputBuffer = bytearray()
                         self.receivingReturn = True
