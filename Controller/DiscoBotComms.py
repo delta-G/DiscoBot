@@ -15,6 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import serial
+import SharedDiscoBot
 
 class DiscoBotComms:
     
@@ -119,8 +120,8 @@ class DiscoBotComms:
     
     def getIndicatorState(self):
         if self.commsOn:
-            return 'green'
+            return SharedDiscoBot.colors['green']
         else:
-            return 'red'
+            return SharedDiscoBot.colors['red']
             
     

@@ -14,6 +14,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import SharedDiscoBot
 
 import Tkinter as tk
 
@@ -34,11 +35,7 @@ class DiscoBotGUI(tk.Frame):
         
         self.parent.config(padx=10, pady=10)
         
-        self.colors = {
-            'red' : '#FF0000',
-            'green' : '#00FF00',
-            'yellow' : '#FFFF00'
-            }
+        self.colors = SharedDiscoBot.colors
         
         self.defaultFont = "Veranda 12 bold"
         
@@ -88,7 +85,7 @@ class DiscoBotGUI(tk.Frame):
         else:            
             self.indicatorFrame.controllerConnectButton.config(bg=self.colors['red'])
                 
-        self.indicatorFrame.comConnectButton.config(bg=self.colors[self.controller.comms.getIndicatorState()])      
+        self.indicatorFrame.comConnectButton.config(bg=self.controller.comms.getIndicatorState())      
         return
 
 
