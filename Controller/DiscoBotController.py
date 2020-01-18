@@ -21,9 +21,6 @@ import time
 import DiscoBotComms
 import SharedDiscoBot
 
-useSerial = True
-useWifi = not useSerial
-
 class DiscoBotController:
     
     def putstring(self, aString):
