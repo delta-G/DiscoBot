@@ -35,10 +35,6 @@ class DiscoBotGUI(tk.Frame):
         
         self.parent.config(padx=10, pady=10)
         
-        self.colors = SharedDiscoBot.colors
-        
-        self.defaultFont = "Veranda 12 bold"
-        
         self.leftSideFrame = tk.Frame(self)
         self.rightSideFrame = tk.Frame(self)
         
@@ -81,9 +77,9 @@ class DiscoBotGUI(tk.Frame):
         self.armGraphicFrame.drawArm()
         self.selectFrame.update()
         if(self.controller.joy is not None) and (self.controller.joy.connected()):
-            self.indicatorFrame.controllerConnectButton.config(bg=self.colors['green'])
+            self.indicatorFrame.controllerConnectButton.config(bg=SharedDiscoBot.colors['green'])
         else:            
-            self.indicatorFrame.controllerConnectButton.config(bg=self.colors['red'])
+            self.indicatorFrame.controllerConnectButton.config(bg=SharedDiscoBot.colors['red'])
                 
         self.indicatorFrame.comConnectButton.config(bg=self.controller.comms.getIndicatorState())      
         return

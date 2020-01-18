@@ -14,7 +14,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import SharedDiscoBot
 import Tkinter as tk
 
 class IndicatorFrame(tk.Frame):
@@ -94,33 +94,33 @@ class IndicatorFrame(tk.Frame):
         self.spdFrame = MotorParamFrame(self.motorParamFrame, "S")
         self.spdFrame.pack(side = tk.TOP)
         
-        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font="Verdana 12 bold", bd=1, relief=tk.SUNKEN)
+        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
         self.throttleLabel.pack(side=tk.TOP)
         
         self.connectButtonFrame = tk.Frame(self.secondFrame)
         self.connectButtonFrame.pack(side = tk.TOP)
         
-        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, bg="red", command=self.propController)
+        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, bg=SharedDiscoBot.colors["red"], command=self.propController)
         self.controllerConnectButton.pack(side = tk.LEFT)
-        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, bg="red", command=self.propCommsInit)
+        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, bg=SharedDiscoBot.colors["red"], command=self.propCommsInit)
         self.comConnectButton.pack(side=tk.LEFT)
         
-        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font="Verdana 12 bold", bd=1, relief=tk.SUNKEN)
+        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
         self.modeLabel.pack(side=tk.TOP)
         
         return
     
     def check(self):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
-        self.hbLabel.check(self.gui.colors[self.controller.rmbHeartbeatWarningLevel])
+        self.hbLabel.check(SharedDiscoBot.colors[self.controller.rmbHeartbeatWarningLevel])
         self.hbLabel.config(text="HB - " + "{:.3f}".format(self.controller.turnAroundTime * 1000))
         self.bvLabel.config(text="Bat" + str(self.controller.rmbBatteryVoltage))
         if self.controller.rmbBatteryVoltage < 6.5:
-            self.bvLabel.config(bg=self.gui.colors['red'])
+            self.bvLabel.config(bg=SharedDiscoBot.colors['red'])
         elif self.controller.rmbBatteryVoltage < 7.4:
-            self.bvLabel.config(bg=self.gui.colors['yellow'])
+            self.bvLabel.config(bg=SharedDiscoBot.colors['yellow'])
         else: 
-            self.bvLabel.config(bg=self.gui.colors['green'])
+            self.bvLabel.config(bg=SharedDiscoBot.colors['green'])
 
         
 #         self.baseSigLabel.config(text="SNR - RSSI")
@@ -145,7 +145,7 @@ class IndicatorLabel(tk.Label):
         self.parent = aParent
         tk.Label.__init__(self, self.parent, text=text)
         
-        self.config(padx=5, pady=5, height=2, font="Verdana 12 bold", bd=1, relief=tk.SUNKEN)
+        self.config(padx=5, pady=5, height=2, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
         
         return
 
@@ -168,7 +168,7 @@ class MotorParamFrame(tk.Frame):
         tk.Frame.__init__(self, self.parent, bd=1, relief=tk.SUNKEN)
         
         self.leftLabel = tk.Label(self, text='100', width=5)
-        self.nameLabel = tk.Label(self, text=(" -" +str(self.name) + "- "), font = "veranda 12 bold")
+        self.nameLabel = tk.Label(self, text=(" -" +str(self.name) + "- "), font = SharedDiscoBot.defaultFont)
         self.rightLabel = tk.Label(self, text='123', width=5)
         
         self.leftLabel.pack(side=tk.LEFT)
