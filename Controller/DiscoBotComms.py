@@ -117,4 +117,10 @@ class DiscoBotComms:
         return 
     
     
+    def getIndicatorState(self):
+        if self.commsOn:
+            return 'green'
+        else:
+            return 'red'
+            
     

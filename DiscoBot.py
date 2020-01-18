@@ -37,7 +37,8 @@ try:
 
 finally:
     #Always close out so that xboxdrv subprocess ends
-    controller.killConnection()
+    if controller.comms.commsOn:
+        controller.killConnection()
     if logFile is not None:
         logFile.close()
     if controller.joy is not None:
