@@ -19,6 +19,7 @@ import DiscoBotJoint
 import time
 
 import DiscoBotComms
+import SharedDiscoBot
 
 useSerial = True
 useWifi = not useSerial
@@ -103,7 +104,7 @@ class DiscoBotController:
         self.comPower = False
         self.armServoPower = False
         
-        self.rmbHeartbeatWarningLevel = "green"
+        self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         self.rmbBatteryVoltage = 0.0
         self.leftMotorCount = 0
         self.rightMotorCount = 0
@@ -236,10 +237,12 @@ class DiscoBotController:
             
                 if(self.joy.Start() and not self.socketConnected):                
                     self.connectToBot()
-        ### Back Button or lost connection ends program
+        
                 if(self.joy.Start() and self.socketConnected and not self.lastStart):
                     self.sendRawController()
                     self.lastStart = True
+                    
+                ### Back Button or lost connection ends program
                 if self.joy.Back():
                     self.killConnection()
                     return False                
@@ -262,7 +265,7 @@ class DiscoBotController:
             self.putstring ("*****   MISSING RMB HEARTBEAT "),
             self.putstring (time.time() - self.lastRMBheartBeat),
             self.putstring ("  Seconds  ****\n")
-            self.rmbHeartbeatWarningLevel = "red"
+            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['red']
             self.RMBheartBeatWarningTime = time.time()        
             
         return True
@@ -277,7 +280,7 @@ class DiscoBotController:
     
     
     def make16bitSigned(self, aNum):
-        if((aNum > 32767) and (aNum < 65535)):
+        if((aNum > 32767) and (aNum <= 65535)):
             return (-65536 + aNum)
         else:
             return aNum
@@ -387,7 +390,7 @@ class DiscoBotController:
     def parseReturnString(self, aBuffer):
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
-            self.rmbHeartbeatWarningLevel = "green"
+            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         elif aBuffer.startswith("<BAT,"):
             tndx = aBuffer.rfind(',')
             self.rmbBatteryVoltage = aBuffer[tndx+1:-1]
