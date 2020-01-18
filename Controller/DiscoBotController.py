@@ -37,9 +37,9 @@ class DiscoBotController:
         return
     
     
-    def initComs(self):
+    def initComs(self, aPort):
         
-        self.comms.initComms()
+        self.comms.initComms(aPort)
             
         return
     
@@ -195,10 +195,11 @@ class DiscoBotController:
     def killConnection(self):
         if(self.socketConnected):
             self.putstring ("Closing Connection\n")
-            ###  TODO:  WHAT GOES HERE??? 
+            self.comms.close() 
             self.socketConnected = False           
         else :
-            self.putstring ("The connection is not open\n")                
+            self.putstring ("The connection is not open\n")   
+            self.comms.close()             
         return
     
     
@@ -253,7 +254,8 @@ class DiscoBotController:
                         self.responseReceived = False
         
     ### COMMS WITH ROBOT
-        self.comms.runComms()
+        if self.socketConnected:
+            self.comms.runComms()
             
         
         if (time.time() - self.lastRMBheartBeat >= 10) and (time.time() - self.RMBheartBeatWarningTime >= 10):

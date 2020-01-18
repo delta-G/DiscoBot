@@ -34,16 +34,16 @@ class DiscoBotComms:
         
         return 
     
-    def initComms(self):
+    def initComms(self, aPort):
         
         if not self.commsOn:
             try:                    
-                self.serOut = serial.Serial('/dev/ttyUSB0', 115200)
+                self.serOut = serial.Serial(aPort, 115200)
     
             except Exception as ex:
                 self.commsOn=False
-                self.putstring(ex)  
-                self.putstring('\n') 
+                self.controller.putstring(ex)  
+                self.controller.putstring('\n') 
             else:
                 self.commsOn = True
             
@@ -108,4 +108,13 @@ class DiscoBotComms:
     
     def read(self):
         return self.serOut.read()
+    
+    def close(self):
+        self.serOut.flushInput()
+        self.serOut.flushOutput()
+        self.serOut.close()
+        self.commsOn=False
+        return 
+    
+    
     

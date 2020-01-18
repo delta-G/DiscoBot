@@ -16,6 +16,9 @@
 
 
 import Tkinter as tk
+import sys
+import glob
+import serial
 
 class SelectFrame(tk.Frame):
     
@@ -42,7 +45,16 @@ class SelectFrame(tk.Frame):
             self.controller.outPutRunner("<A,CP>")
         return
             
+    def getPortList(self):
+        self.portList = glob.glob('/dev/tty[AU]*')
+        self.portList.append("---Check---")
+        self.comPortSpinbox.config(values=self.portList)
+        return
     
+    def clearPortList(self):
+        self.portList = ["---Check---"]        
+        self.comPortSpinbox.config(values=self.portList)
+        return
     
     
     def __init__(self, aParent, aController):
@@ -73,12 +85,20 @@ class SelectFrame(tk.Frame):
         self.armPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-CPU", variable=self.armPow)        
         self.comPowCheck = tk.Checkbutton(self.leftFrame, text="Com-CPU", variable=self.comPow)
         self.armServoPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-Servo", variable=self.armServoPow, command=self.propArmServoPow)
+        
+        
+        
+        self.comPortSpinbox = tk.Spinbox(self.leftFrame)
+        self.getPortList()
+        
+#         self.comPortCombobox = ttk.Combobox(self.leftFrame, values=["COM1" , "COM2"])
 
         self.camPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.headPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.armPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.armServoPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.comPowCheck.pack(side=tk.TOP, anchor=tk.W)
+        self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
         
                 
         return

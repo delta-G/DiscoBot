@@ -23,8 +23,18 @@ class IndicatorFrame(tk.Frame):
         self.controller.connectJoystick()    
         return 
     
-    def propCommsInit(self):        
-        self.controller.initComs()
+    def propCommsInit(self):
+        if self.controller.comms.commsOn:
+            self.controller.killConnection()
+            self.gui.selectFrame.clearPortList()
+        else:
+            selection = self.gui.selectFrame.comPortSpinbox.get()
+            if selection == "---Check---":
+                self.gui.selectFrame.getPortList()
+            else:    
+                self.controller.initComs(selection)
+        
+                    
         return
     
     
