@@ -79,7 +79,6 @@ class DiscoBotController:
 ### Serial Recv variables
         self.lastRMBheartBeat = time.time()
         self.RMBheartBeatWarningTime = time.time()
-#         self.lastGimbalTime = time.time()
 ### Comms Variables
         self.lastXboxSendTime = 0
         self.responseReceived = False       
@@ -115,9 +114,6 @@ class DiscoBotController:
         self.showReturns = False
         self.showDebug = False
         
-#         self.commsOn = False
-
-
         self.motorRight = 0
         self.motorLeft = 0
         self.throttleLevel = 0
@@ -183,10 +179,9 @@ class DiscoBotController:
     def connectToBot(self):
         if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")
-            ###TODO:   WHAT GOES HERE????
+            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
             self.socketConnected = True
             self.putstring ("Connected to Robot\n") 
-            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
         
         return    
     
