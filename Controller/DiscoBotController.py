@@ -440,6 +440,8 @@ class DiscoBotController:
     
     def returnParser(self, aByteArray):
         
+        self.putstring(aByteArray.decode('ascii'))
+        
         if (aByteArray[0] == ord('<')):
             if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14) and (aByteArray[aByteArray[3] - 1] == ord('>')):
                 if aByteArray[1] == 0x13:

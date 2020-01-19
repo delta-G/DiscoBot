@@ -57,6 +57,10 @@ class DiscoBotComms:
             try:
                 while self.serOut.inWaiting():
                     c = self.serOut.read()
+                    
+                    self.controller.putstring(c)
+                    
+                    
                     if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
                         self.receivingReturn = False
                         self.inputBuffer.append(ord(c))
@@ -69,6 +73,7 @@ class DiscoBotComms:
                                 self.inputBuffer = bytearray()
                                                     
                     elif c == '<':
+                        self.controller.putstring("<RESPONSE_COMING>")
                         self.inputBuffer = bytearray()
                         self.receivingReturn = True
                     if self.receivingReturn == True:
@@ -98,7 +103,7 @@ class DiscoBotComms:
         self.serOut.flush()
         return 
     
-    def send(self, aMess):
+    def send(self, aMess):        
         self.buffer(aMess)
         self.flush()
         return
