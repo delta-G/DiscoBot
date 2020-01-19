@@ -68,6 +68,9 @@ class DiscoBotGUI(tk.Frame):
         self.rightSideFrame.pack(side=tk.LEFT, anchor=tk.N)     
                 
         self.pack()
+        
+        self.controller.setRedirect(self.termFrame.redirect)
+        
         return
     
     

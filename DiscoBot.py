@@ -38,8 +38,6 @@ controller = Controller.DiscoBotController.DiscoBotController(None, logFile)
 
 gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
-controller.setRedirect(gui.termFrame.redirect)
-
 
 try:
     
