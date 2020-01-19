@@ -213,10 +213,10 @@ class DiscoBotController:
     
     def outPutRunner(self, cs):
         if self.socketConnected:
-            self.comms.send(cs)
+            self.comms.send(cs)                  
+            self.sendToLog("OUT--> " + str(cs) + "\n")  
         if self.showCommands:
-            self.putstring("COM--> " + str(cs) + '\n')        
-        self.sendToLog("OUT--> " + str(cs) + "\n")        
+            self.putstring("COM--> " + str(cs) + '\n')       
         return
     
     
@@ -385,6 +385,7 @@ class DiscoBotController:
     
     
     def parseReturnString(self, aBuffer):
+        
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
             self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
@@ -439,19 +440,19 @@ class DiscoBotController:
         return              
     
     def returnParser(self, aByteArray):
-        
-        self.putstring(aByteArray.decode('ascii'))
-        
-        if (aByteArray[0] == ord('<')):
-            if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14) and (aByteArray[aByteArray[3] - 1] == ord('>')):
-                if aByteArray[1] == 0x13:
-                    self.handleRawDataDump(aByteArray)
-                elif aByteArray[1] == 0x12:
-                    self.handleArmDump(aByteArray)
-                self.turnAroundTime = time.time() - self.lastXboxSendTime
-            
-            else:
-                self.parseReturnString(aByteArray.decode("ascii"))
+        if len(aByteArray) >= 3:
+            if (aByteArray[0] == ord('<')):
+                if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14):
+                    if (len(aByteArray) >= aByteArray[2]) and (aByteArray[aByteArray[2]-1] == ord('>')):
+                        self.responseReceived = True
+                        if aByteArray[1] == 0x13:
+                            self.handleRawDataDump(aByteArray)
+                        elif aByteArray[1] == 0x12:
+                            self.handleArmDump(aByteArray)
+                        self.turnAroundTime = time.time() - self.lastXboxSendTime
+                
+                else:
+                    self.parseReturnString(aByteArray.decode("ascii"))
                         
         return 
     
@@ -570,7 +571,7 @@ class DiscoBotController:
         rawMessage.append(((int)(rightHatY)) & 0xFF)                    ##14
         rawMessage.append(0x3E)                                         ##15
         
-        self.comms.send(rawMessage)
+        self.comms.write(rawMessage)
         if self.logFile is not None:
             self.logFile.write("RAW -->")
             for val in rawMessage:
