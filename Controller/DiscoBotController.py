@@ -150,7 +150,7 @@ class DiscoBotController:
                           DiscoBotJoint.DiscoBotJoint("wrist", 158, 32, 605, -1.16937, 2400, 2.12930),
                           DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
                           DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
-                          DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, -1.57, 2350, 3.1415),
+                          DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, 3.1415, 2350, 0),
                           DiscoBotJoint.DiscoBotJoint("tilt", 0, 0, 600, 0.87, 1470, -0.35)]
 
         self.servoInfo = []
@@ -179,8 +179,8 @@ class DiscoBotController:
     def connectToBot(self):
         if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")
-            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
             self.socketConnected = True
+            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
             self.putstring ("Connected to Robot\n") 
         
         return    
@@ -258,7 +258,13 @@ class DiscoBotController:
             self.putstring (time.time() - self.lastRMBheartBeat),
             self.putstring ("  Seconds  ****\n")
             self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['red']
-            self.RMBheartBeatWarningTime = time.time()        
+            self.RMBheartBeatWarningTime = time.time()
+        elif (time.time() - self.lastRMBheartBeat >= 2):
+            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['yellow']
+        else:
+            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
+            
+                    
             
         return True
     
@@ -303,11 +309,11 @@ class DiscoBotController:
         
         self.readStatusByte()
         
-        for val in dumpMessage:
-            self.sendToLog(hex(val))
-            self.sendToLog(' ')
-            
-        self.sendToLog('\n')
+#         for val in dumpMessage:
+#             self.sendToLog(hex(val))
+#             self.sendToLog(' ')
+#             
+#         self.sendToLog('\n')
         
         return 
     
@@ -348,6 +354,13 @@ class DiscoBotController:
         self.sendToLog("ARM--> "  + "\n")
        
         dumpMessage = aByteArray
+        
+        if self.logFile is not None:
+            for val in dumpMessage:
+                self.logFile.write(hex(val))
+                self.logFile.write(" ")
+            self.logFile.write("\n")
+        
         self.armStatusByte = dumpMessage[3]
         whichSet = dumpMessage[4]
         
@@ -358,13 +371,16 @@ class DiscoBotController:
             dp |= dumpMessage[6+(2*i)] & 0xFF
             dataPoints.append(dp)
         
-        if whichSet == 'p':
+        if whichSet == ord('p'):
+            self.sendToLog("pos--> "  + "\n")
             for i in range(8):
                 self.servoInfo[i][0] = dataPoints[i]
-        elif whichSet == 's':
+        elif whichSet == ord('s'):
+            self.sendToLog("spd--> "  + "\n")
             for i in range(8):
                 self.servoInfo[i][1] = dataPoints[i]
-        elif whichSet == 't':
+        elif whichSet == ord('t'):
+            self.sendToLog("targ--> "  + "\n")
             for i in range(8):
                 self.servoInfo[i][2] = dataPoints[i]   
                 
@@ -383,7 +399,6 @@ class DiscoBotController:
         
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
-            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         elif aBuffer.startswith("<BAT,"):
             tndx = aBuffer.rfind(',')
             self.rmbBatteryVoltage = aBuffer[tndx+1:-1]

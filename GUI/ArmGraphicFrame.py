@@ -89,7 +89,7 @@ class ArmGraphicFrame(tk.Frame):
         if(abs(gripperTipPoint[0]) > largestX):
             largestX = abs(gripperTipPoint[0])
         
-        baseAngle = (self.controller.armJoints[0].microsToAngle(self.controller.servoInfo[0][0])) + math.pi
+        baseAngle = -(self.controller.armJoints[0].microsToAngle(self.controller.servoInfo[0][0])) # + math.pi
         
                 
         baseCoords = self.toCanvasCoords(basePoint, sizeRatio)
@@ -114,13 +114,24 @@ class ArmGraphicFrame(tk.Frame):
         
         segmentLength = largestX * circleRatio
         
-        xVal = (segmentLength * (math.cos(baseAngle))) + 225
-        yVal = (segmentLength * (math.sin(baseAngle))) + 175
+        armLengthSegX = (segmentLength * (math.cos(baseAngle))) + 225
+        armLengthSegY = (segmentLength * (math.sin(baseAngle))) + 175
+        
+        self.drawSegment((225 , 175), (armLengthSegX, armLengthSegY), "magenta")
+        
+        ####  GIMBAL SECTION ###
+        
+        gimbalPanAngle = baseAngle + ((self.controller.armJoints[6].microsToAngle(self.controller.servoInfo[6][0])) - (math.pi/2))
+        gimbalTiltAngle = gripperWristPoint[2] + ((self.controller.armJoints[7].microsToAngle(self.controller.servoInfo[7][0])) - (math.pi/2))
+        
+        panSegLength = 25
+        
+        panX = (panSegLength * (math.cos(gimbalPanAngle))) + 225
+        panY = (panSegLength * (math.sin(gimbalPanAngle))) + 175
+        
+        self.drawSegment((armLengthSegX , armLengthSegY), (panX, panY), "cyan")
         
         
-        
-        
-        self.drawSegment((225 , 175), (xVal, yVal), "magenta")
         
         return 
             
