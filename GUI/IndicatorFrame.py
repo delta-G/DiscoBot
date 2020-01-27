@@ -76,6 +76,12 @@ class IndicatorFrame(tk.Frame):
         self.botSigLabel.config(height=1)
         self.botSigLabel.pack(side=tk.TOP) 
         
+        self.distLabel = IndicatorLabel(self.firstFrame, text="DST")
+        self.distLabel.config(width=10)        
+        self.distLabel.config(height=1)
+        self.distLabel.pack(side=tk.TOP)
+        
+        
 #         self.rsLabel = IndicatorLabel(self, text="RSSI")
 #         self.rsLabel.pack(side=tk.LEFT)
 
@@ -126,6 +132,8 @@ class IndicatorFrame(tk.Frame):
 #         self.baseSigLabel.config(text="SNR - RSSI")
         self.botSigLabel.config(text="Bot " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI))
         self.baseSigLabel.config(text="Base " + str(self.controller.lastBaseSNR) + " , " + str(self.controller.lastBaseRSSI))
+        
+        self.distLabel.config(text="d= " + str(self.controller.sonarDistance))
         
         self.ticFrame.update(self.controller.leftMotorCount, self.controller.rightMotorCount)
         self.pwmFrame.update(self.controller.leftMotorOut, self.controller.rightMotorOut)

@@ -47,7 +47,7 @@ class DiscoBotController:
         
         print """ 
         ***********************
-*********   pyBot Interface   *******
+*****   DiscoBotBot Interface   *******
  ***********************************
 """
 
@@ -55,7 +55,7 @@ class DiscoBotController:
         
 *********************************************************************        
 *********************************************************************        
-******* pyBot  Copyright (C) 2016  David C.  ************************
+******* DiscoBot  Copyright (C) 2016  David C.  *********************
 **  This program comes with ABSOLUTELY NO WARRANTY; *****************
 **  This is free software, and you are welcome to redistribute it  **
 **  under certain conditions; ***************************************
@@ -108,6 +108,8 @@ class DiscoBotController:
         self.rightMotorOut = 0
         self.leftMotorSpeed = 0
         self.rightMotorSpeed = 0
+        
+        self.sonarDistance = 0
         
 ### Vars for GUI
         self.showCommands = False
@@ -391,7 +393,17 @@ class DiscoBotController:
                     
         return 
     
-    
+    def handleSonarDump(self, aByteArray):        
+        if(aByteArray[2] == 10):
+            self.sonarDistance = (aByteArray[3] << 8) + aByteArray[4]        
+            self.sonarDistance = self.make16bitSigned(self.sonarDistance)
+        elif(aByteArray[2] == 30):
+            self.putstring("NEW SWEEP")
+            for i in range(13):
+                temp = (aByteArray[(2*i)+3] << 8) + aByteArray[(2*i)+4]
+                temp = self.make16bitSigned(temp)
+                self.putstring(str(i) + " : " + str(temp) + "\n")
+        return
     
     
     
@@ -455,8 +467,10 @@ class DiscoBotController:
                 if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14):
                     if (len(aByteArray) >= aByteArray[2]) and (aByteArray[aByteArray[2]-1] == ord('>')):
                         self.responseReceived = True
-                        if aByteArray[1] == 0x13:
+                        if (aByteArray[1] == 0x13) and (aByteArray[2] == 21):
                             self.handleRawDataDump(aByteArray)
+                        elif (aByteArray[1] == 0x13):
+                            self.handleSonarDump(aByteArray)
                         elif aByteArray[1] == 0x12:
                             self.handleArmDump(aByteArray)
                         self.turnAroundTime = time.time() - self.lastXboxSendTime
