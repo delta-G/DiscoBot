@@ -47,7 +47,7 @@ class DiscoBotController:
         
         print """ 
         ***********************
-*********   pyBot Interface   *******
+*****   DiscoBotBot Interface   *******
  ***********************************
 """
 
@@ -55,7 +55,7 @@ class DiscoBotController:
         
 *********************************************************************        
 *********************************************************************        
-******* pyBot  Copyright (C) 2016  David C.  ************************
+******* DiscoBot  Copyright (C) 2016  David C.  *********************
 **  This program comes with ABSOLUTELY NO WARRANTY; *****************
 **  This is free software, and you are welcome to redistribute it  **
 **  under certain conditions; ***************************************
