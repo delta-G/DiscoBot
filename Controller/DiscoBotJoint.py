@@ -65,11 +65,23 @@ class DiscoBotJoint:
         
         return (reX, reY, reA)
     
-    def findOffsetPoint(self, aXYAtuple, aMicros, aRatio):
+#     def findOffsetPoint(self, aXYAtuple, aMicros, aRatio):
+#         
+#         endAngle = aXYAtuple[2] + self.microsToAngle(aMicros)
+#         
+#         xySolution = self.solveTriangle(endAngle, self.offset * aRatio)
+#             
+#         reX = xySolution[0] + aXYAtuple[0]
+#         reY = xySolution[1] + aXYAtuple[1]
+#         reA = endAngle
+#         
+#         return (reX, reY, reA)
+    
+    def findOffsetPoint(self, aXYAtuple, aOffset, aMicros, aRatio):
         
         endAngle = aXYAtuple[2] + self.microsToAngle(aMicros)
         
-        xySolution = self.solveTriangle(endAngle, self.offset * aRatio)
+        xySolution = self.solveTriangle(endAngle, aOffset * aRatio)
             
         reX = xySolution[0] + aXYAtuple[0]
         reY = xySolution[1] + aXYAtuple[1]

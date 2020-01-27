@@ -82,7 +82,7 @@ class ArmGraphicFrame(tk.Frame):
         wristPoint = self.controller.armJoints[2].findEndXYandApproach(elbowPoint, self.controller.servoInfo[2][0], sizeRatio)
         if(abs(wristPoint[0]) > largestX):
             largestX = abs(wristPoint[0])
-        gripperWristPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
+        gripperWristPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.armJoints[3].offset, self.controller.servoInfo[3][0], sizeRatio)
         if(abs(gripperWristPoint[0]) > largestX):
             largestX = abs(gripperWristPoint[0])
         gripperTipPoint = self.controller.armJoints[3].findEndXYandApproach(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
@@ -130,6 +130,19 @@ class ArmGraphicFrame(tk.Frame):
         panY = (panSegLength * (math.sin(gimbalPanAngle))) + 175
         
         self.drawSegment((armLengthSegX , armLengthSegY), (panX, panY), "cyan")
+        
+        gimbalOffsetPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.armJoints[7].offset, self.controller.servoInfo[3][0], sizeRatio)
+        gimbalOffsetCoords = self.toCanvasCoords(gimbalOffsetPoint, sizeRatio)
+        
+        self.drawSegment(wristCoords, gimbalOffsetCoords, "black")
+        
+        tiltX = ((panSegLength) * (math.cos(gimbalTiltAngle))) + gimbalOffsetCoords[0]
+        tiltY = ((panSegLength) * (-math.sin(gimbalTiltAngle))) + gimbalOffsetCoords[1]
+        
+#         tiltCoords = self.toCanvasCoords((tiltX, tiltY), sizeRatio)
+        tiltCoords = (tiltX, tiltY)
+        
+        self.drawSegment(gimbalOffsetCoords, tiltCoords, "cyan")
         
         
         

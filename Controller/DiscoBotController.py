@@ -151,7 +151,7 @@ class DiscoBotController:
                           DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
                           DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
                           DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, 3.1415, 2350, 0),
-                          DiscoBotJoint.DiscoBotJoint("tilt", 0, 0, 600, 0.87, 1470, -0.35)]
+                          DiscoBotJoint.DiscoBotJoint("tilt", 0, 80, 600, 0.8727, 1470, -0.5236)]
 
         self.servoInfo = []
         for i in range(8):
