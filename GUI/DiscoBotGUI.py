@@ -24,6 +24,7 @@ import IndicatorFrame
 import SelectFrame
 
 import ArmGraphicFrame
+import SonarGraphicFrame
 
 class DiscoBotGUI(tk.Frame):
     
@@ -46,6 +47,7 @@ class DiscoBotGUI(tk.Frame):
         self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
         
         self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller)
+        self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.rightSideFrame, self.controller)
         
         self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
         self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
@@ -61,7 +63,8 @@ class DiscoBotGUI(tk.Frame):
         self.termFrame.pack(side=tk.LEFT)
         
         #rightSideFrame
-        self.armGraphicFrame.pack(side=tk.TOP, anchor=tk.N)        
+        self.armGraphicFrame.pack(side=tk.TOP, anchor=tk.N)    
+        self.sonarGraphicFrame.pack(side=tk.TOP, anchor=tk.N)  
         self.servoPane.pack(side=tk.TOP)
         
         self.leftSideFrame.pack(side=tk.LEFT, anchor=tk.N)
@@ -78,6 +81,7 @@ class DiscoBotGUI(tk.Frame):
         self.servoPane.updateData()
         self.indicatorFrame.check()
         self.armGraphicFrame.drawArm()
+        self.sonarGraphicFrame.display(self.controller.sonarList)
         self.selectFrame.update()
         if(self.controller.joy is not None) and (self.controller.joy.connected()):
             self.indicatorFrame.controllerConnectButton.config(bg=SharedDiscoBot.colors['green'])

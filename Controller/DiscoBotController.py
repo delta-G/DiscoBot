@@ -111,6 +111,8 @@ class DiscoBotController:
         
         self.sonarDistance = 0
         
+        self.sonarList = [100,200,300,400,500,600,700,800,900,1000,1100,1200,1300]
+        
 ### Vars for GUI
         self.showCommands = False
         self.showReturns = False
@@ -398,11 +400,11 @@ class DiscoBotController:
             self.sonarDistance = (aByteArray[3] << 8) + aByteArray[4]        
             self.sonarDistance = self.make16bitSigned(self.sonarDistance)
         elif(aByteArray[2] == 30):
-            self.putstring("NEW SWEEP")
             for i in range(13):
                 temp = (aByteArray[(2*i)+3] << 8) + aByteArray[(2*i)+4]
                 temp = self.make16bitSigned(temp)
-                self.putstring(str(i) + " : " + str(temp) + "\n")
+#                 self.putstring(str(i) + " : " + str(temp) + "\n")
+                self.sonarList[i]=temp
         return
     
     
