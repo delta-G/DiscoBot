@@ -47,7 +47,7 @@ class DiscoBotGUI(tk.Frame):
         self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
         
         self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller)
-        self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.rightSideFrame, self.controller)
+        self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.leftSideFrame, self.controller)
         
         self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
         self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
@@ -60,11 +60,15 @@ class DiscoBotGUI(tk.Frame):
         #leftSideFrame
         self.topFrame.pack(side=tk.TOP, anchor=tk.W)
         
-        self.termFrame.pack(side=tk.LEFT)
+        self.sonarGraphicFrame.pack(side=tk.TOP, anchor=tk.W) 
         
-        #rightSideFrame
-        self.armGraphicFrame.pack(side=tk.TOP, anchor=tk.N)    
-        self.sonarGraphicFrame.pack(side=tk.TOP, anchor=tk.N)  
+        self.termFrame.pack(side=tk.TOP)
+        
+        
+        
+        #rightSideFrame    
+        
+        self.armGraphicFrame.pack(side=tk.TOP, anchor=tk.N) 
         self.servoPane.pack(side=tk.TOP)
         
         self.leftSideFrame.pack(side=tk.LEFT, anchor=tk.N)

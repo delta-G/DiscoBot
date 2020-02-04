@@ -66,6 +66,9 @@ class OneServo(tk.Frame):
         self.speedLabel.pack(side=tk.LEFT)     
         self.targetLabel.pack(side=tk.LEFT)  
         
+        self.speedLabel.bind("<Double-Button-1>", self.makeSpeedEntry)
+        self.targetLabel.bind("<Double-Button-1>", self.makeTargetEntry)
+        
         return
     
     
@@ -76,8 +79,48 @@ class OneServo(tk.Frame):
         
         return
     
+    def makeSpeedEntry(self, event):
+        widget = event.widget
+        entry = tk.Entry(widget)
+        entry.place(x=0, y=0, anchor="nw", relwidth=1.0, relheight=1.0)
+        entry.bind("<Return>", self.modifySpeedValue)
+        entry.bind("<KP_Enter>", self.modifySpeedValue)
+        entry.bind("<FocusOut>", self.entryLostFocus)
+        entry.focus_set()
+        return
+        
+    def modifySpeedValue(self, event):
+        entry = event.widget
+#         label = entry.place_info()["in"]
+#         label.configure(text=entry.get()) 
+        comstr = "<S" + str(self.number) + ",s" + entry.get() + ">"
+        self.gui.controller.outPutRunner(comstr)
+          
+        entry.destroy()
+        return 
+        
+    def makeTargetEntry(self, event):
+        widget = event.widget
+        entry = tk.Entry(widget)
+        entry.place(x=0, y=0, anchor="nw", relwidth=1.0, relheight=1.0)
+        entry.bind("<Return>", self.modifyTargetValue)
+        entry.bind("<KP_Enter>", self.modifyTargetValue)
+        entry.bind("<FocusOut>", self.entryLostFocus)
+        entry.focus_set()
+        return
+        
+    def modifyTargetValue(self, event):
+        entry = event.widget
+        comstr = "<S" + str(self.number) + ",T" + entry.get() + ">"
+        self.gui.controller.outPutRunner(comstr)
+          
+        entry.destroy()
+        return 
     
-    
+    def entryLostFocus(self, event):
+        entry = event.widget
+        entry.destroy()
+        return 
     
     
     

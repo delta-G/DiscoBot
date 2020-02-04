@@ -32,6 +32,7 @@ logFile = None
 
 
 root = tk.Tk()
+root.title("DiscoBot Base Controller")
 
 controller = Controller.DiscoBotController.DiscoBotController(None, logFile)
 

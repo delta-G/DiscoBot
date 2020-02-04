@@ -111,7 +111,7 @@ class DiscoBotController:
         
         self.sonarDistance = 0
         
-        self.sonarList = [100,200,300,400,500,600,700,800,900,1000,1100,1200,1300]
+        self.sonarList = [100,200,300,400,1050,1050,700,800,900,1000,1100,1200,1300]
         
 ### Vars for GUI
         self.showCommands = False

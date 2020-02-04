@@ -81,7 +81,7 @@ class TermFrame(tk.Frame):
         self.comsend = ComSenderField.ComSenderField(self, self.gui.controller)
         self.comsend.pack(side=tk.TOP)
         
-        self.log = tk.Text(self.logFrame, width=60, height=20, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
+        self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.log.yview)
         self.log.pack()    
         
