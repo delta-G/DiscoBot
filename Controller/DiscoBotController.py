@@ -66,6 +66,7 @@ class DiscoBotController:
     """
         
         self.socketConnected = False 
+        self.endProgram = False
         
         self.comms = DiscoBotComms.DiscoBotComms(self, self.returnParser)
         
@@ -225,27 +226,18 @@ class DiscoBotController:
     ###########################################
     #*****************************************#
     
-    def runInterface(self):       
+    def runInterface(self):
+                   
         if self.joy is not None:
             if(self.joy.connected()):
-                if not self.joy.Start():
-                    self.lastStart = False
-            
-                if(self.joy.Start() and not self.socketConnected):                
-                    self.connectToBot()
-        
-                if(self.joy.Start() and self.socketConnected and not self.lastStart):
-                    self.sendRawController()
-                    self.lastStart = True
+                if(self.joy.Guide()):
+                    self.guideMode()    
                     
-                ### Back Button or lost connection ends program
-                if self.joy.Back():
-                    self.killConnection()
-                    return False                
+                if self.endProgram:
+                    return False            
               
     ### CONTROLLER LOOP        
                 if ((time.time() - self.lastXboxSendTime >= 0.35) or (self.responseReceived)):
-#                 if self.responseReceived:
        
                     if self.socketConnected:    
                         self.sendRawController()
@@ -271,6 +263,27 @@ class DiscoBotController:
                     
             
         return True
+    
+    
+    def guideMode(self):
+        if not self.joy.Start():
+            self.lastStart = False
+            
+        if(self.joy.Start() and not self.socketConnected):                
+            self.connectToBot()
+        
+        if(self.joy.Start() and self.socketConnected and not self.lastStart):
+            self.sendRawController()
+            self.lastStart = True
+                    
+        ### Back Button or lost connection ends program
+        if self.joy.Back():
+            self.killConnection()
+            self.endProgram = True       
+        
+        return
+    
+    
     
     
     
