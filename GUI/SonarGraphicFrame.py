@@ -17,7 +17,6 @@
 
 import Tkinter as tk
 import math
-from scipy.ndimage.interpolation import zoom
 
 class SonarGraphicFrame(tk.Frame):
     
