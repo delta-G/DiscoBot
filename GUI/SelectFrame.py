@@ -88,7 +88,7 @@ class SelectFrame(tk.Frame):
         
         
         
-        self.comPortSpinbox = tk.Spinbox(self.leftFrame)
+        self.comPortSpinbox = tk.Spinbox(self.leftFrame, width=13)
         self.getPortList()
         
 #         self.comPortCombobox = ttk.Combobox(self.leftFrame, values=["COM1" , "COM2"])

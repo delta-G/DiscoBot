@@ -35,7 +35,7 @@ class DiscoBotGUI(tk.Frame):
         tk.Frame.__init__(self, self.parent)
         self.controller = aController
         
-        self.parent.config(padx=10, pady=10)
+        self.parent.config(padx=5, pady=5)
         
         self.leftSideFrame = tk.Frame(self)
         self.rightSideFrame = tk.Frame(self)

@@ -77,6 +77,8 @@ class DirectionFrame(tk.Frame):
         if(self.angle > math.pi):
             self.angle = (3*math.pi) - self.angle
             self.lineColor = "red"
+        else:
+            self.lineColor = "black"
         
         return self.angle
     
@@ -85,18 +87,25 @@ class DirectionFrame(tk.Frame):
     def display(self):
         
         self.canvas.delete("all")
-        self.lineColor = "black"
         
+        ls = self.controller.leftMotorSpeed
+        rs = self.controller.rightMotorSpeed
         self.diameter = 50
+        circleColor = "black"
+        fill=None
+        if (ls == 0) or (rs == 0):
+            circleColor = "red"
+            fill="red"
+        else:  
+            self.calculateAngle()
+            
+            x = ((self.diameter / 2) * math.cos(self.angle)) + (self.diameter / 2)
+            y = ((self.diameter / 2) * math.sin(self.angle)) + (self.diameter / 2)
+            
+            self.canvas.create_line((self.diameter / 2), (self.diameter / 2), x, self.canvasHeight - y, width=2, fill=self.lineColor)
         
-        self.canvas.create_oval(0, 0, self.diameter, self.diameter, outline="black")
+        self.canvas.create_oval(0, 0, self.diameter, self.diameter, outline=circleColor, width=2, fill=fill)
         
-        self.calculateAngle()
-        
-        x = ((self.diameter / 2) * math.cos(self.angle)) + (self.diameter / 2)
-        y = ((self.diameter / 2) * math.sin(self.angle)) + (self.diameter / 2)
-        
-        self.canvas.create_line((self.diameter / 2), (self.diameter / 2), x, self.canvasHeight - y, width=2, fill=self.lineColor)
         
         
         return

@@ -44,13 +44,13 @@ class IndicatorFrame(tk.Frame):
         self.controller = aController
         self.gui = aGui
         
-        self.config(height=10, padx=5, pady=5)
+#         self.config(height=10, padx=5, pady=5)
         
 #         self.ssidLabel = IndicatorLabel(self, text="SSID")
 #         self.ssidLabel.pack(side=tk.LEFT)
         
         self.firstFrame = tk.Frame(self)
-        self.firstFrame.config(padx=10, pady=10)
+#         self.firstFrame.config(padx=10, pady=10)
         
         self.firstFrame.pack(side = tk.LEFT)
         
@@ -86,7 +86,7 @@ class IndicatorFrame(tk.Frame):
 #         self.rsLabel.pack(side=tk.LEFT)
 
         self.secondFrame = tk.Frame(self)
-        self.secondFrame.config(padx=10, pady=10)
+        self.secondFrame.config(padx=5, pady=0)
         self.secondFrame.pack(side = tk.LEFT)
 
         self.motorParamFrame = tk.Frame(self.secondFrame)

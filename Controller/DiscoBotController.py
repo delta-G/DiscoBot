@@ -341,7 +341,9 @@ class DiscoBotController:
         elif mb == 2:
             self.driveMode = "ARM"
         elif mb == 3:
-            self.driveMode = "MINE"            
+            self.driveMode = "MINE"  
+        elif mb == 0:
+            self.driveMode = "AUTO"          
         
         if(self.botStatusByte & 0x10):
             self.cameraPower = True
