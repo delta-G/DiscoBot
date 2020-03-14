@@ -91,7 +91,10 @@ class SelectFrame(tk.Frame):
         self.comPortSpinbox = tk.Spinbox(self.leftFrame, width=13)
         self.getPortList()
         
-#         self.comPortCombobox = ttk.Combobox(self.leftFrame, values=["COM1" , "COM2"])
+        self.modeFrame = tk.Frame(self.leftFrame)
+        
+        self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"])
+        self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton)
 
         self.camPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.headPowCheck.pack(side=tk.TOP, anchor=tk.W)
@@ -99,6 +102,10 @@ class SelectFrame(tk.Frame):
         self.armServoPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.comPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
+        
+        self.modeFrame.pack(side=tk.TOP, anchor=tk.W)
+        self.comModeSpinbox.pack(side=tk.LEFT, anchor=tk.W)
+        self.comModeButton.pack(side=tk.LEFT, anchor=tk.W)      
         
                 
         return
@@ -112,6 +119,10 @@ class SelectFrame(tk.Frame):
         self.comPow.set(self.controller.comPower)
         self.armServoPow.set(self.controller.armServoPower)
         
-    
+    def handleLoRaModeButton(self):
+        
+        self.controller.setLoRaMode(self.comModeSpinbox.get())
+        
+        return 
             
     

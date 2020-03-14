@@ -201,6 +201,21 @@ class DiscoBotController:
         return
     
     
+    def setLoRaMode(self, aMode):
+        
+        ### flush the radio
+        self.outPutRunner("<FFE>")        
+        ### give some time for transmission        
+        time.sleep(2.5)
+        ### send control code for new mode
+        self.outPutRunner("<lM" + aMode + ">")
+        ### flush radio 
+        self.outPutRunner("<FFE>")
+        ### give some time for other radio to adjust        
+        time.sleep(2.5)
+        ### return to normal operation        
+        return
+    
     
     def sendToLog(self, cs, level = 0):
         if self.logFile is not None:
