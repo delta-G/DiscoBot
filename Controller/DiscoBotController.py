@@ -17,9 +17,11 @@
 import xbox
 import DiscoBotJoint
 import time
+import struct
 
 import DiscoBotComms
 import SharedDiscoBot
+from __builtin__ import True
 
 class DiscoBotController:
     
@@ -76,6 +78,8 @@ class DiscoBotController:
         self.putstring("Global Interface Initializing\n")   
         
         self.joy = None
+        
+        self.sendingController = False
         
 ### Serial Recv variables
         self.lastRMBheartBeat = time.time()
@@ -149,7 +153,7 @@ class DiscoBotController:
         self.TILT = 6
         
         #########   DiscoBotJoint   ( name , length, offset, minMicros, minAngle, maxMicros, maxAngle)
-        self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 544, -0.34907, 2400, 3.31631),
+        self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 600, -0.0, 2400, 3.31631),
                           DiscoBotJoint.DiscoBotJoint("shoulder", 105, 0, 544, -0.087266, 2400, 2.91470),
                           DiscoBotJoint.DiscoBotJoint("elbow", 98, 0, 544, 2.96706, 2400, -0.13963),
                           DiscoBotJoint.DiscoBotJoint("wrist", 158, 32, 605, -1.16937, 2400, 2.12930),
@@ -234,6 +238,13 @@ class DiscoBotController:
             self.putstring("COM--> " + str(cs) + '\n')       
         return
     
+    def stopSendingController(self):
+        self.sendingController = False
+        return 
+    
+    def startSendingController(self):
+        self.sendingController = True
+        return
     
     #*****************************************#
     ###########################################
@@ -254,7 +265,7 @@ class DiscoBotController:
     ### CONTROLLER LOOP        
                 if ((time.time() - self.lastXboxSendTime >= 0.35) or (self.responseReceived)):
        
-                    if self.socketConnected:    
+                    if self.socketConnected and self.sendingController:    
                         self.sendRawController()
                         self.lastXboxSendTime = time.time()
                         self.responseReceived = False
@@ -286,9 +297,13 @@ class DiscoBotController:
             
         if(self.joy.Start() and not self.socketConnected):                
             self.connectToBot()
+            self.startSendingController()
         
         if(self.joy.Start() and self.socketConnected and not self.lastStart):
+            self.startSendingController()
             self.sendRawController()
+            self.lastXboxSendTime = time.time()
+            self.responseReceived = False
             self.lastStart = True
                     
         ### Back Button or lost connection ends program
@@ -425,6 +440,20 @@ class DiscoBotController:
                     
         return 
     
+    
+    def handleArmCalDump(self, aByteArray):
+        
+        for i in range(6):
+            inTuple = struct.unpack_from('ffHH', aByteArray[((12*i)+3):((12*i)+15)])
+            self.armJoints[i].minAngle = inTuple[0]
+            self.armJoints[i].maxAngle = inTuple[1]
+            self.armJoints[i].minMicros = inTuple[2]
+            self.armJoints[i].maxMicros = inTuple[3]
+        
+        
+        return 
+    
+    
     def handleSonarDump(self, aByteArray):        
         if(aByteArray[2] == 10):
             self.sonarDistance = (aByteArray[3] << 8) + aByteArray[4]        
@@ -504,7 +533,10 @@ class DiscoBotController:
                         elif (aByteArray[1] == 0x13):
                             self.handleSonarDump(aByteArray)
                         elif aByteArray[1] == 0x12:
-                            self.handleArmDump(aByteArray)
+                            if aByteArray[2] == 22:
+                                self.handleArmDump(aByteArray)
+                            elif aByteArray[2] == 76:
+                                self.handleArmCalDump(aByteArray)
                         self.turnAroundTime = time.time() - self.lastXboxSendTime
                 
                 else:

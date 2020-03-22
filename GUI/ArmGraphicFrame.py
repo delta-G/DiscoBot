@@ -17,12 +17,15 @@
 
 import Tkinter as tk
 import math
+import ArmCalWindow
+from __builtin__ import True
 
 class ArmGraphicFrame(tk.Frame):
     
-    def __init__ (self, aParent, aController):
+    def __init__ (self, aParent, aController, aGui):
         
         self.parent = aParent
+        self.gui = aGui
         tk.Frame.__init__(self, self.parent)
         self.controller = aController
         
@@ -31,8 +34,33 @@ class ArmGraphicFrame(tk.Frame):
         
         self.canvas = tk.Canvas(self, width=self.canvasWidth, height=self.canvasHeight)
         
-        self.canvas.pack()    
+        self.canvas.pack()   
+        self.canvas.bind("<Double-Button-1>", self.launchCalibrationWindow)
+        return 
+    
+    def launchCalibrationWindow(self, event):
         
+        if not self.gui.calibrationWindowActive:
+            self.gui.calibrationWindowActive = True
+            armCalWindow = ArmCalWindow.ArmCalibrationWindowClass(self.gui, self.controller)
+            
+        
+#         global calibrationWindow
+#         try:
+#             if calibrationWindow.state() == "normal" :
+#                 calibrationWindow.focus()
+#                 calibrationWindow.lift()
+#                  
+#         except NameError as e:
+#             print(e)
+#             calibrationWindow = tk.Toplevel(self.parent)
+#             ArmCalWindow.ArmCalibrationWindowClass(self.controller)
+                        
+        
+        return  
+     
+       
+    
      
     def squareCanvas(self):
         w = (self.canvasWidth - 1)
@@ -149,6 +177,6 @@ class ArmGraphicFrame(tk.Frame):
         return 
             
         
-        
+    
         
     

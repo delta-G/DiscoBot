@@ -35,6 +35,11 @@ class DiscoBotGUI(tk.Frame):
         tk.Frame.__init__(self, self.parent)
         self.controller = aController
         
+        
+        self.calibrationWindowActive = False
+        
+        
+        
         self.parent.config(padx=5, pady=5)
         
         self.leftSideFrame = tk.Frame(self)
@@ -47,7 +52,7 @@ class DiscoBotGUI(tk.Frame):
         
         self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
         
-        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller)
+        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller, self)
         self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.leftSideFrame, self.controller)
         self.directionFrame = DirectionFrame.DirectionFrame(self.topFrame, self.controller)
         
