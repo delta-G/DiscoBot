@@ -20,6 +20,8 @@ import sys
 import glob
 import serial
 
+import SharedDiscoBot
+
 class SelectFrame(tk.Frame):
     
 
@@ -61,12 +63,12 @@ class SelectFrame(tk.Frame):
         
         self.parent = aParent
         self.controller = aController
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
-        self.leftFrame = tk.Frame(self)
+        self.leftFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         self.leftFrame.pack(side=tk.LEFT)
         
-        self.rightFrame = tk.Frame(self)
+        self.rightFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         self.rightFrame.pack(side=tk.LEFT)
         
 
@@ -80,21 +82,21 @@ class SelectFrame(tk.Frame):
         
 
         
-        self.camPowCheck = tk.Checkbutton(self.leftFrame, text="Camera", variable=self.camPow, command=self.propCamPow)
-        self.headPowCheck = tk.Checkbutton(self.leftFrame, text="Lights", variable=self.headPow, command=self.propHeadPow)
-        self.armPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-CPU", variable=self.armPow)        
-        self.comPowCheck = tk.Checkbutton(self.leftFrame, text="Com-CPU", variable=self.comPow)
-        self.armServoPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-Servo", variable=self.armServoPow, command=self.propArmServoPow)
+        self.camPowCheck = tk.Checkbutton(self.leftFrame, text="Camera", variable=self.camPow, command=self.propCamPow, **SharedDiscoBot.checkboxConfig)
+        self.headPowCheck = tk.Checkbutton(self.leftFrame, text="Lights", variable=self.headPow, command=self.propHeadPow, **SharedDiscoBot.checkboxConfig)
+        self.armPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-CPU", variable=self.armPow, **SharedDiscoBot.checkboxConfig)        
+        self.comPowCheck = tk.Checkbutton(self.leftFrame, text="Com-CPU", variable=self.comPow, **SharedDiscoBot.checkboxConfig)
+        self.armServoPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-Servo", variable=self.armServoPow, command=self.propArmServoPow, **SharedDiscoBot.checkboxConfig)
         
         
         
-        self.comPortSpinbox = tk.Spinbox(self.leftFrame, width=13)
+        self.comPortSpinbox = tk.Spinbox(self.leftFrame, width=13, **SharedDiscoBot.spinboxConfig)
         self.getPortList()
         
-        self.modeFrame = tk.Frame(self.leftFrame)
+        self.modeFrame = tk.Frame(self.leftFrame, **SharedDiscoBot.frameConfig)
         
-        self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"])
-        self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton)
+        self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"], **SharedDiscoBot.spinboxConfig)
+        self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton, **SharedDiscoBot.buttonConfig)
 
         self.camPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.headPowCheck.pack(side=tk.TOP, anchor=tk.W)

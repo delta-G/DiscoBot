@@ -16,6 +16,7 @@
 
 import Tkinter as tk
 import math
+import SharedDiscoBot
 
 
 class DirectionFrame(tk.Frame):
@@ -23,20 +24,21 @@ class DirectionFrame(tk.Frame):
     def __init__(self, aParent, aController):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         self.controller = aController
         
         self.angle = 0.0
-        self.lineColor = "black"
+        self.lineColor = "white"
         
         self.canvasWidth = 50
         self.canvasHeight = 50
         
         
         
-        self.canvasFrame = tk.Frame(self, padx=20)
+        self.canvasFrame = tk.Frame(self, padx=20, **SharedDiscoBot.frameConfig)
         
-        self.canvas = tk.Canvas(self.canvasFrame, width=self.canvasWidth, height=self.canvasHeight)
+        self.canvas = tk.Canvas(self.canvasFrame, width=self.canvasWidth, height=self.canvasHeight, **SharedDiscoBot.canvasConfig)
+        self.canvas.config(highlightthickness=0)
         self.canvas.pack()
         
         
@@ -78,7 +80,7 @@ class DirectionFrame(tk.Frame):
             self.angle = (3*math.pi) - self.angle
             self.lineColor = "red"
         else:
-            self.lineColor = "black"
+            self.lineColor = "white"
         
         return self.angle
     
@@ -91,7 +93,7 @@ class DirectionFrame(tk.Frame):
         ls = self.controller.leftMotorSpeed
         rs = self.controller.rightMotorSpeed
         self.diameter = 50
-        circleColor = "black"
+        circleColor = "white"
         fill=None
         if (ls == 0) or (rs == 0):
             circleColor = "red"

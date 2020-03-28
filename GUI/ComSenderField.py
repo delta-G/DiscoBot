@@ -18,6 +18,8 @@
 import Tkinter as tk
 import time
 
+import SharedDiscoBot
+
 class ComSenderField(tk.Frame):
     
     def sendCommand(self):
@@ -32,10 +34,10 @@ class ComSenderField(tk.Frame):
         self.controller = aController
         tk.Frame.__init__(self, self.parent)
         
-        self.sendButton = tk.Button(self, text="Send", width=10, command=self.sendCommand)
+        self.sendButton = tk.Button(self, text="Send", width=10, command=self.sendCommand, **SharedDiscoBot.buttonConfig)
         self.sendButton.pack(side=tk.RIGHT)
                 
-        self.entry = tk.Entry(self, width = 40)
+        self.entry = tk.Entry(self, width = 40, **SharedDiscoBot.entryConfig)
         self.entry.pack(side=tk.LEFT, fill=tk.Y)
         
         return 

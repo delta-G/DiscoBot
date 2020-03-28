@@ -18,7 +18,7 @@
 import Tkinter as tk
 import math
 import ArmCalWindow
-from __builtin__ import True
+import SharedDiscoBot
 
 class ArmGraphicFrame(tk.Frame):
     
@@ -26,13 +26,13 @@ class ArmGraphicFrame(tk.Frame):
         
         self.parent = aParent
         self.gui = aGui
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         self.controller = aController
         
         self.canvasWidth = 250
         self.canvasHeight = 200
         
-        self.canvas = tk.Canvas(self, width=self.canvasWidth, height=self.canvasHeight)
+        self.canvas = tk.Canvas(self, width=self.canvasWidth, height=self.canvasHeight, **SharedDiscoBot.canvasConfig)
         
         self.canvas.pack()   
         self.canvas.bind("<Double-Button-1>", self.launchCalibrationWindow)
@@ -130,14 +130,14 @@ class ArmGraphicFrame(tk.Frame):
         self.canvas.delete("all")
         
         self.squareCanvas()
-        self.drawSegment(baseCoords, shoulderCoords, "black")
+        self.drawSegment(baseCoords, shoulderCoords, "white")
         self.drawSegment(shoulderCoords, elbowCoords, "cyan")
         self.drawSegment(elbowCoords, wristCoords, "red")
-        self.drawSegment(wristCoords, gripperWristCoords, "black")
+        self.drawSegment(wristCoords, gripperWristCoords, "white")
         self.drawSegment(gripperWristCoords, gripperTipCoords, "green")
         
-        self.canvas.create_oval(200, 150, 250, 200, outline="black", width=2)
-        self.canvas.create_oval(224, 174, 226, 176, outline="black", width=2)        
+        self.canvas.create_oval(200, 150, 250, 200, outline="white", width=2)
+        self.canvas.create_oval(224, 174, 226, 176, outline="white", width=2)        
         circleRatio = 25.0 / (totalHeightPossible - self.controller.armJoints[0].length)
         
         segmentLength = largestX * circleRatio
@@ -162,7 +162,7 @@ class ArmGraphicFrame(tk.Frame):
         gimbalOffsetPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.armJoints[7].offset, self.controller.servoInfo[3][0], sizeRatio)
         gimbalOffsetCoords = self.toCanvasCoords(gimbalOffsetPoint, sizeRatio)
         
-        self.drawSegment(wristCoords, gimbalOffsetCoords, "black")
+        self.drawSegment(wristCoords, gimbalOffsetCoords, "white")
         
         tiltX = ((panSegLength) * (math.cos(gimbalTiltAngle))) + gimbalOffsetCoords[0]
         tiltY = ((panSegLength) * (-math.sin(gimbalTiltAngle))) + gimbalOffsetCoords[1]

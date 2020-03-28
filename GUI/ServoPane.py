@@ -17,6 +17,8 @@
 
 import Tkinter as tk
 
+import SharedDiscoBot
+
 
 class ServoPane(tk.Frame):
     
@@ -24,7 +26,7 @@ class ServoPane(tk.Frame):
     def __init__(self, aParent, aGui, jointList):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent, padx=5, pady=5)
+        tk.Frame.__init__(self, self.parent, padx=5, pady=5, **SharedDiscoBot.frameConfig)
         
         self.gui = aGui
         
@@ -53,14 +55,14 @@ class OneServo(tk.Frame):
         
         self.number = aNum
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent, bd=1, relief=tk.SUNKEN)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
         self.gui = aGui
                 
-        self.servoLabel = tk.Label(self, text=str(aName)+' -- ', pady=5, width=12, font="Verdana 12")
-        self.positionLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold")
-        self.speedLabel = tk.Label(self, text=str(100), pady=5, width=5, font="Verdana 12 bold")
-        self.targetLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold")
+        self.servoLabel = tk.Label(self, text=str(aName)+' -- ', pady=5, width=12, font="Verdana 12", **SharedDiscoBot.labelConfig)
+        self.positionLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold", **SharedDiscoBot.labelConfig)
+        self.speedLabel = tk.Label(self, text=str(100), pady=5, width=5, font="Verdana 12 bold", **SharedDiscoBot.labelConfig)
+        self.targetLabel = tk.Label(self, text=str(1500), pady=5, width=5, font="Verdana 12 bold", **SharedDiscoBot.labelConfig)
         self.servoLabel.pack(side=tk.LEFT)
         self.positionLabel.pack(side=tk.LEFT)
         self.speedLabel.pack(side=tk.LEFT)     

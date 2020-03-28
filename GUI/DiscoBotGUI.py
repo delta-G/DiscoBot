@@ -32,21 +32,22 @@ class DiscoBotGUI(tk.Frame):
     def __init__(self, aParent, aController):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         self.controller = aController
         
         
         self.calibrationWindowActive = False
         
+        self.parent.configure(background='black')
         
         
         self.parent.config(padx=5, pady=5)
         
-        self.leftSideFrame = tk.Frame(self)
-        self.rightSideFrame = tk.Frame(self)
+        self.leftSideFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
+        self.rightSideFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         
                 
-        self.topFrame = tk.Frame(self.leftSideFrame)
+        self.topFrame = tk.Frame(self.leftSideFrame, **SharedDiscoBot.frameConfig)
         
         self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
         

@@ -18,6 +18,8 @@
 import Tkinter as tk
 import ComSenderField
 
+import SharedDiscoBot
+
 class TermFrame(tk.Frame):
     
     
@@ -50,14 +52,14 @@ class TermFrame(tk.Frame):
     def __init__(self, aParent, aGui, aController):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
         self.gui = aGui
         self.controller = aController
         
         
-        self.logFrame = tk.Frame(self)
-        self.checkFrame = tk.Frame(self)
+        self.logFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
+        self.checkFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         
         self.scrollbar = tk.Scrollbar(self.logFrame)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -67,11 +69,11 @@ class TermFrame(tk.Frame):
         self.showReturns = tk.IntVar()
         self.showDebug = tk.IntVar()
         
-        asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ')
+        asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ', **SharedDiscoBot.checkboxConfig)
         asCheck.select()
-        self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom)
-        self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet)
-        self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb)
+        self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom, **SharedDiscoBot.checkboxConfig)
+        self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet, **SharedDiscoBot.checkboxConfig)
+        self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb, **SharedDiscoBot.checkboxConfig)
         
         asCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.comCheck.pack(side=tk.LEFT, anchor=tk.W)
@@ -81,7 +83,7 @@ class TermFrame(tk.Frame):
         self.comsend = ComSenderField.ComSenderField(self, self.gui.controller)
         self.comsend.pack(side=tk.TOP)
         
-        self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set)
+        self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set, **SharedDiscoBot.textboxConfig)
         self.scrollbar.config(command=self.log.yview)
         self.log.pack()    
         

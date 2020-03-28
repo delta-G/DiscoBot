@@ -15,6 +15,8 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import Tkinter as tk
+
 colors = {
             'red' : '#FF0000',
             'green' : '#00FF00',
@@ -22,3 +24,29 @@ colors = {
             }
 
 defaultFont = "Veranda 12 bold"
+
+canvasConfig = {'bg':'black', 'highlightthickness':1, 'highlightbackground':'blue'}
+
+labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':0, 'highlightbackground':'blue'}
+
+entryConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
+
+textboxConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
+
+buttonConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
+redButton = {'bg':'red' , 'fg':'black', 'highlightbackground':'blue'}
+greenButton = {'bg':'green' , 'fg':'black', 'highlightbackground':'blue'}
+
+frameConfig = {'bg':'black', 'highlightbackground':'blue'}
+
+checkboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':0,  'highlightbackground':'blue'}
+
+spinboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':0,  'highlightbackground':'blue'}
+
+
+
+
+
+
+
+#####END

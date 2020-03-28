@@ -18,12 +18,14 @@
 import Tkinter as tk
 import math
 
+import SharedDiscoBot
+
 class SonarGraphicFrame(tk.Frame):
     
     def __init__ (self, aParent, aController):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         self.controller = aController
         
         self.zoom = False
@@ -33,17 +35,17 @@ class SonarGraphicFrame(tk.Frame):
         self.canvasWidth = 250
         self.canvasHeight = 150
         
-        self.buttonFrame = tk.Frame(self)
-        self.canvasFrame = tk.Frame(self, padx=20)
+        self.buttonFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
+        self.canvasFrame = tk.Frame(self, padx=20, **SharedDiscoBot.frameConfig)
         
-        self.canvas = tk.Canvas(self.canvasFrame, width=self.canvasWidth, height=self.canvasHeight)
+        self.canvas = tk.Canvas(self.canvasFrame, width=self.canvasWidth, height=self.canvasHeight, **SharedDiscoBot.canvasConfig)
         self.canvas.pack()
         
         
         
-        self.zoomButton = tk.Button(self.buttonFrame, width=10, height=1, text="Zoom", command=self.toggleZoom)
-        self.scanButton = tk.Button(self.buttonFrame, width=10, height=1, text="Scan", command=self.toggleScan)
-        self.singleButton = tk.Button(self.buttonFrame, width=10, height=1, text="Single", command=self.singleScan)
+        self.zoomButton = tk.Button(self.buttonFrame, width=10, height=1, text="Zoom", command=self.toggleZoom, **SharedDiscoBot.buttonConfig)
+        self.scanButton = tk.Button(self.buttonFrame, width=10, height=1, text="Scan", command=self.toggleScan, **SharedDiscoBot.buttonConfig)
+        self.singleButton = tk.Button(self.buttonFrame, width=10, height=1, text="Single", command=self.singleScan, **SharedDiscoBot.buttonConfig)
         self.zoomButton.pack(side=tk.TOP)
         self.scanButton.pack(side=tk.TOP)
         self.singleButton.pack(side=tk.TOP)

@@ -40,7 +40,7 @@ class IndicatorFrame(tk.Frame):
     
     def __init__(self, aParent, aGui, aController):
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         self.controller = aController
         self.gui = aGui
         
@@ -49,7 +49,7 @@ class IndicatorFrame(tk.Frame):
 #         self.ssidLabel = IndicatorLabel(self, text="SSID")
 #         self.ssidLabel.pack(side=tk.LEFT)
         
-        self.firstFrame = tk.Frame(self)
+        self.firstFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
 #         self.firstFrame.config(padx=10, pady=10)
         
         self.firstFrame.pack(side = tk.LEFT)
@@ -57,7 +57,8 @@ class IndicatorFrame(tk.Frame):
         
         self.hbLabel = IndicatorLabel(self.firstFrame, text="HB")
         self.hbLabel.config(width=10)
-        self.hbLabel.config(height=1)        
+        self.hbLabel.config(height=1)
+        self.hbLabel.bind("<Double-Button-1>", self.hbLabelDoubleClickAction)                
         self.hbLabel.pack(side=tk.TOP)
         
         self.bvLabel = IndicatorLabel(self.firstFrame, text="BAT")
@@ -85,11 +86,11 @@ class IndicatorFrame(tk.Frame):
 #         self.rsLabel = IndicatorLabel(self, text="RSSI")
 #         self.rsLabel.pack(side=tk.LEFT)
 
-        self.secondFrame = tk.Frame(self)
+        self.secondFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         self.secondFrame.config(padx=5, pady=0)
         self.secondFrame.pack(side = tk.LEFT)
 
-        self.motorParamFrame = tk.Frame(self.secondFrame)
+        self.motorParamFrame = tk.Frame(self.secondFrame, **SharedDiscoBot.frameConfig)
         
         self.motorParamFrame.pack(side = tk.TOP)
         
@@ -100,18 +101,20 @@ class IndicatorFrame(tk.Frame):
         self.spdFrame = MotorParamFrame(self.motorParamFrame, "S")
         self.spdFrame.pack(side = tk.TOP)
         
-        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
+        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
         self.throttleLabel.pack(side=tk.TOP)
         
-        self.connectButtonFrame = tk.Frame(self.secondFrame)
+        self.connectButtonFrame = tk.Frame(self.secondFrame, **SharedDiscoBot.frameConfig)
         self.connectButtonFrame.pack(side = tk.TOP)
         
-        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, bg=SharedDiscoBot.colors["red"], command=self.propController)
+        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, command=self.propController)
+        self.controllerConnectButton.config(**SharedDiscoBot.redButton)
         self.controllerConnectButton.pack(side = tk.LEFT)
-        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, bg=SharedDiscoBot.colors["red"], command=self.propCommsInit)
+        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, command=self.propCommsInit)
+        self.comConnectButton.config(**SharedDiscoBot.redButton)
         self.comConnectButton.pack(side=tk.LEFT)
         
-        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
+        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
         self.modeLabel.pack(side=tk.TOP)
         
         return
@@ -122,11 +125,11 @@ class IndicatorFrame(tk.Frame):
         self.hbLabel.config(text="HB - " + "{:.3f}".format(self.controller.turnAroundTime * 1000))
         self.bvLabel.config(text="Bat" + str(self.controller.rmbBatteryVoltage))
         if self.controller.rmbBatteryVoltage < 6.5:
-            self.bvLabel.config(bg=SharedDiscoBot.colors['red'])
+            self.bvLabel.config(fg=SharedDiscoBot.colors['red'])
         elif self.controller.rmbBatteryVoltage < 7.4:
-            self.bvLabel.config(bg=SharedDiscoBot.colors['yellow'])
+            self.bvLabel.config(fg=SharedDiscoBot.colors['yellow'])
         else: 
-            self.bvLabel.config(bg=SharedDiscoBot.colors['green'])
+            self.bvLabel.config(fg=SharedDiscoBot.colors['green'])
 
         
 #         self.baseSigLabel.config(text="SNR - RSSI")
@@ -145,6 +148,12 @@ class IndicatorFrame(tk.Frame):
         
         return
     
+    def hbLabelDoubleClickAction(self, event):
+        
+        self.controller.stopSendingController()
+        
+        return 
+    
 
 class IndicatorLabel(tk.Label):
     
@@ -153,7 +162,7 @@ class IndicatorLabel(tk.Label):
         self.parent = aParent
         tk.Label.__init__(self, self.parent, text=text)
         
-        self.config(padx=5, pady=5, height=2, font=SharedDiscoBot.defaultFont, bd=1, relief=tk.SUNKEN)
+        self.config(padx=5, pady=5, height=2, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
         
         return
 
@@ -161,7 +170,7 @@ class IndicatorLabel(tk.Label):
         
         self.state = aState
         
-        self.config(bg=self.state)            
+        self.config(fg=self.state)            
         
         
         return
@@ -173,11 +182,11 @@ class MotorParamFrame(tk.Frame):
     def __init__(self, aParent, aName):
         self.parent = aParent
         self.name = aName
-        tk.Frame.__init__(self, self.parent, bd=1, relief=tk.SUNKEN)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
-        self.leftLabel = tk.Label(self, text='100', width=5)
-        self.nameLabel = tk.Label(self, text=(" -" +str(self.name) + "- "), font = SharedDiscoBot.defaultFont)
-        self.rightLabel = tk.Label(self, text='123', width=5)
+        self.leftLabel = tk.Label(self, text='100', width=5, **SharedDiscoBot.labelConfig)
+        self.nameLabel = tk.Label(self, text=(" -" +str(self.name) + "- "), font = SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
+        self.rightLabel = tk.Label(self, text='123', width=5, **SharedDiscoBot.labelConfig)
         
         self.leftLabel.pack(side=tk.LEFT)
         self.nameLabel.pack(side=tk.LEFT)
