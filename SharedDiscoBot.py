@@ -20,28 +20,31 @@ import Tkinter as tk
 colors = {
             'red' : '#FF0000',
             'green' : '#00FF00',
-            'yellow' : '#FFFF00'
+            'yellow' : '#FFFF00',
+            'highlight' : 'blue'
             }
 
 defaultFont = "Veranda 12 bold"
 
-canvasConfig = {'bg':'black', 'highlightthickness':1, 'highlightbackground':'blue'}
+canvasConfig = {'bg':'black', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 
-labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':0, 'highlightbackground':'blue'}
+labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':0, 'highlightbackground':colors['highlight']}
+highlightLabelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 
-entryConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
+entryConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight'], 'insertbackground':'white', 'insertwidth':'2'}
 
-textboxConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
+textboxConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight']}
 
-buttonConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':'blue'}
-redButton = {'bg':'red' , 'fg':'black', 'highlightbackground':'blue'}
-greenButton = {'bg':'green' , 'fg':'black', 'highlightbackground':'blue'}
+buttonConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight']}
+redButton = {'bg':'red' , 'fg':'black', 'highlightbackground':colors['highlight']}
+greenButton = {'bg':'green' , 'fg':'black', 'highlightbackground':colors['highlight']}
 
-frameConfig = {'bg':'black', 'highlightbackground':'blue'}
+frameConfig = {'bg':'black'}
+highlightFrameConfig = {'bg':'black', 'highlightthickness':1,  'highlightbackground':colors['highlight']}
 
-checkboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':0,  'highlightbackground':'blue'}
+checkboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':1,  'highlightbackground':colors['highlight'], 'selectcolor':colors['highlight']}
 
-spinboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':0,  'highlightbackground':'blue'}
+spinboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':1,  'highlightbackground':colors['highlight']}
 
 
 

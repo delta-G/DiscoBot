@@ -101,7 +101,7 @@ class IndicatorFrame(tk.Frame):
         self.spdFrame = MotorParamFrame(self.motorParamFrame, "S")
         self.spdFrame.pack(side = tk.TOP)
         
-        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
+        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         self.throttleLabel.pack(side=tk.TOP)
         
         self.connectButtonFrame = tk.Frame(self.secondFrame, **SharedDiscoBot.frameConfig)
@@ -114,7 +114,7 @@ class IndicatorFrame(tk.Frame):
         self.comConnectButton.config(**SharedDiscoBot.redButton)
         self.comConnectButton.pack(side=tk.LEFT)
         
-        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
+        self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         self.modeLabel.pack(side=tk.TOP)
         
         return
@@ -162,7 +162,7 @@ class IndicatorLabel(tk.Label):
         self.parent = aParent
         tk.Label.__init__(self, self.parent, text=text)
         
-        self.config(padx=5, pady=5, height=2, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)
+        self.config(padx=5, pady=5, height=2, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         
         return
 
@@ -182,7 +182,7 @@ class MotorParamFrame(tk.Frame):
     def __init__(self, aParent, aName):
         self.parent = aParent
         self.name = aName
-        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         
         self.leftLabel = tk.Label(self, text='100', width=5, **SharedDiscoBot.labelConfig)
         self.nameLabel = tk.Label(self, text=(" -" +str(self.name) + "- "), font = SharedDiscoBot.defaultFont, **SharedDiscoBot.labelConfig)

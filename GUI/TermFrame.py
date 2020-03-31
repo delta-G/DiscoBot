@@ -27,8 +27,7 @@ class TermFrame(tk.Frame):
         if(self.showCommands.get() == 0):
             self.controller.showCommands = False
         else:
-            self.controller.showCommands = True
-            
+            self.controller.showCommands = True          
         return
     
     def propRet(self):
@@ -69,13 +68,13 @@ class TermFrame(tk.Frame):
         self.showReturns = tk.IntVar()
         self.showDebug = tk.IntVar()
         
-        asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ', **SharedDiscoBot.checkboxConfig)
-        asCheck.select()
+        self.asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ', **SharedDiscoBot.checkboxConfig)
+        self.asCheck.select()
         self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom, **SharedDiscoBot.checkboxConfig)
         self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet, **SharedDiscoBot.checkboxConfig)
         self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb, **SharedDiscoBot.checkboxConfig)
         
-        asCheck.pack(side=tk.LEFT, anchor=tk.W)
+        self.asCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.comCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.retCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.debCheck.pack(side=tk.LEFT, anchor=tk.W)

@@ -55,7 +55,7 @@ class OneServo(tk.Frame):
         
         self.number = aNum
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         
         self.gui = aGui
                 
