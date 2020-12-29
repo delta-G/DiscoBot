@@ -23,6 +23,7 @@ import TermFrame
 import IndicatorFrame
 import SelectFrame
 import DirectionFrame
+import VoltageFrame
 
 import ArmGraphicFrame
 import SonarGraphicFrame
@@ -51,18 +52,22 @@ class DiscoBotGUI(tk.Frame):
         
         self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
         
-        self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)        
+        self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)  
+        
+        self.voltageFrame = VoltageFrame.VoltageFrame(self.topFrame, self.controller)      
         
         self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller, self)
         self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.leftSideFrame, self.controller)
-        self.directionFrame = DirectionFrame.DirectionFrame(self.topFrame, self.controller)
+        self.directionFrame = DirectionFrame.DirectionFrame(self.sonarGraphicFrame, self.controller)
         
         self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
         self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
         
         #topFrame (part of leftSideFrame)
-        self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.W)
-        self.selectFrame.pack(side=tk.LEFT)
+        self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.NW)
+        self.selectFrame.pack(side=tk.LEFT, anchor=tk.N)
+        self.voltageFrame.pack(side=tk.LEFT, anchor=tk.N)
+        
         self.directionFrame.pack(side=tk.LEFT)
         
         
@@ -97,6 +102,7 @@ class DiscoBotGUI(tk.Frame):
         self.sonarGraphicFrame.display(self.controller.sonarList)
         self.directionFrame.display()
         self.selectFrame.update()
+        self.voltageFrame.update()
         if(self.controller.joy is not None) and (self.controller.joy.connected()):
             self.indicatorFrame.controllerConnectButton.config(bg=SharedDiscoBot.colors['green'])
         else:            

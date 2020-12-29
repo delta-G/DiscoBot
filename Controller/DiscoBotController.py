@@ -21,7 +21,11 @@ import struct
 
 import DiscoBotComms
 import SharedDiscoBot
-from __builtin__ import True
+from __builtin__ import True, False
+from gtk import FALSE
+
+
+
 
 class DiscoBotController:
     
@@ -66,6 +70,8 @@ class DiscoBotController:
 
 
     """
+    
+        self.speedLog = open("robotSpeedLog.csv", "w")
         
         self.socketConnected = False 
         self.endProgram = False
@@ -95,7 +101,8 @@ class DiscoBotController:
         self.lastBaseSNR = 0
         self.lastBaseRSSI = 0
 ### Robot Variables
-        self.botStatusByte = 0
+        self.botStatusByte1 = 0
+        self.botStatusByte2 = 0
         self.armStatusByte = 0
         
         self.driveMode = ""
@@ -105,8 +112,23 @@ class DiscoBotController:
         self.comPower = False
         self.armServoPower = False
         
+        self.motorPower = False
+        self.motorContEnable = False
+        self.v12Power = False
+        self.auxPower = False
+        self.sonarPower = False
+        
+        
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         self.rmbBatteryVoltage = 0.0
+        self.batteryVoltage = 0.0
+        self.motorVoltage = 1.2
+        self.mainVoltage = 2.3
+        self.comVoltage = 3.4
+        self.auxVoltage = 4.5
+        self.v12Voltage = 5.6
+        
+        
         self.leftMotorCount = 0
         self.rightMotorCount = 0
         self.leftMotorOut = 0
@@ -265,10 +287,13 @@ class DiscoBotController:
     ### CONTROLLER LOOP        
                 if ((time.time() - self.lastXboxSendTime >= 0.35) or (self.responseReceived)):
        
-                    if self.socketConnected and self.sendingController:    
-                        self.sendRawController()
-                        self.lastXboxSendTime = time.time()
-                        self.responseReceived = False
+                    if self.socketConnected:
+                        if self.sendingController:    
+                            self.sendRawController()
+                            self.lastXboxSendTime = time.time()
+                            self.responseReceived = False
+                        else:
+                            self.outPutRunner("<R,R><FFE>")
         
     ### COMMS WITH ROBOT
         if self.socketConnected:
@@ -295,7 +320,9 @@ class DiscoBotController:
         if not self.joy.Start():
             self.lastStart = False
             
-        if(self.joy.Start() and not self.socketConnected):                
+        if(self.joy.Start() and not self.socketConnected):    
+            self.putstring("Connecting to socket")    
+            self.putstring("<Connecting to socket>")                        
             self.connectToBot()
             self.startSendingController()
         
@@ -336,23 +363,24 @@ class DiscoBotController:
         
         dumpMessage = aByteArray
         
-        self.botStatusByte = dumpMessage[3]
-        self.throttleLevel = dumpMessage[4]
-        self.rmbBatteryVoltage = dumpMessage[5] / 10.0
-        self.leftMotorCount = (dumpMessage[6] << 8) + dumpMessage[7]
+        self.botStatusByte1 = dumpMessage[3]
+        self.botStatusByte2 = dumpMessage[4]
+        self.throttleLevel = dumpMessage[5]
+        self.rmbBatteryVoltage = dumpMessage[6] / 10.0
+        self.leftMotorCount = (dumpMessage[7] << 8) + dumpMessage[8]
         self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
-        self.leftMotorSpeed = (dumpMessage[8] << 8) + dumpMessage[9]        
+        self.leftMotorSpeed = (dumpMessage[9] << 8) + dumpMessage[10]        
         self.leftMotorSpeed = self.make16bitSigned(self.leftMotorSpeed)
-        self.leftMotorOut = dumpMessage[10]
-        self.rightMotorCount = (dumpMessage[11] << 8) + dumpMessage[12]
+        self.leftMotorOut = dumpMessage[11]
+        self.rightMotorCount = (dumpMessage[12] << 8) + dumpMessage[13]
         self.rightMotorCount = self.make16bitSigned(self.rightMotorCount)
-        self.rightMotorSpeed = (dumpMessage[13] << 8) + dumpMessage[14]        
+        self.rightMotorSpeed = (dumpMessage[14] << 8) + dumpMessage[15]        
         self.rightMotorSpeed = self.make16bitSigned(self.rightMotorSpeed)
-        self.rightMotorOut = dumpMessage[15]
-        self.lastBotSNR = dumpMessage[16]
-        self.lastBotRSSI = -dumpMessage[17]
-        self.lastBaseSNR = dumpMessage[18]
-        self.lastBaseRSSI = -dumpMessage[19]
+        self.rightMotorOut = dumpMessage[16]
+        self.lastBotSNR = dumpMessage[17]
+        self.lastBotRSSI = -dumpMessage[18]
+        self.lastBaseSNR = dumpMessage[19]
+        self.lastBaseRSSI = -dumpMessage[20]
         
         self.readStatusByte()
         
@@ -365,7 +393,7 @@ class DiscoBotController:
         return 
     
     def readStatusByte(self):
-        mb = self.botStatusByte & 3
+        mb = self.botStatusByte1 & 3
         if mb == 1:
             self.driveMode = "DRIVE"
         elif mb == 2:
@@ -375,25 +403,52 @@ class DiscoBotController:
         elif mb == 0:
             self.driveMode = "AUTO"          
         
-        if(self.botStatusByte & 0x10):
+        if(self.botStatusByte1 & 0x10):
             self.cameraPower = True
         else:
             self.cameraPower = False
             
-        if(self.botStatusByte & 0x20):
+        if(self.botStatusByte1 & 0x20):
             self.headlightPower = True
         else:
             self.headlightPower = False
             
-        if(self.botStatusByte & 0x40):
+        if(self.botStatusByte1 & 0x40):
             self.armPower = True
         else:
             self.armPower = False
             
-        if(self.botStatusByte & 0x80):
+        if(self.botStatusByte1 & 0x80):
             self.comPower = True
         else:
             self.comPower = False
+            
+        if(self.botStatusByte2 & 0x01):
+            self.motorPower = True
+        else:
+            self.motorPower = False
+            
+        if(self.botStatusByte2 & 0x02):
+            self.motorContEnable = True
+        else:
+            self.motorContEnable = False
+            
+        if(self.botStatusByte2 & 0x04):
+            self.v12Power = True
+        else:
+            self.v12Power = False
+            
+        if(self.botStatusByte2 & 0x08):
+            self.auxPower = True
+        else:
+            self.auxPower = False
+            
+        if(self.botStatusByte2 & 0x10):
+            self.sonarPower = True
+        else:
+            self.sonarPower = False
+        
+        
             
         return
     
@@ -466,42 +521,68 @@ class DiscoBotController:
                 self.sonarList[i]=temp
         return
     
+    def handleVoltageDump(self, aByteArray):
+        
+        temp = (aByteArray[3] << 8) | aByteArray[4]
+        self.batteryVoltage = temp/1000
+        
+        temp = (aByteArray[5] << 8) | aByteArray[6]
+        self.motorVoltage = temp/1000
+        
+        temp = (aByteArray[7] << 8) | aByteArray[8]
+        self.mainVoltage = temp/1000
+        
+        temp = (aByteArray[9] << 8) | aByteArray[10]
+        self.comVoltage = temp/1000
+        
+        temp = (aByteArray[11] << 8) | aByteArray[12]
+        self.auxVoltage = temp/1000
+        
+        temp = (aByteArray[13] << 8) | aByteArray[14]
+        self.v12Voltage = temp/1000
+        
+        return 
     
     
     def parseReturnString(self, aBuffer):
         
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
-        elif aBuffer.startswith("<BAT,"):
-            tndx = aBuffer.rfind(',')
-            self.rmbBatteryVoltage = aBuffer[tndx+1:-1]
-        
-        elif aBuffer.startswith("<Cnts,"):
-            tup = tuple(aBuffer.split(','))
-            self.leftMotorCount = tup[1]
-            self.rightMotorCount = tup[2]
-        
-        elif aBuffer.startswith("<Out,"):
-            tup = tuple(aBuffer.split(','))
-            self.leftMotorOut = tup[1]
-            self.rightMotorOut = tup[2]
-        elif aBuffer.startswith("<Spd,"):
-            tup = tuple(aBuffer.split(','))
-            self.leftMotorSpeed = tup[1]
-            self.rightMotorSpeed = tup[2]
-        
-        elif aBuffer.startswith(("<p,")):
-            tup = tuple(aBuffer.split(','))
-            for t in tup:
-                self.servoInfo[t[0]][0] = t[1]
-        elif aBuffer.startswith(("<t,")):
-            tup = tuple(aBuffer.split(','))
-            for t in tup:
-                self.servoInfo[t[0]][1] = t[1]
-        elif aBuffer.startswith(("<s,")):
-            tup = tuple(aBuffer.split(','))
-            for t in tup:
-                self.servoInfo[t[0]][2] = t[1]
+            
+        elif aBuffer.startswith("<SR,"):
+            self.speedLog.write(aBuffer)
+            self.speedLog.write('\n')
+            print (aBuffer)
+#         elif aBuffer.startswith("<BAT,"):
+#             tndx = aBuffer.rfind(',')
+#             self.rmbBatteryVoltage = aBuffer[tndx+1:-1]
+#         
+#         elif aBuffer.startswith("<Cnts,"):
+#             tup = tuple(aBuffer.split(','))
+#             self.leftMotorCount = tup[1]
+#             self.rightMotorCount = tup[2]
+#         
+#         elif aBuffer.startswith("<Out,"):
+#             tup = tuple(aBuffer.split(','))
+#             self.leftMotorOut = tup[1]
+#             self.rightMotorOut = tup[2]
+#         elif aBuffer.startswith("<Spd,"):
+#             tup = tuple(aBuffer.split(','))
+#             self.leftMotorSpeed = tup[1]
+#             self.rightMotorSpeed = tup[2]
+#         
+#         elif aBuffer.startswith(("<p,")):
+#             tup = tuple(aBuffer.split(','))
+#             for t in tup:
+#                 self.servoInfo[t[0]][0] = t[1]
+#         elif aBuffer.startswith(("<t,")):
+#             tup = tuple(aBuffer.split(','))
+#             for t in tup:
+#                 self.servoInfo[t[0]][1] = t[1]
+#         elif aBuffer.startswith(("<s,")):
+#             tup = tuple(aBuffer.split(','))
+#             for t in tup:
+#                 self.servoInfo[t[0]][2] = t[1]
                     
         elif aBuffer.startswith("<E-HB"):
             self.currentRssi = aBuffer[5:aBuffer.rfind('>')]
@@ -528,9 +609,11 @@ class DiscoBotController:
                 if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14):
                     if (len(aByteArray) >= aByteArray[2]) and (aByteArray[aByteArray[2]-1] == ord('>')):
                         self.responseReceived = True
-                        if (aByteArray[1] == 0x13) and (aByteArray[2] == 21):
+                        if (aByteArray[1] == 0x13) and (aByteArray[2] == 22):
                             self.handleRawDataDump(aByteArray)
-                        elif (aByteArray[1] == 0x13):
+                        elif (aByteArray[1] == 0x13) and (aByteArray[2] == 16):
+                            self.handleVoltageDump(aByteArray)
+                        elif (aByteArray[1] == 0x13) and ((aByteArray[2] == 10) or (aByteArray[2] == 30)):
                             self.handleSonarDump(aByteArray)
                         elif aByteArray[1] == 0x12:
                             if aByteArray[2] == 22:
