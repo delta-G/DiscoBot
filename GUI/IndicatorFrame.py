@@ -123,10 +123,16 @@ class IndicatorFrame(tk.Frame):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
         self.hbLabel.config(text="HB - " + "{:.3f}".format(self.controller.turnAroundTime * 1000))
-        self.bvLabel.config(text="Bat" + str(self.controller.rmbBatteryVoltage))
-        if self.controller.rmbBatteryVoltage < 6.5:
+        self.bvLabel.config(text="Bat" + str(self.controller.batteryVoltage))
+        numCells = 0
+        for i in range(6):
+            if (self.controller.batteryVoltage > (i * 3.4)):
+                numCells = i
+            else:
+                break
+        if self.controller.rmbBatteryVoltage < numCells * 3.55:
             self.bvLabel.config(fg=SharedDiscoBot.colors['red'])
-        elif self.controller.rmbBatteryVoltage < 7.4:
+        elif self.controller.rmbBatteryVoltage < numCells * 3.85:
             self.bvLabel.config(fg=SharedDiscoBot.colors['yellow'])
         else: 
             self.bvLabel.config(fg=SharedDiscoBot.colors['green'])
