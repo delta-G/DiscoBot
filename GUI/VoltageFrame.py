@@ -69,7 +69,8 @@ class labelAndValue(tk.Frame):
         return 
     
     def setValue(self, aValue):
-        self.valueLabel.config(text=str(aValue))
+#         self.valueLabel.config(text=str(aValue))
+        self.valueLabel.config(text='{0:>02.3f}'.format(aValue))
         return 
     
     

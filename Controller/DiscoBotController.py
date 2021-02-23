@@ -21,8 +21,6 @@ import struct
 
 import DiscoBotComms
 import SharedDiscoBot
-from __builtin__ import True, False
-from gtk import FALSE
 
 
 
@@ -524,22 +522,22 @@ class DiscoBotController:
     def handleVoltageDump(self, aByteArray):
         
         temp = (aByteArray[3] << 8) | aByteArray[4]
-        self.batteryVoltage = temp/1000
+        self.batteryVoltage = temp/1000.0
         
         temp = (aByteArray[5] << 8) | aByteArray[6]
-        self.motorVoltage = temp/1000
+        self.motorVoltage = temp/1000.0
         
         temp = (aByteArray[7] << 8) | aByteArray[8]
-        self.mainVoltage = temp/1000
+        self.mainVoltage = temp/1000.0
         
         temp = (aByteArray[9] << 8) | aByteArray[10]
-        self.comVoltage = temp/1000
+        self.comVoltage = temp/1000.0
         
         temp = (aByteArray[11] << 8) | aByteArray[12]
-        self.auxVoltage = temp/1000
+        self.auxVoltage = temp/1000.0
         
         temp = (aByteArray[13] << 8) | aByteArray[14]
-        self.v12Voltage = temp/1000
+        self.v12Voltage = temp/1000.0
         
         return 
     
@@ -603,25 +601,31 @@ class DiscoBotController:
             self.putstring('\n')      
         return              
     
+    def setResponseRecieved(self):
+        self.responseReceived = True
+        self.turnAroundTime = time.time() - self.lastXboxSendTime
+        return 
+    
+    
     def returnParser(self, aByteArray):
         if len(aByteArray) >= 3:
             if (aByteArray[0] == ord('<')):
                 if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14):
-                    if (len(aByteArray) >= aByteArray[2]) and (aByteArray[aByteArray[2]-1] == ord('>')):
-                        self.responseReceived = True
+                    if (len(aByteArray) >= aByteArray[2]) and (aByteArray[aByteArray[2]-1] == ord('>')):                        
                         if (aByteArray[1] == 0x13) and (aByteArray[2] == 22):
                             self.handleRawDataDump(aByteArray)
+                            self.setResponseRecieved()
                         elif (aByteArray[1] == 0x13) and (aByteArray[2] == 16):
                             self.handleVoltageDump(aByteArray)
                         elif (aByteArray[1] == 0x13) and ((aByteArray[2] == 10) or (aByteArray[2] == 30)):
                             self.handleSonarDump(aByteArray)
+                            self.setResponseRecieved()
                         elif aByteArray[1] == 0x12:
                             if aByteArray[2] == 22:
                                 self.handleArmDump(aByteArray)
+                                self.setResponseRecieved()
                             elif aByteArray[2] == 76:
-                                self.handleArmCalDump(aByteArray)
-                        self.turnAroundTime = time.time() - self.lastXboxSendTime
-                
+                                self.handleArmCalDump(aByteArray) 
                 else:
                     self.parseReturnString(aByteArray.decode("ascii"))
                         
