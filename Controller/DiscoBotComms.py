@@ -15,6 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import serial
+import time
 import SharedDiscoBot
 
 class DiscoBotComms:
@@ -55,7 +56,8 @@ class DiscoBotComms:
         
         if self.commsOn:
             try:
-                while self.serOut.inWaiting():
+                loopStartTime = time.time()
+                while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
                     c = self.serOut.read()          
                     
                     if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
