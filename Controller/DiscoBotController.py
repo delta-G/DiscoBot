@@ -69,7 +69,7 @@ class DiscoBotController:
 
     """
     
-        self.speedLog = open("robotSpeedLog.csv", "w")
+#         self.speedLog = open("robotSpeedLog.csv", "w")
         
         self.socketConnected = False 
         self.endProgram = False
@@ -90,7 +90,8 @@ class DiscoBotController:
         self.RMBheartBeatWarningTime = time.time()
 ### Comms Variables
         self.lastXboxSendTime = 0
-        self.responseReceived = False       
+        self.responseReceived = False  
+        self.lastResponseTime = 0     
         self.turnAroundTime = 0.0 
         
         self.lastBotSNR = 0
@@ -319,7 +320,7 @@ class DiscoBotController:
             self.lastStart = False
             
         if(self.joy.Start() and not self.socketConnected):    
-            self.putstring("Connecting to socket")    
+#             self.putstring("Connecting to socket")    
             self.putstring("<Connecting to socket>")                        
             self.connectToBot()
             self.startSendingController()
@@ -603,6 +604,7 @@ class DiscoBotController:
     
     def setResponseRecieved(self):
         self.responseReceived = True
+        self.lastResponseTime = time.time()
         self.turnAroundTime = time.time() - self.lastXboxSendTime
         return 
     
