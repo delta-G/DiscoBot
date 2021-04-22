@@ -49,7 +49,4 @@ spinboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':1,  'highlight
 
 
 
-
-
-
 #####END

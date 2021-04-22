@@ -163,6 +163,8 @@ class SelectFrame(tk.Frame):
         
         self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"], **SharedDiscoBot.spinboxConfig)
         self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton, **SharedDiscoBot.buttonConfig)
+        
+        
 
         self.camPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.headPowCheck.pack(side=tk.TOP, anchor=tk.W)

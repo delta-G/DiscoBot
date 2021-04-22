@@ -94,6 +94,8 @@ class DiscoBotController:
         self.lastResponseTime = 0     
         self.turnAroundTime = 0.0 
         
+        self.comTimeOut = 0.35
+        
         self.lastBotSNR = 0
         self.lastBotRSSI = 0
         
@@ -238,7 +240,11 @@ class DiscoBotController:
         self.outPutRunner("<FFE>")
         ### give some time for other radio to adjust        
         time.sleep(2.5)
-        ### return to normal operation        
+        ### return to normal operation   
+        if(aMode > 1):
+            self.comTimeOut = 10
+        else:
+            self.comTimeOut = 0.35   
         return
     
     
@@ -284,15 +290,15 @@ class DiscoBotController:
                     return False            
               
     ### CONTROLLER LOOP        
-                if ((time.time() - self.lastXboxSendTime >= 0.35) or (self.responseReceived)):
+                if ((time.time() - self.lastXboxSendTime >= self.comTimeOut) or (self.responseReceived)):
        
                     if self.socketConnected:
                         if self.sendingController:    
                             self.sendRawController()
                             self.lastXboxSendTime = time.time()
                             self.responseReceived = False
-                        else:
-                            self.outPutRunner("<R,R><FFE>")
+#                         else:
+#                             self.outPutRunner("<R,R><FFE>")
         
     ### COMMS WITH ROBOT
         if self.socketConnected:
