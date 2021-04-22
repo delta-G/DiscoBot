@@ -150,7 +150,7 @@ class IndicatorFrame(tk.Frame):
         
         self.throttleLabel.config(text="THR: " + str(self.controller.throttleLevel))
         
-        self.modeLabel.config(text="Mode: " + self.controller.driveMode)
+        self.modeLabel.config(text="Mode: " + self.controller.getProperty('driveMode'))
         
         return
     

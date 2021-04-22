@@ -21,80 +21,10 @@ import glob
 import serial
 
 import SharedDiscoBot
+import CommandCheckButton
 
 class SelectFrame(tk.Frame):
-    
 
-    
-    def propCamPow(self):
-        if(self.camPow.get() == 0):
-            self.controller.outPutRunner("<V0>")
-        else:
-            self.controller.outPutRunner("<V1>")
-        return
-    
-    def propHeadPow(self):
-        if(self.headPow.get() == 0):
-            self.controller.outPutRunner("<H0>")
-        else:
-            self.controller.outPutRunner("<H1>")
-        return
-    
-    def propComPow(self):
-        if(self.comPow.get() == 0):
-            self.controller.outPutRunner("<QR0>")
-        else:
-            self.controller.outPutRunner("<QR1>")
-        return
-    
-    def propArmServoPow(self):
-        if(self.armServoPow.get() == 0):
-            self.controller.outPutRunner("<A,Cp>")
-        else:
-            self.controller.outPutRunner("<A,CP>")
-        return
-    
-    def propArmPow(self):
-        if(self.armPow.get() == 0):
-            self.controller.outPutRunner("<QA0>")
-        else:
-            self.controller.outPutRunner("<QA1>")
-        return
-    
-    def propMotorPow(self):
-        if(self.motorPow.get() == 0):
-            self.controller.outPutRunner("<QM0>")
-        else:
-            self.controller.outPutRunner("<QM1>")
-        return
-    
-    def propMotorCont(self):
-        if(self.motorContEnable.get() == 0):
-            self.controller.outPutRunner("<Qm0>")
-        else:
-            self.controller.outPutRunner("<Qm1>")
-        return
-    
-    def propV12Pow(self):
-        if(self.v12Pow.get() == 0):
-            self.controller.outPutRunner("<QV0>")
-        else:
-            self.controller.outPutRunner("<QV1>")
-        return
-    
-    def propAuxPow(self):
-        if(self.auxPow.get() == 0):
-            self.controller.outPutRunner("<Qa0>")
-        else:
-            self.controller.outPutRunner("<Qa1>")
-        return
-    
-    def propSonarPow(self):
-        if(self.sonarPow.get() == 0):
-            self.controller.outPutRunner("<QS0>")
-        else:
-            self.controller.outPutRunner("<QS1>")
-        return
             
     def getPortList(self):
         self.portList = glob.glob('/dev/tty[AU]*')
@@ -124,35 +54,17 @@ class SelectFrame(tk.Frame):
         self.rightFrame = tk.Frame(self.checkFrame, **SharedDiscoBot.frameConfig)
         self.rightFrame.pack(side=tk.LEFT)
         
-
+        self.camPowCheck = CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Camera", 'cameraPower', "<V0>", "<V1>")
+        self.headPowCheck = CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Lights", 'headlightPower', "<H0>", "<H1>")
+        self.armPowCheck = CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Arm-CPU", 'armPower', "<QA0>", "<QA1>")
+        self.comPowCheck = CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Com-CPU", 'comPower', "<QR0>", "<QR1>")
+        self.armServoPowCheck = CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Arm-Servo", 'armServoPower', "<A,Cp>", "<A,CP>")
         
-        self.camPow = tk.IntVar()
-        self.headPow = tk.IntVar()
-        self.armPow = tk.IntVar()
-        self.comPow = tk.IntVar()
-        
-        self.armServoPow = tk.IntVar()
-        
-        self.motorPow = tk.IntVar()
-        self.motorContEnable = tk.IntVar()
-        self.v12Pow = tk.IntVar()
-        self.auxPow = tk.IntVar()
-        self.sonarPow = tk.IntVar()
-        
-        
-
-        
-        self.camPowCheck = tk.Checkbutton(self.leftFrame, text="Camera", variable=self.camPow, command=self.propCamPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.headPowCheck = tk.Checkbutton(self.leftFrame, text="Lights", variable=self.headPow, command=self.propHeadPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.armPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-CPU", variable=self.armPow, command=self.propArmPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)        
-        self.comPowCheck = tk.Checkbutton(self.leftFrame, text="Com-CPU", variable=self.comPow, command=self.propComPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.armServoPowCheck = tk.Checkbutton(self.leftFrame, text="Arm-Servo", variable=self.armServoPow, command=self.propArmServoPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        
-        self.motorPowCheck = tk.Checkbutton(self.rightFrame, text="Motors", variable=self.motorPow, command=self.propMotorPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.motorContEnableCheck = tk.Checkbutton(self.rightFrame, text="Controller", variable=self.motorContEnable, command=self.propMotorCont, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.v12PowCheck = tk.Checkbutton(self.rightFrame, text="12-Volt", variable=self.v12Pow, command=self.propV12Pow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.auxPowCheck = tk.Checkbutton(self.rightFrame, text="Aux", variable=self.auxPow, command=self.propAuxPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        self.sonarPowCheck = tk.Checkbutton(self.rightFrame, text="Sonar", variable=self.sonarPow, command=self.propSonarPow, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
+        self.motorPowCheck = CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Motors", 'motorPower', "<QM0>", "<QM1>")
+        self.motorContEnableCheck = CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Motor-En", 'motorContEnable', "<Qm0>", "<Qm1>")
+        self.v12PowCheck = CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "12-Volt", 'v12Power', "<QV0>", "<QV1>")
+        self.auxPowCheck = CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Aux", 'auxPower', "<Qa0>", "<Qa1>")
+        self.sonarPowCheck = CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Sonar", 'sonarPower', "<QS0>", "<QS1>")
         
         
         
@@ -172,33 +84,35 @@ class SelectFrame(tk.Frame):
         self.armServoPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.comPowCheck.pack(side=tk.TOP, anchor=tk.W)
         
-        self.modeFrame.pack(side=tk.TOP, anchor=tk.W)
-        self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
-        self.comModeSpinbox.pack(side=tk.LEFT, anchor=tk.W)
-        self.comModeButton.pack(side=tk.LEFT, anchor=tk.W)      
-        
         self.motorPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.motorContEnableCheck.pack(side=tk.TOP, anchor=tk.W)
         self.v12PowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.auxPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.sonarPowCheck.pack(side=tk.TOP, anchor=tk.W)
+        
+        self.modeFrame.pack(side=tk.TOP, anchor=tk.W)
+        self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
+        self.comModeSpinbox.pack(side=tk.LEFT, anchor=tk.W)
+        self.comModeButton.pack(side=tk.LEFT, anchor=tk.W)      
+        
+        
                 
         return
     
 
-    def update(self):
+    def refresh(self):
         
-        self.camPow.set(self.controller.cameraPower)
-        self.headPow.set(self.controller.headlightPower)
-        self.armPow.set(self.controller.armPower)
-        self.comPow.set(self.controller.comPower)
-        self.armServoPow.set(self.controller.armServoPower)
+        self.camPowCheck.refresh()
+        self.headPowCheck.refresh()
+        self.armPowCheck.refresh()
+        self.comPowCheck.refresh()
+        self.armServoPowCheck.refresh()
         
-        self.motorPow.set(self.controller.motorPower)
-        self.motorContEnable.set(self.controller.motorContEnable)
-        self.v12Pow.set(self.controller.v12Power)
-        self.auxPow.set(self.controller.auxPower)
-        self.sonarPow.set(self.controller.sonarPower)
+        self.motorPowCheck.refresh()
+        self.motorContEnableCheck.refresh()
+        self.v12PowCheck.refresh()
+        self.auxPowCheck.refresh()
+        self.sonarPowCheck.refresh()
         
         
     def handleLoRaModeButton(self):

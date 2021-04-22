@@ -71,6 +71,8 @@ class DiscoBotController:
     
 #         self.speedLog = open("robotSpeedLog.csv", "w")
         
+        self.properties = {}
+        
         self.socketConnected = False 
         self.endProgram = False
         
@@ -106,18 +108,18 @@ class DiscoBotController:
         self.botStatusByte2 = 0
         self.armStatusByte = 0
         
-        self.driveMode = ""
-        self.cameraPower = False
-        self.headlightPower = False
-        self.armPower = False
-        self.comPower = False
-        self.armServoPower = False
+        self.properties['driveMode'] = ""
+        self.properties['cameraPower'] = False
+        self.properties['headlightPower'] = False
+        self.properties['armPower'] = 0
+        self.properties['comPower'] = False
+        self.properties['armServoPower'] = False
         
-        self.motorPower = False
-        self.motorContEnable = False
-        self.v12Power = False
-        self.auxPower = False
-        self.sonarPower = False
+        self.properties['motorPower'] = False
+        self.properties['motorContEnable'] = False
+        self.properties['v12Power'] = False
+        self.properties['auxPower'] = False
+        self.properties['sonarPower'] = False
         
         
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
@@ -190,7 +192,10 @@ class DiscoBotController:
             self.servoInfo.append([1500,100,1234])
         
         return
-            
+    
+    
+    def getProperty(self, aKey):
+        return self.properties[aKey]       
     
     def setRedirect(self, aRedirect):
         self.printRedirect = aRedirect
@@ -400,58 +405,58 @@ class DiscoBotController:
     def readStatusByte(self):
         mb = self.botStatusByte1 & 3
         if mb == 1:
-            self.driveMode = "DRIVE"
+            self.properties['driveMode'] = "DRIVE"
         elif mb == 2:
-            self.driveMode = "ARM"
+            self.properties['driveMode'] = "ARM"
         elif mb == 3:
-            self.driveMode = "MINE"  
+            self.properties['driveMode'] = "MINE"  
         elif mb == 0:
-            self.driveMode = "AUTO"          
+            self.properties['driveMode'] = "AUTO"          
         
         if(self.botStatusByte1 & 0x10):
-            self.cameraPower = True
+            self.properties['cameraPower'] = True
         else:
-            self.cameraPower = False
+            self.properties['cameraPower'] = False
             
         if(self.botStatusByte1 & 0x20):
-            self.headlightPower = True
+            self.properties['headlightPower'] = True
         else:
-            self.headlightPower = False
+            self.properties['headlightPower'] = False
             
         if(self.botStatusByte1 & 0x40):
-            self.armPower = True
+            self.properties['armPower'] = 1
         else:
-            self.armPower = False
+            self.properties['armPower'] = 0
             
         if(self.botStatusByte1 & 0x80):
-            self.comPower = True
+            self.properties['comPower'] = True
         else:
-            self.comPower = False
+            self.properties['comPower'] = False
             
         if(self.botStatusByte2 & 0x01):
-            self.motorPower = True
+            self.properties['motorPower'] = True
         else:
-            self.motorPower = False
+            self.properties['motorPower'] = False
             
         if(self.botStatusByte2 & 0x02):
-            self.motorContEnable = True
+            self.properties['motorContEnable'] = True
         else:
-            self.motorContEnable = False
+            self.properties['motorContEnable'] = False
             
         if(self.botStatusByte2 & 0x04):
-            self.v12Power = True
+            self.properties['v12Power'] = True
         else:
-            self.v12Power = False
+            self.properties['v12Power'] = False
             
         if(self.botStatusByte2 & 0x08):
-            self.auxPower = True
+            self.properties['auxPower'] = True
         else:
-            self.auxPower = False
+            self.properties['auxPower'] = False
             
         if(self.botStatusByte2 & 0x10):
-            self.sonarPower = True
+            self.properties['sonarPower'] = True
         else:
-            self.sonarPower = False
+            self.properties['sonarPower'] = False
         
         
             

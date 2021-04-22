@@ -101,8 +101,8 @@ class DiscoBotGUI(tk.Frame):
         self.armGraphicFrame.drawArm()
         self.sonarGraphicFrame.display(self.controller.sonarList)
         self.directionFrame.display()
-        self.selectFrame.update()
-        self.voltageFrame.update()
+        self.selectFrame.refresh()
+        self.voltageFrame.refresh()
         if(self.controller.joy is not None) and (self.controller.joy.connected()):
             self.indicatorFrame.controllerConnectButton.config(bg=SharedDiscoBot.colors['green'])
         else:            

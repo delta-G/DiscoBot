@@ -29,19 +29,22 @@ class CommandCheckButton(tk.Checkbutton):
         return 
     
     
-    def refresh(self, aState):
-        self.checkVariable.set(aState)
+    def refresh(self):
+        self.checkVariable.set(self.controller.getProperty(self.keyword))
+        self.update()
+        self.update_idletasks()
         return 
             
     
-    def __init__(self, aParent, aController, aText, aOffCommand, aOnCommand):
+    def __init__(self, aParent, aController, aText, aKeyword, aOffCommand, aOnCommand):
         
         self.parent = aParent
         self.controller = aController
         self.text = aText
+        self.keyword = aKeyword
         self.onCommand = aOnCommand
         self.offCommand = aOffCommand
-        tk.Checkbutton.__init__(self, self.parent, text=self.text, **SharedDiscoBot.checkboxConfig)
+        tk.Checkbutton.__init__(self, self.parent, text=self.text, command=self.checkCommand, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
         
         self.checkVariable = tk.IntVar()
         

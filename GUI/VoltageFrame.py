@@ -43,7 +43,7 @@ class VoltageFrame(tk.Frame):
         
         return 
     
-    def update(self):
+    def refresh(self):
         self.batVlabel.setValue(self.controller.batteryVoltage)
         self.motorVlabel.setValue(self.controller.motorVoltage)
         self.mainVlabel.setValue(self.controller.mainVoltage)
