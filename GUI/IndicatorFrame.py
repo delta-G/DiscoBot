@@ -123,16 +123,16 @@ class IndicatorFrame(tk.Frame):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
         self.hbLabel.config(text="HB - " + "{:.3f}".format(self.controller.turnAroundTime * 1000))
-        self.bvLabel.config(text="Bat" + str(self.controller.batteryVoltage))
+        self.bvLabel.config(text="Bat" + str(self.controller.properties['batteryVoltage']))
         numCells = 0
         for i in range(6):
-            if (self.controller.batteryVoltage > (i * 3.4)):
+            if (self.controller.properties['batteryVoltage'] > (i * 3.4)):
                 numCells = i
             else:
                 break
-        if self.controller.rmbBatteryVoltage < numCells * 3.55:
+        if self.controller.properties['batteryVoltage'] < numCells * 3.55:
             self.bvLabel.config(fg=SharedDiscoBot.colors['red'])
-        elif self.controller.rmbBatteryVoltage < numCells * 3.85:
+        elif self.controller.properties['batteryVoltage'] < numCells * 3.85:
             self.bvLabel.config(fg=SharedDiscoBot.colors['yellow'])
         else: 
             self.bvLabel.config(fg=SharedDiscoBot.colors['green'])
@@ -151,6 +151,14 @@ class IndicatorFrame(tk.Frame):
         self.throttleLabel.config(text="THR: " + str(self.controller.throttleLevel))
         
         self.modeLabel.config(text="Mode: " + self.controller.getProperty('driveMode'))
+        
+        if(self.controller.joy is not None) and (self.controller.joy.connected()):
+            if(self.controller.sendingController):
+                self.controllerConnectButton.config(bg=SharedDiscoBot.colors['green'])
+            else:
+                self.controllerConnectButton.config(bg=SharedDiscoBot.colors['yellow'])                
+        else:            
+            self.controllerConnectButton.config(bg=SharedDiscoBot.colors['red'])
         
         return
     

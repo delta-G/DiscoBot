@@ -31,8 +31,6 @@ class CommandCheckButton(tk.Checkbutton):
     
     def refresh(self):
         self.checkVariable.set(self.controller.getProperty(self.keyword))
-        self.update()
-        self.update_idletasks()
         return 
             
     
@@ -44,9 +42,9 @@ class CommandCheckButton(tk.Checkbutton):
         self.keyword = aKeyword
         self.onCommand = aOnCommand
         self.offCommand = aOffCommand
-        tk.Checkbutton.__init__(self, self.parent, text=self.text, command=self.checkCommand, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
-        
         self.checkVariable = tk.IntVar()
+        tk.Checkbutton.__init__(self, self.parent, text=self.text, command=self.checkCommand, 
+                                variable=self.checkVariable, anchor=tk.W, width=9, **SharedDiscoBot.checkboxConfig)
         
         return 
     

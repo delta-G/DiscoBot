@@ -27,12 +27,12 @@ class VoltageFrame(tk.Frame):
         self.controller = aController
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
-        self.batVlabel = labelAndValue(self, "Battery")
-        self.motorVlabel = labelAndValue(self, "Motor")
-        self.mainVlabel = labelAndValue(self, "Main")
-        self.comVlabel = labelAndValue(self, "Com")
-        self.auxVlabel = labelAndValue(self, "Aux")
-        self.v12Vlabel = labelAndValue(self, "12-Volt")
+        self.batVlabel = voltageLabel(self, self.controller, "Battery", 'batteryVoltage')
+        self.motorVlabel = voltageLabel(self, self.controller, "Motor", 'motorVoltage')
+        self.mainVlabel = voltageLabel(self, self.controller, "Main", 'mainVoltage')
+        self.comVlabel = voltageLabel(self, self.controller, "Com", 'comVoltage')
+        self.auxVlabel = voltageLabel(self, self.controller, "Aux", 'auxVoltage')
+        self.v12Vlabel = voltageLabel(self, self.controller, "12-Volt", 'v12Voltage')
         
         self.batVlabel.pack(side=tk.TOP, anchor=tk.W)
         self.motorVlabel.pack(side=tk.TOP, anchor=tk.W)
@@ -44,33 +44,34 @@ class VoltageFrame(tk.Frame):
         return 
     
     def refresh(self):
-        self.batVlabel.setValue(self.controller.batteryVoltage)
-        self.motorVlabel.setValue(self.controller.motorVoltage)
-        self.mainVlabel.setValue(self.controller.mainVoltage)
-        self.comVlabel.setValue(self.controller.comVoltage)
-        self.auxVlabel.setValue(self.controller.auxVoltage)
-        self.v12Vlabel.setValue(self.controller.v12Voltage)
+        self.batVlabel.refresh()
+        self.motorVlabel.refresh()
+        self.mainVlabel.refresh()
+        self.comVlabel.refresh()
+        self.auxVlabel.refresh()
+        self.v12Vlabel.refresh()
         return 
     
+
+
+class voltageLabel(tk.Frame):
     
-    
-class labelAndValue(tk.Frame):
-    
-    def __init__(self, aParent, aText):
-        
+    def __init__(self, aParent, aController, aText, aKey):
         self.parent = aParent
+        self.controller = aController
+        self.key = aKey
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         self.nameLabel = tk.Label(self, text=aText, width=7, anchor=tk.W, **SharedDiscoBot.labelConfig)
         self.valueLabel = tk.Label(self, text="void", **SharedDiscoBot.labelConfig)
         
         self.nameLabel.pack(side=tk.LEFT, anchor=tk.W)
-        self.valueLabel.pack(side=tk.LEFT, anchor=tk.W)
+        self.valueLabel.pack(side=tk.LEFT, anchor=tk.W)        
         
         return 
     
-    def setValue(self, aValue):
-#         self.valueLabel.config(text=str(aValue))
-        self.valueLabel.config(text='{0:>02.3f}'.format(aValue))
-        return 
+    def refresh(self):
+        self.valueLabel.config(text='{0:>02.3f}'.format(self.controller.properties[self.key]))
+        return
     
+
     

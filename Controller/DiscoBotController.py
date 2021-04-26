@@ -111,7 +111,7 @@ class DiscoBotController:
         self.properties['driveMode'] = ""
         self.properties['cameraPower'] = False
         self.properties['headlightPower'] = False
-        self.properties['armPower'] = 0
+        self.properties['armPower'] = False
         self.properties['comPower'] = False
         self.properties['armServoPower'] = False
         
@@ -123,13 +123,14 @@ class DiscoBotController:
         
         
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
-        self.rmbBatteryVoltage = 0.0
-        self.batteryVoltage = 0.0
-        self.motorVoltage = 1.2
-        self.mainVoltage = 2.3
-        self.comVoltage = 3.4
-        self.auxVoltage = 4.5
-        self.v12Voltage = 5.6
+        
+        self.properties['rmbBatteryVoltage'] = 0.0
+        self.properties['batteryVoltage'] = 0.0
+        self.properties['motorVoltage'] = 1.2
+        self.properties['mainVoltage'] = 2.3
+        self.properties['comVoltage'] = 3.4
+        self.properties['auxVoltage'] = 4.5
+        self.properties['v12Voltage'] = 5.6
         
         
         self.leftMotorCount = 0
@@ -212,7 +213,8 @@ class DiscoBotController:
                         
         return
     
-     
+    ###  TODO:  
+    ### This should check for connection before declaring the socket connected.  
     def connectToBot(self):
         if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")
@@ -330,7 +332,7 @@ class DiscoBotController:
         if not self.joy.Start():
             self.lastStart = False
             
-        if(self.joy.Start() and not self.socketConnected):    
+        if(self.joy.Start() and not self.socketConnected and not self.lastStart):    
 #             self.putstring("Connecting to socket")    
             self.putstring("<Connecting to socket>")                        
             self.connectToBot()
@@ -376,7 +378,7 @@ class DiscoBotController:
         self.botStatusByte1 = dumpMessage[3]
         self.botStatusByte2 = dumpMessage[4]
         self.throttleLevel = dumpMessage[5]
-        self.rmbBatteryVoltage = dumpMessage[6] / 10.0
+        self.properties['rmbBatteryVoltage'] = dumpMessage[6] / 10.0
         self.leftMotorCount = (dumpMessage[7] << 8) + dumpMessage[8]
         self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
         self.leftMotorSpeed = (dumpMessage[9] << 8) + dumpMessage[10]        
@@ -424,9 +426,9 @@ class DiscoBotController:
             self.properties['headlightPower'] = False
             
         if(self.botStatusByte1 & 0x40):
-            self.properties['armPower'] = 1
+            self.properties['armPower'] = True
         else:
-            self.properties['armPower'] = 0
+            self.properties['armPower'] = False
             
         if(self.botStatusByte1 & 0x80):
             self.properties['comPower'] = True
@@ -534,22 +536,22 @@ class DiscoBotController:
     def handleVoltageDump(self, aByteArray):
         
         temp = (aByteArray[3] << 8) | aByteArray[4]
-        self.batteryVoltage = temp/1000.0
+        self.properties['batteryVoltage'] = temp/1000.0
         
         temp = (aByteArray[5] << 8) | aByteArray[6]
-        self.motorVoltage = temp/1000.0
+        self.properties['motorVoltage'] = temp/1000.0
         
         temp = (aByteArray[7] << 8) | aByteArray[8]
-        self.mainVoltage = temp/1000.0
+        self.properties['mainVoltage'] = temp/1000.0
         
         temp = (aByteArray[9] << 8) | aByteArray[10]
-        self.comVoltage = temp/1000.0
+        self.properties['comVoltage'] = temp/1000.0
         
         temp = (aByteArray[11] << 8) | aByteArray[12]
-        self.auxVoltage = temp/1000.0
+        self.properties['auxVoltage'] = temp/1000.0
         
         temp = (aByteArray[13] << 8) | aByteArray[14]
-        self.v12Voltage = temp/1000.0
+        self.properties['v12Voltage'] = temp/1000.0
         
         return 
     
@@ -559,40 +561,11 @@ class DiscoBotController:
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
             
-        elif aBuffer.startswith("<SR,"):
-            self.speedLog.write(aBuffer)
-            self.speedLog.write('\n')
-            print (aBuffer)
-#         elif aBuffer.startswith("<BAT,"):
-#             tndx = aBuffer.rfind(',')
-#             self.rmbBatteryVoltage = aBuffer[tndx+1:-1]
-#         
-#         elif aBuffer.startswith("<Cnts,"):
-#             tup = tuple(aBuffer.split(','))
-#             self.leftMotorCount = tup[1]
-#             self.rightMotorCount = tup[2]
-#         
-#         elif aBuffer.startswith("<Out,"):
-#             tup = tuple(aBuffer.split(','))
-#             self.leftMotorOut = tup[1]
-#             self.rightMotorOut = tup[2]
-#         elif aBuffer.startswith("<Spd,"):
-#             tup = tuple(aBuffer.split(','))
-#             self.leftMotorSpeed = tup[1]
-#             self.rightMotorSpeed = tup[2]
-#         
-#         elif aBuffer.startswith(("<p,")):
-#             tup = tuple(aBuffer.split(','))
-#             for t in tup:
-#                 self.servoInfo[t[0]][0] = t[1]
-#         elif aBuffer.startswith(("<t,")):
-#             tup = tuple(aBuffer.split(','))
-#             for t in tup:
-#                 self.servoInfo[t[0]][1] = t[1]
-#         elif aBuffer.startswith(("<s,")):
-#             tup = tuple(aBuffer.split(','))
-#             for t in tup:
-#                 self.servoInfo[t[0]][2] = t[1]
+#         elif aBuffer.startswith("<SR,"):
+#             self.speedLog.write(aBuffer)
+#             self.speedLog.write('\n')
+#             print (aBuffer)
+
                     
         elif aBuffer.startswith("<E-HB"):
             self.currentRssi = aBuffer[5:aBuffer.rfind('>')]
@@ -606,10 +579,10 @@ class DiscoBotController:
         else:
             self.putstring ("returnBuffer --> ") 
             self.putstring( aBuffer)  
-            for c in aBuffer:
-                if ord(c) < 33:
-                    self.putstring(ord(c))
-                    self.putstring(',')
+#             for c in aBuffer:
+#                 if ord(c) < 33:
+#                     self.putstring(ord(c))
+#                     self.putstring(',')
             self.putstring('\n')      
         return              
     
