@@ -57,8 +57,8 @@ class DirectionFrame(tk.Frame):
         ###  But we gotta rotate the other way so the axes reverse
         ###  Just draw a damn picture if you don't get it
         ###  left motor is on x axis and right motor on y 
-        ls = self.controller.leftMotorSpeed * 1.0
-        rs = self.controller.rightMotorSpeed * 1.0
+        ls = self.controller.getProperty('leftMotorSpeed') * 1.0
+        rs = self.controller.getProperty('rightMotorSpeed') * 1.0
         self.angle = math.pi / 4.0
         if(ls == 0):
             if(rs > 0):
@@ -90,8 +90,8 @@ class DirectionFrame(tk.Frame):
         
         self.canvas.delete("all")
         
-        ls = self.controller.leftMotorSpeed
-        rs = self.controller.rightMotorSpeed
+        ls = self.controller.getProperty('leftMotorSpeed')
+        rs = self.controller.getProperty('rightMotorSpeed')
         self.diameter = 50
         circleColor = "white"
         fill=None

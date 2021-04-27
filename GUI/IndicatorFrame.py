@@ -94,14 +94,15 @@ class IndicatorFrame(tk.Frame):
         
         self.motorParamFrame.pack(side = tk.TOP)
         
-        self.ticFrame = MotorParamFrame(self.motorParamFrame, "T")
+        self.ticFrame = LRPropertyFrame(self.motorParamFrame, self.controller, "T", 'MotorCount')
         self.ticFrame.pack(side = tk.TOP)
-        self.pwmFrame = MotorParamFrame(self.motorParamFrame, "P")
+        self.pwmFrame = LRPropertyFrame(self.motorParamFrame, self.controller, "P", 'MotorOut')
         self.pwmFrame.pack(side = tk.TOP)
-        self.spdFrame = MotorParamFrame(self.motorParamFrame, "S")
+        self.spdFrame = LRPropertyFrame(self.motorParamFrame, self.controller, "S", 'MotorSpeed')
         self.spdFrame.pack(side = tk.TOP)
         
-        self.throttleLabel = tk.Label(self.secondFrame, text='THR', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
+        self.throttleLabel = PropertyLabel(self.secondFrame, self.controller, 'THR', 'throttleLevel')
+        self.throttleLabel.config(width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         self.throttleLabel.pack(side=tk.TOP)
         
         self.connectButtonFrame = tk.Frame(self.secondFrame, **SharedDiscoBot.frameConfig)
@@ -144,11 +145,12 @@ class IndicatorFrame(tk.Frame):
         
         self.distLabel.config(text="d= " + str(self.controller.sonarDistance))
         
-        self.ticFrame.update(self.controller.leftMotorCount, self.controller.rightMotorCount)
-        self.pwmFrame.update(self.controller.leftMotorOut, self.controller.rightMotorOut)
-        self.spdFrame.update(self.controller.leftMotorSpeed, self.controller.rightMotorSpeed)
+        self.ticFrame.refresh()
+        self.pwmFrame.refresh()
+        self.spdFrame.refresh()
         
-        self.throttleLabel.config(text="THR: " + str(self.controller.throttleLevel))
+#         self.throttleLabel.config(text="THR: " + str(self.controller.throttleLevel))
+        self.throttleLabel.refresh()
         
         self.modeLabel.config(text="Mode: " + self.controller.getProperty('driveMode'))
         
@@ -188,14 +190,33 @@ class IndicatorLabel(tk.Label):
         
         
         return
-   
-   
 
-class MotorParamFrame(tk.Frame):
+
+class PropertyLabel(tk.Label):
     
-    def __init__(self, aParent, aName):
+    def __init__(self, aParent, aController, aName, aKey):
         self.parent = aParent
+        self.controller = aController
         self.name = aName
+        self.key = aKey
+        tk.Label.__init__(self, self.parent, text=self.name)        
+        self.config(font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
+        
+        return
+    
+    def refresh(self):
+        self.config(text=self.name + ': ' + str(self.controller.getProperty(self.key)))
+        return
+        
+
+
+class LRPropertyFrame(tk.Frame):
+    
+    def __init__(self, aParent, aController, aName, aPartKey):
+        self.parent = aParent
+        self.controller = aController
+        self.name = aName
+        self.partialKey = aPartKey
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         
         self.leftLabel = tk.Label(self, text='100', width=5, **SharedDiscoBot.labelConfig)
@@ -209,10 +230,12 @@ class MotorParamFrame(tk.Frame):
         return 
     
     
-    def update(self, aLeftNumber, aRightNumber):
-        self.leftLabel.config(text=str(aLeftNumber))
-        self.rightLabel.config(text=str(aRightNumber))
+    def refresh(self):
+        self.leftLabel.config(text=str(self.controller.getProperty('left'+self.partialKey)))
+        self.rightLabel.config(text=str(self.controller.getProperty('right'+self.partialKey)))
         
         return
-        
+
+
+       
     

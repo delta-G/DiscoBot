@@ -70,7 +70,7 @@ class voltageLabel(tk.Frame):
         return 
     
     def refresh(self):
-        self.valueLabel.config(text='{0:>02.3f}'.format(self.controller.properties[self.key]))
+        self.valueLabel.config(text='{0:>02.3f}'.format(self.controller.getProperty(self.key)))
         return
     
 

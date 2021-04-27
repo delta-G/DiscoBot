@@ -133,12 +133,12 @@ class DiscoBotController:
         self.properties['v12Voltage'] = 5.6
         
         
-        self.leftMotorCount = 0
-        self.rightMotorCount = 0
-        self.leftMotorOut = 0
-        self.rightMotorOut = 0
-        self.leftMotorSpeed = 0
-        self.rightMotorSpeed = 0
+        self.properties['leftMotorCount'] = 0
+        self.properties['rightMotorCount'] = 0
+        self.properties['leftMotorOut'] = 0
+        self.properties['rightMotorOut'] = 0
+        self.properties['leftMotorSpeed'] = 0
+        self.properties['rightMotorSpeed'] = 0
         
         self.sonarDistance = 0
         
@@ -151,7 +151,7 @@ class DiscoBotController:
         
         self.motorRight = 0
         self.motorLeft = 0
-        self.throttleLevel = 0
+        self.properties['throttleLevel'] = 0
         
         self.invertShoulder = True
         self.invertElbow = True
@@ -377,18 +377,18 @@ class DiscoBotController:
         
         self.botStatusByte1 = dumpMessage[3]
         self.botStatusByte2 = dumpMessage[4]
-        self.throttleLevel = dumpMessage[5]
+        self.properties['throttleLevel'] = dumpMessage[5]
         self.properties['rmbBatteryVoltage'] = dumpMessage[6] / 10.0
-        self.leftMotorCount = (dumpMessage[7] << 8) + dumpMessage[8]
-        self.leftMotorCount = self.make16bitSigned(self.leftMotorCount)
-        self.leftMotorSpeed = (dumpMessage[9] << 8) + dumpMessage[10]        
-        self.leftMotorSpeed = self.make16bitSigned(self.leftMotorSpeed)
-        self.leftMotorOut = dumpMessage[11]
-        self.rightMotorCount = (dumpMessage[12] << 8) + dumpMessage[13]
-        self.rightMotorCount = self.make16bitSigned(self.rightMotorCount)
-        self.rightMotorSpeed = (dumpMessage[14] << 8) + dumpMessage[15]        
-        self.rightMotorSpeed = self.make16bitSigned(self.rightMotorSpeed)
-        self.rightMotorOut = dumpMessage[16]
+        temp = (dumpMessage[7] << 8) + dumpMessage[8]
+        self.properties['leftMotorCount'] = self.make16bitSigned(temp)
+        temp = (dumpMessage[9] << 8) + dumpMessage[10]        
+        self.properties['leftMotorSpeed'] = self.make16bitSigned(temp)
+        self.properties['leftMotorOut'] = dumpMessage[11]
+        temp = (dumpMessage[12] << 8) + dumpMessage[13]
+        self.properties['rightMotorCount'] = self.make16bitSigned(temp)
+        temp = (dumpMessage[14] << 8) + dumpMessage[15]        
+        self.properties['rightMotorSpeed'] = self.make16bitSigned(temp)
+        self.properties['rightMotorOut'] = dumpMessage[16]
         self.lastBotSNR = dumpMessage[17]
         self.lastBotRSSI = -dumpMessage[18]
         self.lastBaseSNR = dumpMessage[19]
@@ -501,9 +501,9 @@ class DiscoBotController:
                 self.servoInfo[i][2] = dataPoints[i]   
                 
         if(self.armStatusByte & 1):
-            self.armServoPower = True
+            self.properties['armServoPower'] = True
         else:
-            self.armServoPower = False
+            self.properties['armServoPower'] = False
                     
         return 
     
