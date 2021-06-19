@@ -34,7 +34,7 @@ class DiscoBotGUI(tk.Frame):
     def __init__(self, aParent, aController):
         
         self.parent = aParent
-        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
+        tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         self.controller = aController
         self.videoOpen = False
         
@@ -102,8 +102,8 @@ class DiscoBotGUI(tk.Frame):
     def refresh(self):
         self.servoPane.updateData()
         self.indicatorFrame.check()
-        self.armGraphicFrame.drawArm()
-        self.sonarGraphicFrame.display(self.controller.sonarList)
+        self.armGraphicFrame.refresh()
+        self.sonarGraphicFrame.refresh()
         self.directionFrame.display()
         self.selectFrame.refresh()
         self.voltageFrame.refresh()

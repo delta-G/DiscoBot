@@ -21,6 +21,7 @@ import struct
 
 import DiscoBotComms
 import SharedDiscoBot
+import DiscoBotKinematics as dbk
 
 
 
@@ -28,6 +29,10 @@ import SharedDiscoBot
 class DiscoBotController:
     
     def putstring(self, aString):
+        
+        if(aString == "ascii"):
+            print("Got IT")
+            raise NameError('stupidAscii')
         
         if self.printRedirect is not None:
             self.printRedirect(aString)
@@ -124,7 +129,7 @@ class DiscoBotController:
         
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         
-        self.properties['rmbBatteryVoltage'] = 0.0
+#         self.properties['rmbBatteryVoltage'] = 0.0
         self.properties['batteryVoltage'] = 0.0
         self.properties['motorVoltage'] = 1.2
         self.properties['mainVoltage'] = 2.3
@@ -141,8 +146,19 @@ class DiscoBotController:
         self.properties['rightMotorSpeed'] = 0
         
         self.sonarDistance = 0
+        self.properties['sonarPanAngle'] = 2.25
         
         self.sonarList = [100,200,300,400,1050,1050,700,800,900,1000,1100,1200,1300]
+        
+        self.properties['baseServoMicros'] = 1500
+        self.properties['baseAngle'] = 1.57
+        self.properties['shoulderServoMicros'] = 1500
+        self.properties['shoulderAngle'] = 1.57
+        self.properties['elbowServoMicros'] = 1500
+        self.properties['elbowAngle'] = 1.57
+        self.properties['wristServoMicros'] = 1500
+        self.properties['wristAngle'] = 1.57
+        
         
 ### Vars for GUI
         self.showCommands = False
@@ -179,10 +195,10 @@ class DiscoBotController:
         self.TILT = 6
         
         #########   DiscoBotJoint   ( name , length, offset, minMicros, minAngle, maxMicros, maxAngle)
-        self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 600, -0.0, 2400, 3.31631),
-                          DiscoBotJoint.DiscoBotJoint("shoulder", 105, 0, 544, -0.087266, 2400, 2.91470),
-                          DiscoBotJoint.DiscoBotJoint("elbow", 98, 0, 544, 2.96706, 2400, -0.13963),
-                          DiscoBotJoint.DiscoBotJoint("wrist", 158, 32, 605, -1.16937, 2400, 2.12930),
+        self.armJoints = [DiscoBotJoint.DiscoBotJoint("base", 37, 0, 750, -0.0, 2350, 3.14),
+                          DiscoBotJoint.DiscoBotJoint("shoulder", 103, 0, 544, -0.24, 2400, 2.86),
+                          DiscoBotJoint.DiscoBotJoint("elbow", 97, 0, 544, 2.67, 2400, -0.33),
+                          DiscoBotJoint.DiscoBotJoint("wrist", 165, 31, 650, -1.2, 2400, 2.09),
                           DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
                           DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
                           DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, 3.1415, 2350, 0),
@@ -193,6 +209,9 @@ class DiscoBotController:
             self.servoInfo.append([1500,100,1234])
         
         return
+    
+    def getGripperXYZ(self):
+        return dbk.findEndEffectorTip(self.armJoints[0].getCurrentAngle(), self.armJoints[1].getCurrentAngle(), self.armJoints[2].getCurrentAngle(), self.armJoints[3].getCurrentAngle())
     
     
     def getProperty(self, aKey):
@@ -378,7 +397,8 @@ class DiscoBotController:
         self.botStatusByte1 = dumpMessage[3]
         self.botStatusByte2 = dumpMessage[4]
         self.properties['throttleLevel'] = dumpMessage[5]
-        self.properties['rmbBatteryVoltage'] = dumpMessage[6] / 10.0
+#         self.properties['rmbBatteryVoltage'] = dumpMessage[6] / 10.0
+        self.properties['sonarPanAngle'] = dumpMessage[6] * (3.1415/256)
         temp = (dumpMessage[7] << 8) + dumpMessage[8]
         self.properties['leftMotorCount'] = self.make16bitSigned(temp)
         temp = (dumpMessage[9] << 8) + dumpMessage[10]        
@@ -491,14 +511,17 @@ class DiscoBotController:
             self.sendToLog("pos--> "  + "\n")
             for i in range(8):
                 self.servoInfo[i][0] = dataPoints[i]
+                self.armJoints[i].currentMicros = dataPoints[i]
         elif whichSet == ord('s'):
             self.sendToLog("spd--> "  + "\n")
             for i in range(8):
                 self.servoInfo[i][1] = dataPoints[i]
+                self.armJoints[i].speed = dataPoints[i]
         elif whichSet == ord('t'):
             self.sendToLog("targ--> "  + "\n")
             for i in range(8):
-                self.servoInfo[i][2] = dataPoints[i]   
+                self.servoInfo[i][2] = dataPoints[i]
+                self.armJoints[i].target = dataPoints[i]  
                 
         if(self.armStatusByte & 1):
             self.properties['armServoPower'] = True
@@ -614,6 +637,7 @@ class DiscoBotController:
                                 self.handleArmCalDump(aByteArray) 
                 else:
                     self.parseReturnString(aByteArray.decode("ascii"))
+                    print '..'
                         
         return 
     

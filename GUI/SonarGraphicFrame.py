@@ -148,10 +148,10 @@ class SonarGraphicFrame(tk.Frame):
         self.scale = self.range/(self.canvasWidth/2) # mm range / pixel
         self.squareCanvas()
         
-        ###  Draw an arrow to mark where the sensor is
-        self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0], self.originPoint[1] - 20)),"black")
-        self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0]-5, self.originPoint[1] - 5)),"black")
-        self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0]+5, self.originPoint[1] - 5)),"black")        
+#         ###  Draw an arrow to mark where the sensor is
+#         self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0], self.originPoint[1] - 20)),"red")
+#         self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0]-5, self.originPoint[1] - 5)),"red")
+#         self.drawSegment(self.toCanvasCoords(self.originPoint),self.toCanvasCoords((self.originPoint[0]+5, self.originPoint[1] - 5)),"red")        
         
         
         for i in range(13):
@@ -166,6 +166,15 @@ class SonarGraphicFrame(tk.Frame):
             
                 self.displayPoint(point, 2)
             
+        return
+    
+    def refresh(self):
+        
+        self.display(self.controller.sonarList)
+        pointerTip = self.solveTriangle(3000 / self.scale, self.controller.getProperty('sonarPanAngle'))
+        pointerTipOnCanvas = self.toCanvasCoords(((pointerTip[0] + self.originPoint[0]), (pointerTip[1]+self.originPoint[1])))
+        self.drawSegment(self.toCanvasCoords(self.originPoint),pointerTipOnCanvas,"white")
+        
         return
             
     

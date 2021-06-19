@@ -34,8 +34,30 @@ class ArmGraphicFrame(tk.Frame):
         
         self.canvas = tk.Canvas(self, width=self.canvasWidth, height=self.canvasHeight, **SharedDiscoBot.canvasConfig)
         
-        self.canvas.pack()   
+        self.xLabel = tk.Label(self, width=12, text="x", **SharedDiscoBot.highlightLabelConfig)
+        self.yLabel = tk.Label(self, width=12, text="y", **SharedDiscoBot.highlightLabelConfig)
+        self.zLabel = tk.Label(self, width=12, text="z", **SharedDiscoBot.highlightLabelConfig)
+        self.phiLabel = tk.Label(self, width=12, text="phi", **SharedDiscoBot.highlightLabelConfig)
+        
+        self.baseLabel = tk.Label(self, width=12, text="base", **SharedDiscoBot.highlightLabelConfig)
+        self.shoulderLabel = tk.Label(self, width=12, text="shoul", **SharedDiscoBot.highlightLabelConfig)
+        self.elbowLabel = tk.Label(self, width=12, text="elbow", **SharedDiscoBot.highlightLabelConfig)
+        self.wristLabel = tk.Label(self, width=12, text="wrist", **SharedDiscoBot.highlightLabelConfig)
+        
+        
+        self.canvas.pack(side=tk.LEFT)   
         self.canvas.bind("<Double-Button-1>", self.launchCalibrationWindow)
+        self.xLabel.pack(side=tk.TOP)
+        self.yLabel.pack(side=tk.TOP)
+        self.zLabel.pack(side=tk.TOP)
+        self.phiLabel.pack(side=tk.TOP)
+        
+        self.baseLabel.pack(side=tk.TOP)
+        self.shoulderLabel.pack(side=tk.TOP)
+        self.elbowLabel.pack(side=tk.TOP)
+        self.wristLabel.pack(side=tk.TOP)
+        
+        
         return 
     
     def launchCalibrationWindow(self, event):
@@ -83,6 +105,21 @@ class ArmGraphicFrame(tk.Frame):
         
         self.canvas.create_line(aXYtuple1[0], aXYtuple1[1], aXYtuple2[0], aXYtuple2[1], width=2, fill=aColor)
         return
+    
+    
+    def refresh(self):
+        self.drawArm()
+        self.baseLabel.configure(text='{0:>02.3f}'.format(self.controller.armJoints[0].getCurrentAngle()))
+        self.shoulderLabel.configure(text='{0:>02.3f}'.format(self.controller.armJoints[1].getCurrentAngle()))
+        self.elbowLabel.configure(text='{0:>02.3f}'.format(self.controller.armJoints[2].getCurrentAngle()))
+        self.wristLabel.configure(text='{0:>02.3f}'.format(self.controller.armJoints[3].getCurrentAngle()))
+        tip = self.controller.getGripperXYZ()
+        self.xLabel.configure(text='{0:>02.3f}'.format(tip[0]))
+        self.yLabel.configure(text='{0:>02.3f}'.format(tip[1]))
+        self.zLabel.configure(text='{0:>02.3f}'.format(tip[2]))
+        self.phiLabel.configure(text='{0:>02.3f}'.format(tip[3]))
+        return 
+    
     
     
     ###  Draw arm with base at x,y of this tuple 

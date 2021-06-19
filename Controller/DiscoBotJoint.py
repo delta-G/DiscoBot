@@ -28,7 +28,24 @@ class DiscoBotJoint:
         self.maxAngle = aMaxAngle
         self.maxMicros = aMaxMicros
         
+        self.currentMicros = 1500
+        self.speed = 200
+        self.target = 1500
+        
         return 
+    
+    def getCurrentMicros(self):
+        return self.currentMicros
+    
+    def getSpeed(self):
+        return self.speed
+    
+    def getTarget(self):
+        return self.target
+    
+    def getCurrentAngle(self):
+        return self.microsToAngle(self.currentMicros)
+    
     
     def microsToAngle(self, aMicros):
         
