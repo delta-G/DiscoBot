@@ -85,7 +85,7 @@ class DiscoBotComms:
                             
             except Exception as e:
                 err = e.args[0]
-                print e
+                print (e)
                 self.controller.putstring("COMS-ERROR:")
                 self.controller.putstring(err)
                             

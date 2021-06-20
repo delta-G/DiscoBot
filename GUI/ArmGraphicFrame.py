@@ -15,9 +15,9 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import Tkinter as tk
+import tkinter as tk
 import math
-import ArmCalWindow
+import GUI.ArmCalWindow
 import SharedDiscoBot
 
 class ArmGraphicFrame(tk.Frame):

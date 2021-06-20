@@ -51,15 +51,15 @@ def runInverse(x, y, z, a):
     
     rtip = np.sqrt((x*x)+(y*y))
     
-    print "rdisp: ", rdisp
-    print "zdisp: ", zdisp
-    print "rtip: ", rtip
+    print ("rdisp: ", rdisp)
+    print ("zdisp: ", zdisp)
+    print ("rtip: ", rtip)
     
     rwrist = rtip - rdisp
     zwrist = z-zdisp
     
-    print "rwrist: ", rwrist
-    print "zwrist: ", zwrist
+    print ("rwrist: ", rwrist)
+    print ("zwrist: ", zwrist)
     
     
 ### Step 3 Calculate distance from wrist to base
@@ -71,7 +71,7 @@ def runInverse(x, y, z, a):
 
     cosElbow = ((a2*a2) + (a3*a3) - (dwr*dwr)) / (2*a2*a3)
     
-    print "cosElbow: ", cosElbow
+    print ("cosElbow: ", cosElbow)
     
     elbowTheta = np.arccos(cosElbow)
     elbowServo = elbowTheta - (np.pi/2)
@@ -88,9 +88,9 @@ def runInverse(x, y, z, a):
     shoulderTheta = t1+t2
     shoulderServo = shoulderTheta
     
-    print "t1: ", t1
-    print "ct2: ", ct2
-    print "t2: ", t2
+    print ("t1: ", t1)
+    print ("ct2: ", ct2)
+    print ("t2: ", t2)
     
 ### Step 6 Set wrist to get gripper angle
 
@@ -99,22 +99,22 @@ def runInverse(x, y, z, a):
     wristTheta = phi - forang + np.pi
     wristServo = wristTheta - (np.pi/2)
     
-    print "forang: ", forang
-    print "wristTheta: ", wristTheta
+    print ("forang: ", forang)
+    print ("wristTheta: ", wristTheta)
     
     
     
-    print "Results:"
-    print "Base: ",baseTheta
-    print "Shoulder: ",shoulderTheta
-    print "Elbow: ",elbowTheta
-    print "Wrist: ",wristTheta
+    print ("Results:")
+    print ("Base: ",baseTheta)
+    print ("Shoulder: ",shoulderTheta)
+    print ("Elbow: ",elbowTheta)
+    print ("Wrist: ",wristTheta)
     
-    print "Servos:"
-    print "Base: ",baseServo
-    print "Shoulder: ",shoulderServo
-    print "Elbow: ",elbowServo
-    print "Wrist: ",wristServo
+    print ("Servos:")
+    print ("Base: ",baseServo)
+    print ("Shoulder: ",shoulderServo)
+    print ("Elbow: ",elbowServo)
+    print ("Wrist: ",wristServo)
     
     return
 

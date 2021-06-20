@@ -27,6 +27,7 @@ import os
 import select
 import time
 
+
 class Joystick:
 
     """Initializes the joystick/wireless receiver, launching 'xboxdrv' as a subprocess
@@ -38,21 +39,22 @@ class Joystick:
     Usage:
         joy = xbox.Joystick()
     """
-    def __init__(self,refreshRate = 30):
-        self.proc = subprocess.Popen(['xboxdrv','--no-uinput'], stdout=subprocess.PIPE)
+
+    def __init__(self, refreshRate=30):
+        self.proc = subprocess.Popen(['xboxdrv', '--no-uinput'], stdout=subprocess.PIPE)
         self.pipe = self.proc.stdout
         #
-        self.connectStatus = False  #will be set to True once controller is detected and stays on
-        self.reading = '0' * 140    #initialize stick readings to all zeros
+        self.connectStatus = False  # will be set to True once controller is detected and stays on
+        self.reading = '0' * 140  # initialize stick readings to all zeros
         #
-        self.refreshTime = 0	#absolute time when next refresh (read results from xboxdrv stdout pipe) is to occur
-	self.refreshDelay = 1.0 / refreshRate   #joystick refresh is to be performed 30 times per sec by default
-	#
-	# Read responses from 'xboxdrv' for 2 secs, looking for controller/receiver to respond
-	found = False
+        self.refreshTime = 0  # absolute time when next refresh (read results from xboxdrv stdout pipe) is to occur
+        self.refreshDelay = 1.0 / refreshRate  # joystick refresh is to be performed 30 times per sec by default
+        #
+        # Read responses from 'xboxdrv' for 2 secs, looking for controller/receiver to respond
+        found = False
         waitTime = time.time() + 2.0
-	while waitTime > time.time():
-            readable, writeable, exception = select.select([self.pipe],[],[],0)
+        while waitTime > time.time():
+            readable, writeable, exception = select.select([self.pipe], [], [], 0)
             if readable:
                 response = self.pipe.readline()
                 # Hard fail if we see this, so force an error
@@ -75,9 +77,9 @@ class Joystick:
     If a valid event response is found, then the controller is flagged as 'connected'.
     """
     def refresh(self):
-	# Refresh the joystick readings based on regular defined freq
-	if self.refreshTime < time.time():
-	    self.refreshTime = time.time() + self.refreshDelay  #set next refresh time
+        # Refresh the joystick readings based on regular defined freq
+        if self.refreshTime < time.time():
+            self.refreshTime = time.time() + self.refreshDelay  #set next refresh time
             # If there is text available to read from xboxdrv, then read it.
             readable, writeable, exception = select.select([self.pipe],[],[],0)
             if readable:

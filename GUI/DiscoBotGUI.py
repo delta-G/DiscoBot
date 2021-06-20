@@ -16,18 +16,18 @@
 
 import SharedDiscoBot
 
-import Tkinter as tk
+import tkinter as tk
 
-import ServoPane
-import TermFrame
-import IndicatorFrame
-import SelectFrame
-import DirectionFrame
-import VoltageFrame
-import VideoWindow
+import GUI.ServoPane
+import GUI.TermFrame
+import GUI.IndicatorFrame
+import GUI.SelectFrame
+import GUI.DirectionFrame
+import GUI.VoltageFrame
+import GUI.VideoWindow
 
-import ArmGraphicFrame
-import SonarGraphicFrame
+import GUI.ArmGraphicFrame
+import GUI.SonarGraphicFrame
 
 class DiscoBotGUI(tk.Frame):
     
@@ -51,20 +51,20 @@ class DiscoBotGUI(tk.Frame):
                 
         self.topFrame = tk.Frame(self.leftSideFrame, **SharedDiscoBot.frameConfig)
         
-        self.indicatorFrame = IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
+        self.indicatorFrame = GUI.IndicatorFrame.IndicatorFrame(self.topFrame, self, self.controller)
         
-        self.selectFrame = SelectFrame.SelectFrame(self.topFrame, self.controller)  
+        self.selectFrame = GUI.SelectFrame.SelectFrame(self.topFrame, self.controller)  
         
-        self.voltageFrame = VoltageFrame.VoltageFrame(self.topFrame, self.controller)      
+        self.voltageFrame = GUI.VoltageFrame.VoltageFrame(self.topFrame, self.controller)      
         
-        self.armGraphicFrame = ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller, self)
-        self.sonarGraphicFrame = SonarGraphicFrame.SonarGraphicFrame(self.leftSideFrame, self.controller)
-        self.directionFrame = DirectionFrame.DirectionFrame(self.sonarGraphicFrame, self.controller)
+        self.armGraphicFrame = GUI.ArmGraphicFrame.ArmGraphicFrame(self.rightSideFrame, self.controller, self)
+        self.sonarGraphicFrame = GUI.SonarGraphicFrame.SonarGraphicFrame(self.leftSideFrame, self.controller)
+        self.directionFrame = GUI.DirectionFrame.DirectionFrame(self.sonarGraphicFrame, self.controller)
         
         self.videoButton = tk.Button(self.sonarGraphicFrame, text="Video", width=5, command=self.launchVideo)
         
-        self.termFrame = TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
-        self.servoPane = ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
+        self.termFrame = GUI.TermFrame.TermFrame(self.leftSideFrame, self, self.controller) 
+        self.servoPane = GUI.ServoPane.ServoPane(self.rightSideFrame, self, self.controller.armJoints)  
         
         #topFrame (part of leftSideFrame)
         self.indicatorFrame.pack(side=tk.LEFT, anchor=tk.NW)

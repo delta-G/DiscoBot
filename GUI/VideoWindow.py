@@ -15,7 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import Tkinter as tk
+import tkinter as tk
 import PIL.Image, PIL.ImageTk
 import SharedDiscoBot
 import cv2

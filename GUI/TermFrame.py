@@ -15,8 +15,8 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import Tkinter as tk
-import ComSenderField
+import tkinter as tk
+import GUI.ComSenderField
 
 import SharedDiscoBot
 
@@ -79,7 +79,7 @@ class TermFrame(tk.Frame):
         self.retCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.debCheck.pack(side=tk.LEFT, anchor=tk.W)
         
-        self.comsend = ComSenderField.ComSenderField(self, self.gui.controller)
+        self.comsend = GUI.ComSenderField.ComSenderField(self, self.gui.controller)
         self.comsend.pack(side=tk.TOP)
         
         self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set, **SharedDiscoBot.textboxConfig)

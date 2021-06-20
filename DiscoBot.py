@@ -17,7 +17,7 @@
 
 import os
 import time
-import Tkinter as tk
+import tkinter as tk
 
 import Controller.DiscoBotController
 
