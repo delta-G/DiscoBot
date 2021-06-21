@@ -78,9 +78,16 @@ class DiscoBotComms:
                         self.receivingReturn = True
                     if self.receivingReturn == True:
 #                         print("READ ->", c)
-                        if c != None:
-                            self.inputBuffer.append(ord(c))
-#                             print("READ2 ->", c, ord(c), self.inputBuffer.decode('ascii'))
+                        if c != None:                            
+                            if ord(c)<127:
+                                self.inputBuffer.append(ord(c))
+                            else:
+                                ### Bail out on non-ascii characters in an ascii command
+                                ### This indicates a comms error
+                                self.inputBuffer = bytearray()
+                                self.receivingReturn = False
+                                self.controller.logger.logString("COMMS_ERROR", 1)
+                                
                         if c == b'>':
                             self.receivingReturn = False
                             self.returnParser(self.inputBuffer)

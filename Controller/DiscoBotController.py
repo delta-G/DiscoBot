@@ -15,6 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Controller.xbox as xbox
+
 import Controller.DiscoBotJoint
 import time
 import struct
@@ -31,13 +32,16 @@ class DiscoBotController:
     def putstring(self, aString):
         
         if(aString == "ascii"):
-            print("Got IT")
-            raise NameError('stupidAscii')
+            self.logger.logString("Stupid-Ascii")
+#             print("Got IT")
+#             raise NameError('stupidAscii')
+
         
         if self.printRedirect is not None:
             self.printRedirect(aString)
-        if self.logFile is not None:
-            self.logFile.write(str(aString))
+        self.logger.logString(str(aString))
+#         if self.logFile is not None:
+#             self.logFile.write(str(aString))
         
         print (aString,)
         
@@ -52,7 +56,7 @@ class DiscoBotController:
     
     
     
-    def __init__(self, aRedirect = None, aLogFile = None):
+    def __init__(self, aRedirect = None, aLogger = None):
         
         print (""" 
         ***********************
@@ -84,7 +88,7 @@ class DiscoBotController:
         self.comms = Controller.DiscoBotComms.DiscoBotComms(self, self.returnParser)
         
         self.printRedirect = aRedirect
-        self.logFile = aLogFile
+        self.logger = aLogger
                 
         self.putstring("Global Interface Initializing\n")   
         
@@ -274,19 +278,10 @@ class DiscoBotController:
         return
     
     
-    def sendToLog(self, cs, level = 0):
-        if self.logFile is not None:
-            self.logFile.write(str(time.time()))
-            self.logFile.write(" :")
-            self.logFile.write(str(level))
-            self.logFile.write(": ")
-            self.logFile.write(str(cs))
-    
-    
     def outPutRunner(self, cs):
         if self.socketConnected:
             self.comms.send(cs)                  
-            self.sendToLog("OUT--> " + str(cs) + "\n")  
+            self.logger.logString("OUT--> " + str(cs), 2)  
         if self.showCommands:
             self.putstring("COM--> " + str(cs) + '\n')       
         return
@@ -390,7 +385,7 @@ class DiscoBotController:
     
     def handleRawDataDump(self, aByteArray):
         
-        self.sendToLog("DUMP--> ")
+        self.logger.logByteArray("DUMP--> ", aByteArray)
         
         dumpMessage = aByteArray
         
@@ -416,11 +411,11 @@ class DiscoBotController:
         
         self.readStatusByte()
         
-        if self.logFile is not None:
-            for val in dumpMessage:
-                self.logFile.write(hex(val))
-                self.logFile.write(" ")
-            self.logFile.write("\n")
+#         if self.logFile is not None:
+#             for val in dumpMessage:
+#                 self.logFile.write(hex(val))
+#                 self.logFile.write(" ")
+#             self.logFile.write("\n")
         
         return 
     
@@ -487,15 +482,15 @@ class DiscoBotController:
     
     def handleArmDump(self, aByteArray):
         
-        self.sendToLog("ARM--> "  + "\n")
+        self.logger.logByteArray("ARM--> ", aByteArray)
        
         dumpMessage = aByteArray
         
-        if self.logFile is not None:
-            for val in dumpMessage:
-                self.logFile.write(hex(val))
-                self.logFile.write(" ")
-            self.logFile.write("\n")
+#         if self.logFile is not None:
+#             for val in dumpMessage:
+#                 self.logFile.write(hex(val))
+#                 self.logFile.write(" ")
+#             self.logFile.write("\n")
         
         self.armStatusByte = dumpMessage[3]
         whichSet = dumpMessage[4]
@@ -508,17 +503,17 @@ class DiscoBotController:
             dataPoints.append(dp)
         
         if whichSet == ord('p'):
-            self.sendToLog("pos--> "  + "\n")
+            self.logger.logString("pos--> ")
             for i in range(8):
                 self.servoInfo[i][0] = dataPoints[i]
                 self.armJoints[i].currentMicros = dataPoints[i]
         elif whichSet == ord('s'):
-            self.sendToLog("spd--> "  + "\n")
+            self.logger.logString("spd--> ")
             for i in range(8):
                 self.servoInfo[i][1] = dataPoints[i]
                 self.armJoints[i].speed = dataPoints[i]
         elif whichSet == ord('t'):
-            self.sendToLog("targ--> "  + "\n")
+            self.logger.logString("targ--> ")
             for i in range(8):
                 self.servoInfo[i][2] = dataPoints[i]
                 self.armJoints[i].target = dataPoints[i]  
@@ -617,12 +612,14 @@ class DiscoBotController:
     
     
     def returnParser(self, aByteArray):
-        if self.logFile is not None:
-            self.sendToLog("RET--> "  + "\n")
-            for val in aByteArray:
-                self.logFile.write(hex(val))
-                self.logFile.write(" ")
-            self.logFile.write("\n")
+        
+        self.logger.logByteArray("RET-->", aByteArray)
+#         if self.logFile is not None:
+#             self.sendToLog("RET--> "  + "\n")
+#             for val in aByteArray:
+#                 self.logFile.write(hex(val))
+#                 self.logFile.write(" ")
+#             self.logFile.write("\n")
             
         if len(aByteArray) >= 3:
             if (aByteArray[0] == ord('<')):
@@ -644,7 +641,7 @@ class DiscoBotController:
                                 self.handleArmCalDump(aByteArray) 
                 else:
                     self.parseReturnString(aByteArray.decode("ascii"))
-                    print ('..')
+#                     print ('..')
                         
         return 
     
@@ -764,11 +761,12 @@ class DiscoBotController:
         rawMessage.append(0x3E)                                         ##15
         
         self.comms.write(rawMessage)
-        if self.logFile is not None:
-            self.logFile.write("RAW -->")
-            for val in rawMessage:
-                self.logFile.write(hex(val))
-                self.logFile.write(" ")
-            self.logFile.write("\n")
+        self.logger.logByteArray("RAW -->", rawMessage)
+#         if self.logFile is not None:
+#             self.logFile.write("RAW -->")
+#             for val in rawMessage:
+#                 self.logFile.write(hex(val))
+#                 self.logFile.write(" ")
+#             self.logFile.write("\n")
         
         return

@@ -23,18 +23,25 @@ import Controller.DiscoBotController
 
 import GUI.DiscoBotGUI
 
-logFile = None
+import DiscoBotLogger
+
+# logger= None
+logger = DiscoBotLogger.DiscoBotLogger()
+logger.openLogFile()
+logger.logString("Starting DiscoBot", 99)
+
 # logFile = open("/home/david/robot/DiscoBot/robotLogFile.txt", "w")
-#    
+#     
 # logFile.write("DiscoBot Log File Start:\n")
 # logFile.write(str(time.time()))
 # logFile.write('\n')
 
 
+
 root = tk.Tk()
 root.title("DiscoBot Base Controller")
 
-controller = Controller.DiscoBotController.DiscoBotController(None, logFile)
+controller = Controller.DiscoBotController.DiscoBotController(None, logger)
 
 gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
@@ -53,8 +60,9 @@ finally:
     #Always close out so that xboxdrv subprocess ends
     if controller.comms.commsOn:
         controller.killConnection()
-    if logFile is not None:
-        logFile.close()
+    if logger is not None:
+        logger.logString("Ending DiscoBot", 99)
+        logger.closeLogFile()
     if controller.joy is not None:
         controller.joy.close()
     os.system('pkill -9 xboxdrv')
