@@ -24,8 +24,8 @@ import Controller.DiscoBotController
 import GUI.DiscoBotGUI
 
 logFile = None
-# logFile = open("robotLogFile.txt", "w")
-#   
+# logFile = open("/home/david/robot/DiscoBot/robotLogFile.txt", "w")
+#    
 # logFile.write("DiscoBot Log File Start:\n")
 # logFile.write(str(time.time()))
 # logFile.write('\n')

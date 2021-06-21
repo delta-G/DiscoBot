@@ -416,11 +416,11 @@ class DiscoBotController:
         
         self.readStatusByte()
         
-#         for val in dumpMessage:
-#             self.sendToLog(hex(val))
-#             self.sendToLog(' ')
-#             
-#         self.sendToLog('\n')
+        if self.logFile is not None:
+            for val in dumpMessage:
+                self.logFile.write(hex(val))
+                self.logFile.write(" ")
+            self.logFile.write("\n")
         
         return 
     
@@ -617,6 +617,13 @@ class DiscoBotController:
     
     
     def returnParser(self, aByteArray):
+        if self.logFile is not None:
+            self.sendToLog("RET--> "  + "\n")
+            for val in aByteArray:
+                self.logFile.write(hex(val))
+                self.logFile.write(" ")
+            self.logFile.write("\n")
+            
         if len(aByteArray) >= 3:
             if (aByteArray[0] == ord('<')):
                 if(aByteArray[1] >= 0x12) and (aByteArray[1] <= 0x14):

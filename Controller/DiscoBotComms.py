@@ -59,7 +59,7 @@ class DiscoBotComms:
                 loopStartTime = time.time()
                 while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
                     c = self.serOut.read()          
-                    
+#                     print("READ ->", c)
                     if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
                         
                         self.receivingReturn = False
@@ -72,13 +72,16 @@ class DiscoBotComms:
                             else:
                                 self.inputBuffer = bytearray()
                                                     
-                    elif c == '<':
+                    elif c == b'<':
+#                         print("START OF PACKET")
                         self.inputBuffer = bytearray()
                         self.receivingReturn = True
                     if self.receivingReturn == True:
+#                         print("READ ->", c)
                         if c != None:
                             self.inputBuffer.append(ord(c))
-                        if c == '>':
+#                             print("READ2 ->", c, ord(c), self.inputBuffer.decode('ascii'))
+                        if c == b'>':
                             self.receivingReturn = False
                             self.returnParser(self.inputBuffer)
                             self.inputBuffer = bytearray()
@@ -94,7 +97,7 @@ class DiscoBotComms:
 
     
     def buffer(self, aMess):
-        self.outputBuffer.extend(bytearray(aMess))
+        self.outputBuffer.extend(bytearray(aMess, encoding='ascii'))
         return
     
     def flush(self):
