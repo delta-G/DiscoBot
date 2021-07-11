@@ -46,9 +46,10 @@ class DiscoBotLogger:
         return 
     
     def closeLogFile(self):
-        self.logOpen = False
-        self.logFile.write("Closing Log")
-        self.logFile.close()
+        if self.logOpen:
+            self.logOpen = False
+            self.logFile.write("Closing Log")
+            self.logFile.close()
         return 
     
     def logString(self, cs, level=0):

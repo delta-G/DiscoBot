@@ -31,19 +31,17 @@ class DiscoBotController:
     
     def putstring(self, aString):
         
-        if(aString == "ascii"):
-            self.logger.logString("Stupid-Ascii")
-#             print("Got IT")
-#             raise NameError('stupidAscii')
+#         if(aString == "ascii"):
+#             self.logger.logString("Stupid-Ascii")
+# #             print("Got IT")
+# #             raise NameError('stupidAscii')
 
         
         if self.printRedirect is not None:
             self.printRedirect(aString)
         self.logger.logString(str(aString))
-#         if self.logFile is not None:
-#             self.logFile.write(str(aString))
         
-        print (aString,)
+        print (aString)
         
         return
     
@@ -105,7 +103,7 @@ class DiscoBotController:
         self.lastResponseTime = 0     
         self.turnAroundTime = 0.0 
         
-        self.comTimeOut = 0.35
+        self.comTimeOut = 0.5
         
         self.lastBotSNR = 0
         self.lastBotRSSI = 0
@@ -274,7 +272,7 @@ class DiscoBotController:
         if(aMode > 1):
             self.comTimeOut = 10
         else:
-            self.comTimeOut = 0.35   
+            self.comTimeOut = 1
         return
     
     
@@ -312,7 +310,8 @@ class DiscoBotController:
               
     ### CONTROLLER LOOP        
                 if ((time.time() - self.lastXboxSendTime >= self.comTimeOut) or (self.responseReceived)):
-       
+                    if self.sendingController and not self.responseReceived:
+                        self.logger.logString("MISSED RESPONSE")       
                     if self.socketConnected:
                         if self.sendingController:    
                             self.sendRawController()
@@ -630,6 +629,7 @@ class DiscoBotController:
                             self.setResponseRecieved()
                         elif (aByteArray[1] == 0x13) and (aByteArray[2] == 16):
                             self.handleVoltageDump(aByteArray)
+                            self.setResponseRecieved()                            
                         elif (aByteArray[1] == 0x13) and ((aByteArray[2] == 10) or (aByteArray[2] == 30)):
                             self.handleSonarDump(aByteArray)
                             self.setResponseRecieved()

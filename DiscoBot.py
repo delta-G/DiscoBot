@@ -27,7 +27,7 @@ import DiscoBotLogger
 
 # logger= None
 logger = DiscoBotLogger.DiscoBotLogger()
-logger.openLogFile()
+# logger.openLogFile()
 logger.logString("Starting DiscoBot", 99)
 
 # logFile = open("/home/david/robot/DiscoBot/robotLogFile.txt", "w")

@@ -118,7 +118,7 @@ class DiscoBotGUI(tk.Frame):
         
         if not self.videoOpen:
             self.videoOpen = True
-            self.vidWindow = VideoWindow.VideoWindow(self, self.controller, 0)
+            self.vidWindow = GUI.VideoWindow.VideoWindow(self, self.controller, 0)
             return
 
 

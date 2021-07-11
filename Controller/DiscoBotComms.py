@@ -83,10 +83,11 @@ class DiscoBotComms:
                                 self.inputBuffer.append(ord(c))
                             else:
                                 ### Bail out on non-ascii characters in an ascii command
-                                ### This indicates a comms error
-                                self.inputBuffer = bytearray()
+                                ### This indicates a comms error                                
                                 self.receivingReturn = False
-                                self.controller.logger.logString("COMMS_ERROR", 1)
+#                                 self.controller.logger.logString("COMMS_ERROR", 1)
+                                self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
+                                self.inputBuffer = bytearray()
                                 
                         if c == b'>':
                             self.receivingReturn = False
@@ -96,6 +97,7 @@ class DiscoBotComms:
             except Exception as e:
                 err = e.args[0]
                 print (e)
+                self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
                 self.controller.putstring("COMS-ERROR:")
                 self.controller.putstring(err)
                             
