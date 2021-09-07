@@ -82,6 +82,13 @@ class TermFrame(tk.Frame):
         self.comsend = GUI.ComSenderField.ComSenderField(self, self.gui.controller)
         self.comsend.pack(side=tk.TOP)
         
+        self.controllerLabel = tk.Label(self, text="controllerLabel", **SharedDiscoBot.labelConfig)
+        self.controllerLabel.pack(side=tk.TOP)
+        
+        self.controllerLabel2 = tk.Label(self, text="controllerLabel2", **SharedDiscoBot.labelConfig)
+        self.controllerLabel2.pack(side=tk.TOP)       
+        
+        
         self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set, **SharedDiscoBot.textboxConfig)
         self.scrollbar.config(command=self.log.yview)
         self.log.pack()    

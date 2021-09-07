@@ -36,8 +36,8 @@ entryConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highli
 textboxConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight']}
 
 buttonConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight']}
-redButton = {'bg':'red' , 'fg':'black', 'highlightbackground':colors['highlight']}
-greenButton = {'bg':'green' , 'fg':'black', 'highlightbackground':colors['highlight']}
+redButton = {'bg':colors['red'] , 'fg':'black', 'highlightbackground':colors['highlight']}
+greenButton = {'bg':colors['green'] , 'fg':'black', 'highlightbackground':colors['highlight']}
 
 frameConfig = {'bg':'black'}
 highlightFrameConfig = {'bg':'black', 'highlightthickness':1,  'highlightbackground':colors['highlight']}

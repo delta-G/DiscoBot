@@ -14,7 +14,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Controller.xbox as xbox
+import Controller.JoyReader as JoyReader
 
 import Controller.DiscoBotJoint
 import time
@@ -116,17 +116,17 @@ class DiscoBotController:
         self.armStatusByte = 0
         
         self.properties['driveMode'] = ""
-        self.properties['cameraPower'] = False
-        self.properties['headlightPower'] = False
-        self.properties['armPower'] = False
-        self.properties['comPower'] = False
-        self.properties['armServoPower'] = False
+        self.properties['cameraPower'] = 0
+        self.properties['headlightPower'] = 0
+        self.properties['armPower'] = 0
+        self.properties['comPower'] = 0
+        self.properties['armServoPower'] = 0
         
-        self.properties['motorPower'] = False
-        self.properties['motorContEnable'] = False
-        self.properties['v12Power'] = False
-        self.properties['auxPower'] = False
-        self.properties['sonarPower'] = False
+        self.properties['motorPower'] = 0
+        self.properties['motorContEnable'] = 0
+        self.properties['v12Power'] = 0
+        self.properties['auxPower'] = 0
+        self.properties['sonarPower'] = 0
         
         
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
@@ -160,6 +160,8 @@ class DiscoBotController:
         self.properties['elbowAngle'] = 1.57
         self.properties['wristServoMicros'] = 1500
         self.properties['wristAngle'] = 1.57
+        
+        self.properties['lastController'] = "LastController"
         
         
 ### Vars for GUI
@@ -226,7 +228,9 @@ class DiscoBotController:
     def connectJoystick(self):
         if self.joy == None:
             try:
-                self.joy = xbox.Joystick()            
+                self.joy = JoyReader.JoyReader()   
+                while not self.joy.connected():
+                    self.joy.run()        
             except Exception as ex:
                 self.joy = None
                 self.putstring(ex)  
@@ -430,49 +434,49 @@ class DiscoBotController:
             self.properties['driveMode'] = "AUTO"          
         
         if(self.botStatusByte1 & 0x10):
-            self.properties['cameraPower'] = True
+            self.properties['cameraPower'] = 1
         else:
-            self.properties['cameraPower'] = False
+            self.properties['cameraPower'] = 0
             
         if(self.botStatusByte1 & 0x20):
-            self.properties['headlightPower'] = True
+            self.properties['headlightPower'] = 1
         else:
-            self.properties['headlightPower'] = False
+            self.properties['headlightPower'] = 0
             
         if(self.botStatusByte1 & 0x40):
-            self.properties['armPower'] = True
+            self.properties['armPower'] = 1
         else:
-            self.properties['armPower'] = False
+            self.properties['armPower'] = 0
             
         if(self.botStatusByte1 & 0x80):
-            self.properties['comPower'] = True
+            self.properties['comPower'] = 1
         else:
-            self.properties['comPower'] = False
+            self.properties['comPower'] = 0
             
         if(self.botStatusByte2 & 0x01):
-            self.properties['motorPower'] = True
+            self.properties['motorPower'] = 1
         else:
-            self.properties['motorPower'] = False
+            self.properties['motorPower'] = 0
             
         if(self.botStatusByte2 & 0x02):
-            self.properties['motorContEnable'] = True
+            self.properties['motorContEnable'] = 1
         else:
-            self.properties['motorContEnable'] = False
+            self.properties['motorContEnable'] = 0
             
         if(self.botStatusByte2 & 0x04):
-            self.properties['v12Power'] = True
+            self.properties['v12Power'] = 1
         else:
-            self.properties['v12Power'] = False
+            self.properties['v12Power'] = 0
             
         if(self.botStatusByte2 & 0x08):
-            self.properties['auxPower'] = True
+            self.properties['auxPower'] = 1
         else:
-            self.properties['auxPower'] = False
+            self.properties['auxPower'] = 0
             
         if(self.botStatusByte2 & 0x10):
-            self.properties['sonarPower'] = True
+            self.properties['sonarPower'] = 1
         else:
-            self.properties['sonarPower'] = False
+            self.properties['sonarPower'] = 0
         
         
             
@@ -518,9 +522,9 @@ class DiscoBotController:
                 self.armJoints[i].target = dataPoints[i]  
                 
         if(self.armStatusByte & 1):
-            self.properties['armServoPower'] = True
+            self.properties['armServoPower'] = 1
         else:
-            self.properties['armServoPower'] = False
+            self.properties['armServoPower'] = 0
                     
         return 
     
@@ -760,6 +764,8 @@ class DiscoBotController:
         rawMessage.append(((int)(rightHatY)) & 0xFF)                    ##14
         rawMessage.append(0x3E)                                         ##15
         
+        self.properties['lastController'] = self.displayRawMessage(rawMessage)
+        
         self.comms.write(rawMessage)
         self.logger.logByteArray("RAW -->", rawMessage)
 #         if self.logFile is not None:
@@ -770,3 +776,20 @@ class DiscoBotController:
 #             self.logFile.write("\n")
         
         return
+    
+    
+    def displayRawMessage(self, aMessage):
+        
+        retText = ""
+        
+        for val in aMessage:
+            retText += hex(val)               
+        
+        return retText
+    
+    
+    
+    
+    
+    
+#####

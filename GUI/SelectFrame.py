@@ -21,7 +21,7 @@ import glob
 import serial
 
 import SharedDiscoBot
-import GUI.CommandCheckButton
+import GUI.IndicatorButton
 
 class SelectFrame(tk.Frame):
 
@@ -54,17 +54,17 @@ class SelectFrame(tk.Frame):
         self.rightFrame = tk.Frame(self.checkFrame, **SharedDiscoBot.frameConfig)
         self.rightFrame.pack(side=tk.LEFT)
         
-        self.camPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Camera", 'cameraPower', "<V0>", "<V1>")
-        self.headPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Lights", 'headlightPower', "<H0>", "<H1>")
-        self.armPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Arm-CPU", 'armPower', "<QA0>", "<QA1>")
-        self.comPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Com-CPU", 'comPower', "<QR0>", "<QR1>")
-        self.armServoPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.leftFrame, self.controller, "Arm-Servo", 'armServoPower', "<A,Cp>", "<A,CP>")
+        self.camPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Camera", 'cameraPower', "<V0>", "<V1>")
+        self.headPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Lights", 'headlightPower', "<H0>", "<H1>")
+        self.armPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Arm-CPU", 'armPower', "<QA0>", "<QA1>")
+        self.comPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Com-CPU", 'comPower', "<QR0>", "<QR1>")
+        self.armServoPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Arm-Servo", 'armServoPower', "<A,Cp>", "<A,CP>")
         
-        self.motorPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Motors", 'motorPower', "<QM0>", "<QM1>")
-        self.motorContEnableCheck = GUI.CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Motor-En", 'motorContEnable', "<Qm0>", "<Qm1>")
-        self.v12PowCheck = GUI.CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "12-Volt", 'v12Power', "<QV0>", "<QV1>")
-        self.auxPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Aux", 'auxPower', "<Qa0>", "<Qa1>")
-        self.sonarPowCheck = GUI.CommandCheckButton.CommandCheckButton(self.rightFrame, self.controller, "Sonar", 'sonarPower', "<QS0>", "<QS1>")
+        self.motorPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Motors", 'motorPower', "<QM0>", "<QM1>")
+        self.motorContEnableCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Motor-En", 'motorContEnable', "<Qm0>", "<Qm1>")
+        self.v12PowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "12-Volt", 'v12Power', "<QV0>", "<QV1>")
+        self.auxPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Aux", 'auxPower', "<Qa0>", "<Qa1>")
+        self.sonarPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Sonar", 'sonarPower', "<QS0>", "<QS1>")
         
         
         

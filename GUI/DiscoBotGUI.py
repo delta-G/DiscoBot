@@ -98,6 +98,8 @@ class DiscoBotGUI(tk.Frame):
         
         return
     
+    def getController(self):
+        return self.controller
     
     def refresh(self):
         self.servoPane.updateData()
@@ -107,6 +109,13 @@ class DiscoBotGUI(tk.Frame):
         self.directionFrame.display()
         self.selectFrame.refresh()
         self.voltageFrame.refresh()
+        
+        self.termFrame.controllerLabel.config(text=self.controller.getProperty('lastController'));
+        if(self.controller.joy is not None and self.controller.joy.connected()):
+#             self.termFrame.controllerLabel2.config(text=self.controller.joy.reading[0:42])
+            self.termFrame.controllerLabel.config(fg=SharedDiscoBot.colors['green'])
+        else:
+            self.termFrame.controllerLabel.config(fg=SharedDiscoBot.colors['red'])            
         
         if self.videoOpen:
             self.vidWindow.refresh()

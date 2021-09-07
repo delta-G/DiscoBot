@@ -65,7 +65,7 @@ finally:
         logger.closeLogFile()
     if controller.joy is not None:
         controller.joy.close()
-    os.system('pkill -9 xboxdrv')
+#     os.system('pkill -9 xboxdrv')
     
     print ("Done.")
     

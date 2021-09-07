@@ -17,6 +17,7 @@
 
 import tkinter as tk
 import SharedDiscoBot
+import GUI.Gauge as Gauge
 
 
 class VoltageFrame(tk.Frame):
@@ -27,7 +28,7 @@ class VoltageFrame(tk.Frame):
         self.controller = aController
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
-        self.batVlabel = voltageLabel(self, self.controller, "Battery", 'batteryVoltage')
+        self.batVlabel = Gauge.Gauge(self, self.controller, "Battery", 'batteryVoltage')
         self.motorVlabel = voltageLabel(self, self.controller, "Motor", 'motorVoltage')
         self.mainVlabel = voltageLabel(self, self.controller, "Main", 'mainVoltage')
         self.comVlabel = voltageLabel(self, self.controller, "Com", 'comVoltage')
