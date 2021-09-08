@@ -15,6 +15,26 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+
+#############################################################
+#
+#
+#
+#             To make this work on Ubuntu
+#             Put this line into a rule file in /etc/udev/rules.d with a number higher than 50
+#             SUBSYSTEM=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="028e", GROUP="plugdev", TAG+="uaccess"
+#             But replace the 045e and 028e with the VID and PID of the stick you're using (use lsusb to find it)
+#             Next add yourself to the plugdev group and go to /dev and 
+#             chgrp plugdev uinput
+#             chmod 660 uinput
+#             and that will make it so xboxdrv can run without sudo.
+#             Launch xboxdrv in a terminal and then this will attach to js0
+#
+#
+#
+#
+#############################################################
+
 import os
 import io 
 import struct
@@ -73,15 +93,6 @@ class JoyReader:
         return 
     
     def __init__(self):
-        
-#         self.leftHatX = 0
-#         self.leftHatY = 0
-#         self.rightHatX = 0
-#         self.rightHatY = 0
-#         self.dpadX = 0
-#         self.dpadY = 0
-#         self.rightTrigger = 0
-#         self.leftTrigger = 0
 
         self.connectStatus = False 
         
@@ -91,7 +102,7 @@ class JoyReader:
         self.joyFile = io.open(JOY_PATH, "rb")
         os.set_blocking(self.joyFile.fileno(), False)
         
-        self.run()
+        self.run()  ## run once to get connection status
         
         return 
     
@@ -179,20 +190,8 @@ class JoyReader:
         return 0
     
     def getAnalog(self, aName):
-        self.run()
-        idx = analogIndices[aName]
-        retval = self.analogVals[idx]
-#         ### Triggers need special treatment for existing code compatibility
-#         ### To be compatible with existing discobot code they need to return 0-255
-#         ### Currently they return -32767 to 32767
-#         if idx == 4 or idx == 5:
-# #             retval = retval / 32767  ###  scale to -1.0 to 1.0 
-# #             retval = retval / 2      ###  scale to -0.5 to 0.5
-# #             retval = retval + 0.5    ###  move scale to 0.0 - 1.0
-# #             retval = retval * 255    ###  scale to 0 - 255
-#             retval = int(((retval / 65534) + 0.5) * 255)
-                    
-        return (retval)
+        self.run()                 
+        return self.analogVals[analogIndices[aName]]
     
     ####  Functions for compatibility with old DiscoBot code
     def axisScale(self, raw, deadzone):        
