@@ -24,6 +24,8 @@ class DiscoBotComms:
         
         self.controller = aController
         
+        self.serOut = None
+        
         self.commsOn = False
         
         self.established = False
@@ -51,6 +53,8 @@ class DiscoBotComms:
             
         return
     
+    def connected(self):
+        return self.commsOn
     
     def runComms(self):
         
@@ -128,9 +132,10 @@ class DiscoBotComms:
         return self.serOut.read()
     
     def close(self):
-        self.serOut.flushInput()
-        self.serOut.flushOutput()
-        self.serOut.close()
+        if self.serOut != None:
+            self.serOut.flushInput()
+            self.serOut.flushOutput()
+            self.serOut.close()
         self.commsOn=False
         return 
     

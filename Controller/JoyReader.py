@@ -22,11 +22,11 @@
 #
 #             To make this work on Ubuntu
 #             Put this line into a rule file in /etc/udev/rules.d with a number higher than 50
-#             SUBSYSTEM=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="028e", GROUP="plugdev", TAG+="uaccess"
+#             SUBSYSTEM=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="028e", GROUP="input", TAG+="uaccess"
+#             Also need another rule file with this one:
+#             KERNEL=="uinput", GROUP="input", MODE:="0660"
 #             But replace the 045e and 028e with the VID and PID of the stick you're using (use lsusb to find it)
-#             Next add yourself to the plugdev group and go to /dev and 
-#             chgrp plugdev uinput
-#             chmod 660 uinput
+#             Next add yourself to the input group and reboot
 #             and that will make it so xboxdrv can run without sudo.
 #             Launch xboxdrv in a terminal and then this will attach to js0
 #
@@ -36,6 +36,7 @@
 #############################################################
 
 import os
+import subprocess
 import io 
 import struct
 import time
@@ -92,12 +93,30 @@ class JoyReader:
             time.sleep(0.1)        
         return 
     
+    def checkForXboxdrvProcess(self):
+        psgrp = os.popen('ps -Af | grep xboxdrv | grep -v grep')
+        time.sleep(0.01)  ## give grep a couple ms to run
+        psrd = psgrp.read()
+        if psrd == "":  ## xboxdrv not running
+            return False
+        elif 'xboxdrv --silent' in psrd:
+            return True 
+        
+    
     def __init__(self):
 
         self.connectStatus = False 
         
         self.analogVals = [0,0,0,0,-32767,-32767,0,0]
         self.buttons = 0
+        
+        self.xboxProcess = None
+        self.xboxStartedHere = False
+        
+        while not self.checkForXboxdrvProcess():
+            self.xboxProcess = subprocess.Popen(['xboxdrv', '--silent'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            time.sleep(0.1)        
+            self.xboxStartedHere = True
         
         self.joyFile = io.open(JOY_PATH, "rb")
         os.set_blocking(self.joyFile.fileno(), False)
@@ -108,6 +127,8 @@ class JoyReader:
     
     def close(self):
         self.joyFile.close()
+        if self.xboxStartedHere:
+            os.system('pkill -9 xboxdrv')
         return
     
     def run(self):

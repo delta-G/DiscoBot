@@ -31,12 +31,6 @@ class DiscoBotController:
     
     def putstring(self, aString):
         
-#         if(aString == "ascii"):
-#             self.logger.logString("Stupid-Ascii")
-# #             print("Got IT")
-# #             raise NameError('stupidAscii')
-
-        
         if self.printRedirect is not None:
             self.printRedirect(aString)
         self.logger.logString(str(aString))
@@ -80,7 +74,8 @@ class DiscoBotController:
         
         self.properties = {}
         
-        self.socketConnected = False 
+#         self.socketConnected = False 
+        self.connectedToBot = False
         self.endProgram = False
         
         self.comms = Controller.DiscoBotComms.DiscoBotComms(self, self.returnParser)
@@ -227,6 +222,7 @@ class DiscoBotController:
      
     def connectJoystick(self):
         if self.joy == None:
+            
             try:
                 self.joy = JoyReader.JoyReader()   
                 while not self.joy.connected():
@@ -242,18 +238,20 @@ class DiscoBotController:
     ### This should check for connection before declaring the socket connected.  
     def connectToBot(self):
         if self.comms.commsOn:
-            self.putstring("Connecting to Robot\n")
-            self.socketConnected = True
-            self.outPutRunner("<ESTART><ECONNECT><B,HB>")
-            self.putstring ("Connected to Robot\n") 
+            self.putstring("Connecting to Robot\n")            
+            self.outPutRunner("<P123>")
+            time.sleep(0.2)
+#             self.socketConnected = True
+            self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")
+#             self.putstring ("Connected to Robot\n") 
         
         return    
     
     def killConnection(self):
-        if(self.socketConnected):
+        if(self.comms.connected()):
             self.putstring ("Closing Connection\n")
             self.comms.close() 
-            self.socketConnected = False           
+            self.connectedToBot = False           
         else :
             self.putstring ("The connection is not open\n")   
             self.comms.close()             
@@ -281,7 +279,7 @@ class DiscoBotController:
     
     
     def outPutRunner(self, cs):
-        if self.socketConnected:
+        if self.comms.connected():
             self.comms.send(cs)                  
             self.logger.logString("OUT--> " + str(cs), 2)  
         if self.showCommands:
@@ -316,7 +314,7 @@ class DiscoBotController:
                 if ((time.time() - self.lastXboxSendTime >= self.comTimeOut) or (self.responseReceived)):
                     if self.sendingController and not self.responseReceived:
                         self.logger.logString("MISSED RESPONSE")       
-                    if self.socketConnected:
+                    if self.connectedToBot:
                         if self.sendingController:    
                             self.sendRawController()
                             self.lastXboxSendTime = time.time()
@@ -325,7 +323,7 @@ class DiscoBotController:
 #                             self.outPutRunner("<R,R><FFE>")
         
     ### COMMS WITH ROBOT
-        if self.socketConnected:
+        if self.comms.connected():
             self.comms.runComms()
             
         
@@ -338,9 +336,7 @@ class DiscoBotController:
         elif (time.time() - self.lastRMBheartBeat >= 2):
             self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['yellow']
         else:
-            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
-            
-                    
+            self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']                    
             
         return True
     
@@ -349,13 +345,14 @@ class DiscoBotController:
         if not self.joy.Start():
             self.lastStart = False
             
-        if(self.joy.Start() and not self.socketConnected and not self.lastStart):    
+        if(self.joy.Start() and not self.connectedToBot and not self.lastStart):    
 #             self.putstring("Connecting to socket")    
             self.putstring("<Connecting to socket>")                        
             self.connectToBot()
             self.startSendingController()
+            self.lastStart = True
         
-        if(self.joy.Start() and self.socketConnected and not self.lastStart):
+        if(self.joy.Start() and self.connectedToBot and not self.lastStart):
             self.startSendingController()
             self.sendRawController()
             self.lastXboxSendTime = time.time()
@@ -581,6 +578,8 @@ class DiscoBotController:
         
         if aBuffer == "<RMB HBoR>":
             self.lastRMBheartBeat = time.time()
+        elif aBuffer == "<RMB_RESP>":
+            self.connectedToBot = True
             
 #         elif aBuffer.startswith("<SR,"):
 #             self.speedLog.write(aBuffer)
