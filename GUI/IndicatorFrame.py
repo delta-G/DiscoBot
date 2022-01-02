@@ -16,6 +16,9 @@
 
 import SharedDiscoBot
 import tkinter as tk
+import glob
+import GUI.SelectFrame
+import GUI.VoltageFrame
 
 class IndicatorFrame(tk.Frame):
     
@@ -26,17 +29,28 @@ class IndicatorFrame(tk.Frame):
     def propCommsInit(self):
         if self.controller.comms.commsOn:
             self.controller.killConnection()
-            self.gui.selectFrame.clearPortList()
+            self.clearPortList()
         else:
-            selection = self.gui.selectFrame.comPortSpinbox.get()
+            selection = self.comPortSpinbox.get()
             if selection == "---Check---":
-                self.gui.selectFrame.getPortList()
+                self.getPortList()
             else:    
                 self.controller.initComs(selection)
         
                     
         return
     
+    
+    def getPortList(self):
+        self.portList = glob.glob('/dev/tty[AU]*')
+        self.portList.append("---Check---")
+        self.comPortSpinbox.config(values=self.portList)
+        return
+    
+    def clearPortList(self):
+        self.portList = ["---Check---"]        
+        self.comPortSpinbox.config(values=self.portList)
+        return
     
     def __init__(self, aParent, aGui, aController):
         self.parent = aParent
@@ -61,10 +75,10 @@ class IndicatorFrame(tk.Frame):
         self.hbLabel.bind("<Double-Button-1>", self.hbLabelDoubleClickAction)                
         self.hbLabel.pack(side=tk.TOP)
         
-        self.bvLabel = IndicatorLabel(self.firstFrame, text="BAT")
-        self.bvLabel.config(width=10)        
-        self.bvLabel.config(height=1)
-        self.bvLabel.pack(side=tk.TOP)      
+#         self.bvLabel = IndicatorLabel(self.firstFrame, text="BAT")
+#         self.bvLabel.config(width=10)        
+#         self.bvLabel.config(height=1)
+#         self.bvLabel.pack(side=tk.TOP)      
         
         self.baseSigLabel = IndicatorLabel(self.firstFrame, text="BASE 00 , -00")
 #         self.baseSigLabel.config(font=(self.gui.defaultFont , 10))
@@ -77,14 +91,47 @@ class IndicatorFrame(tk.Frame):
         self.botSigLabel.config(height=1)
         self.botSigLabel.pack(side=tk.TOP) 
         
-        self.distLabel = IndicatorLabel(self.firstFrame, text="DST")
-        self.distLabel.config(width=10)        
-        self.distLabel.config(height=1)
-        self.distLabel.pack(side=tk.TOP)
+        self.connectButtonFrame = tk.Frame(self.firstFrame, **SharedDiscoBot.frameConfig)
+        self.connectButtonFrame.pack(side = tk.TOP)
+        
+        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, command=self.propController)
+        self.controllerConnectButton.config(**SharedDiscoBot.redButton)
+        self.controllerConnectButton.pack(side = tk.LEFT)
+        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, command=self.propCommsInit)
+        self.comConnectButton.config(**SharedDiscoBot.redButton)
+        self.comConnectButton.pack(side=tk.LEFT)
+        
+        
+        self.modeFrame = tk.Frame(self.firstFrame, **SharedDiscoBot.frameConfig)
+        self.modeFrame.pack(side=tk.TOP)
+        
+        self.comPortSpinbox = tk.Spinbox(self.modeFrame, width=13, **SharedDiscoBot.spinboxConfig)
+        self.getPortList()
+        
+        self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"], **SharedDiscoBot.spinboxConfig)
+        self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton, **SharedDiscoBot.buttonConfig)
+        
+        self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
+        self.comModeSpinbox.pack(side=tk.LEFT, anchor=tk.W)
+        self.comModeButton.pack(side=tk.LEFT, anchor=tk.W) 
+        
+        
+        
+#         self.distLabel = IndicatorLabel(self.firstFrame, text="DST")
+#         self.distLabel.config(width=10)        
+#         self.distLabel.config(height=1)
+#         self.distLabel.pack(side=tk.TOP)
         
         
 #         self.rsLabel = IndicatorLabel(self, text="RSSI")
 #         self.rsLabel.pack(side=tk.LEFT)
+
+        self.voltageFrame = GUI.VoltageFrame.VoltageFrame(self, self.controller) 
+        self.voltageFrame.pack(side=tk.LEFT, anchor=tk.N)
+        
+        self.selectFrame = GUI.SelectFrame.SelectFrame(self, self.controller)
+        self.selectFrame.pack(side=tk.LEFT, anchor=tk.N)
+
 
         self.secondFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         self.secondFrame.config(padx=5, pady=0)
@@ -105,18 +152,13 @@ class IndicatorFrame(tk.Frame):
         self.throttleLabel.config(width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         self.throttleLabel.pack(side=tk.TOP)
         
-        self.connectButtonFrame = tk.Frame(self.secondFrame, **SharedDiscoBot.frameConfig)
-        self.connectButtonFrame.pack(side = tk.TOP)
         
-        self.controllerConnectButton = tk.Button(self.connectButtonFrame, text="Control", width = 5, command=self.propController)
-        self.controllerConnectButton.config(**SharedDiscoBot.redButton)
-        self.controllerConnectButton.pack(side = tk.LEFT)
-        self.comConnectButton = tk.Button(self.connectButtonFrame, text="Comms", width = 5, command=self.propCommsInit)
-        self.comConnectButton.config(**SharedDiscoBot.redButton)
-        self.comConnectButton.pack(side=tk.LEFT)
         
         self.modeLabel = tk.Label(self.secondFrame, text='MODE', width=12, font=SharedDiscoBot.defaultFont, **SharedDiscoBot.highlightLabelConfig)
         self.modeLabel.pack(side=tk.TOP)
+        
+        self.videoButton = tk.Button(self.secondFrame, text="Video", width=5, command=self.gui.launchVideo)
+        self.videoButton.pack(side=tk.TOP)
         
         return
     
@@ -124,26 +166,30 @@ class IndicatorFrame(tk.Frame):
 #         self.ssidLabel.config(text=" SSID \n" + str(self.controller.currentSSID))
         self.hbLabel.check(self.controller.rmbHeartbeatWarningLevel)
         self.hbLabel.config(text="HB - " + "{:.3f}".format(self.controller.turnAroundTime * 1000))
-        self.bvLabel.config(text="Bat" + str(self.controller.properties['batteryVoltage']))
-        numCells = 0
-        for i in range(6):
-            if (self.controller.properties['batteryVoltage'] > (i * 3.4)):
-                numCells = i
-            else:
-                break
-        if self.controller.properties['batteryVoltage'] < numCells * 3.55:
-            self.bvLabel.config(fg=SharedDiscoBot.colors['red'])
-        elif self.controller.properties['batteryVoltage'] < numCells * 3.85:
-            self.bvLabel.config(fg=SharedDiscoBot.colors['yellow'])
-        else: 
-            self.bvLabel.config(fg=SharedDiscoBot.colors['green'])
+#         self.bvLabel.config(text="Bat" + str(self.controller.properties['batteryVoltage']))
+#         numCells = 0
+#         for i in range(6):
+#             if (self.controller.properties['batteryVoltage'] > (i * 3.4)):
+#                 numCells = i
+#             else:
+#                 break
+#         if self.controller.properties['batteryVoltage'] < numCells * 3.55:
+#             self.bvLabel.config(fg=SharedDiscoBot.colors['red'])
+#         elif self.controller.properties['batteryVoltage'] < numCells * 3.85:
+#             self.bvLabel.config(fg=SharedDiscoBot.colors['yellow'])
+#         else: 
+#             self.bvLabel.config(fg=SharedDiscoBot.colors['green'])
 
         
 #         self.baseSigLabel.config(text="SNR - RSSI")
         self.botSigLabel.config(text="Bot " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI))
         self.baseSigLabel.config(text="Base " + str(self.controller.lastBaseSNR) + " , " + str(self.controller.lastBaseRSSI))
         
-        self.distLabel.config(text="d= " + str(self.controller.sonarDistance))
+#         self.distLabel.config(text="d= " + str(self.controller.sonarDistance))
+        
+        
+        self.voltageFrame.refresh()  
+        self.selectFrame.refresh()       
         
         self.ticFrame.refresh()
         self.pwmFrame.refresh()
@@ -170,6 +216,11 @@ class IndicatorFrame(tk.Frame):
         
         return 
     
+    def handleLoRaModeButton(self):
+        
+        self.controller.setLoRaMode(self.comModeSpinbox.get())
+        
+        return 
 
 class IndicatorLabel(tk.Label):
     

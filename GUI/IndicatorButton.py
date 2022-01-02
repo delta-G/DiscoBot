@@ -45,7 +45,7 @@ class IndicatorButton(tk.Button):
         self.keyword = aKeyword
         self.onCommand = aOnCommand
         self.offCommand = aOffCommand
-        tk.Button.__init__(self, self.parent, text=self.text, command=self.onPress, padx=0, pady=0, anchor=tk.W, height=1, width=9, font=('Veranda', '10', 'bold'), **SharedDiscoBot.redButton)
+        tk.Button.__init__(self, self.parent, text=self.text, command=self.onPress, padx=0, pady=0, anchor=tk.W, height=1, width=4, font=('Veranda', '10', 'bold'), **SharedDiscoBot.redButton)
         
         return 
     

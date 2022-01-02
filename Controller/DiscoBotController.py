@@ -98,7 +98,7 @@ class DiscoBotController:
         self.lastResponseTime = 0     
         self.turnAroundTime = 0.0 
         
-        self.comTimeOut = 0.5
+        self.comTimeOut = 1.0
         
         self.lastBotSNR = 0
         self.lastBotRSSI = 0
@@ -127,12 +127,12 @@ class DiscoBotController:
         self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']
         
 #         self.properties['rmbBatteryVoltage'] = 0.0
-        self.properties['batteryVoltage'] = 0.0
-        self.properties['motorVoltage'] = 1.2
-        self.properties['mainVoltage'] = 2.3
-        self.properties['comVoltage'] = 3.4
-        self.properties['auxVoltage'] = 4.5
-        self.properties['v12Voltage'] = 5.6
+        self.properties['batteryVoltage'] = 14.55
+        self.properties['motorVoltage'] = 1.23
+        self.properties['mainVoltage'] = 1.23
+        self.properties['comVoltage'] = 1.23
+        self.properties['auxVoltage'] = 1.23
+        self.properties['v12Voltage'] = 1.23
         
         
         self.properties['leftMotorCount'] = 0
@@ -312,10 +312,12 @@ class DiscoBotController:
               
     ### CONTROLLER LOOP        
                 if ((time.time() - self.lastXboxSendTime >= self.comTimeOut) or (self.responseReceived)):
-                    if self.sendingController and not self.responseReceived:
-                        self.logger.logString("MISSED RESPONSE")       
+#                     if self.sendingController and not self.responseReceived:
+#                         self.logger.logString("MISSED RESPONSE")       
                     if self.connectedToBot:
                         if self.sendingController:    
+                            if not self.responseReceived:
+                                self.logger.logString("MISSED RESPONSE")
                             self.sendRawController()
                             self.lastXboxSendTime = time.time()
                             self.responseReceived = False
@@ -522,7 +524,7 @@ class DiscoBotController:
             self.properties['armServoPower'] = 1
         else:
             self.properties['armServoPower'] = 0
-                    
+        
         return 
     
     
@@ -610,6 +612,7 @@ class DiscoBotController:
         self.responseReceived = True
         self.lastResponseTime = time.time()
         self.turnAroundTime = time.time() - self.lastXboxSendTime
+        self.lastRMBheartBeat = time.time()
         return 
     
     

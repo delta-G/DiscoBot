@@ -16,26 +16,11 @@
 
 
 import tkinter as tk
-import sys
-import glob
-import serial
 
 import SharedDiscoBot
 import GUI.IndicatorButton
 
-class SelectFrame(tk.Frame):
-
-            
-    def getPortList(self):
-        self.portList = glob.glob('/dev/tty[AU]*')
-        self.portList.append("---Check---")
-        self.comPortSpinbox.config(values=self.portList)
-        return
-    
-    def clearPortList(self):
-        self.portList = ["---Check---"]        
-        self.comPortSpinbox.config(values=self.portList)
-        return
+class SelectFrame(tk.Frame):   
     
     
     def __init__(self, aParent, aController):
@@ -54,27 +39,20 @@ class SelectFrame(tk.Frame):
         self.rightFrame = tk.Frame(self.checkFrame, **SharedDiscoBot.frameConfig)
         self.rightFrame.pack(side=tk.LEFT)
         
-        self.camPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Camera", 'cameraPower', "<V0>", "<V1>")
-        self.headPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Lights", 'headlightPower', "<H0>", "<H1>")
-        self.armPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Arm-CPU", 'armPower', "<QA0>", "<QA1>")
-        self.comPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Com-CPU", 'comPower', "<QR0>", "<QR1>")
-        self.armServoPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Arm-Servo", 'armServoPower', "<A,Cp>", "<A,CP>")
+        self.camPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Cam", 'cameraPower', "<V0>", "<V1>")
+        self.headPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Lite", 'headlightPower', "<H0>", "<H1>")
+        self.armPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Arm", 'armPower', "<QA0>", "<QA1>")
+        self.comPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "Com", 'comPower', "<QR0>", "<QR1>")
+        self.armServoPowCheck = GUI.IndicatorButton.IndicatorButton(self.leftFrame, self.controller, "ASe", 'armServoPower', "<A,Cp>", "<A,CP>")
         
-        self.motorPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Motors", 'motorPower', "<QM0>", "<QM1>")
-        self.motorContEnableCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Motor-En", 'motorContEnable', "<Qm0>", "<Qm1>")
-        self.v12PowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "12-Volt", 'v12Power', "<QV0>", "<QV1>")
+        self.motorPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Mot", 'motorPower', "<QM0>", "<QM1>")
+        self.motorContEnableCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "MEn", 'motorContEnable', "<Qm0>", "<Qm1>")
+        self.v12PowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "12V", 'v12Power', "<QV0>", "<QV1>")
         self.auxPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Aux", 'auxPower', "<Qa0>", "<Qa1>")
-        self.sonarPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Sonar", 'sonarPower', "<QS0>", "<QS1>")
+        self.sonarPowCheck = GUI.IndicatorButton.IndicatorButton(self.rightFrame, self.controller, "Son", 'sonarPower', "<QS0>", "<QS1>")
         
         
         
-        self.modeFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
-        
-        self.comPortSpinbox = tk.Spinbox(self.modeFrame, width=13, **SharedDiscoBot.spinboxConfig)
-        self.getPortList()
-        
-        self.comModeSpinbox = tk.Spinbox(self.modeFrame, width=3, values=["0" , "1" , "2" , "3"], **SharedDiscoBot.spinboxConfig)
-        self.comModeButton = tk.Button(self.modeFrame, text="LoRa-Mode", height=1, pady=0, padx=1, command=self.handleLoRaModeButton, **SharedDiscoBot.buttonConfig)
         
         
 
@@ -90,10 +68,7 @@ class SelectFrame(tk.Frame):
         self.auxPowCheck.pack(side=tk.TOP, anchor=tk.W)
         self.sonarPowCheck.pack(side=tk.TOP, anchor=tk.W)
         
-        self.modeFrame.pack(side=tk.TOP, anchor=tk.W)
-        self.comPortSpinbox.pack(side=tk.TOP, anchor=tk.W)
-        self.comModeSpinbox.pack(side=tk.LEFT, anchor=tk.W)
-        self.comModeButton.pack(side=tk.LEFT, anchor=tk.W)      
+             
         
         
                 
@@ -115,10 +90,6 @@ class SelectFrame(tk.Frame):
         self.sonarPowCheck.refresh()
         
         
-    def handleLoRaModeButton(self):
-        
-        self.controller.setLoRaMode(self.comModeSpinbox.get())
-        
-        return 
+    
             
     

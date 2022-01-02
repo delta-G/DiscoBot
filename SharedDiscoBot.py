@@ -28,7 +28,7 @@ defaultFont = "Veranda 12 bold"
 
 canvasConfig = {'bg':'black', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 
-labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':0, 'highlightbackground':colors['highlight']}
+labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 highlightLabelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 
 entryConfig = {'bg':'black' , 'fg':'white', 'highlightbackground':colors['highlight'], 'insertbackground':'white', 'insertwidth':'2'}

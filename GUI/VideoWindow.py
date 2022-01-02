@@ -37,6 +37,9 @@ class VideoWindow(tk.Toplevel):
         self.buttonFrame = tk.Frame(self.mainFrame, **SharedDiscoBot.frameConfig)
         
         self.cap = Vidcap(self.vidSource)
+        self.recording = False 
+        self.vidOut = None 
+        self.lastFrame = None
         
         self.canvas = tk.Canvas(self.vidFrame, width=self.cap.width, height=self.cap.height, **SharedDiscoBot.canvasConfig)
         self.canvas.pack(side=tk.TOP)
@@ -44,10 +47,17 @@ class VideoWindow(tk.Toplevel):
         self.snapButton = tk.Button(self.buttonFrame, text="Snap", width=5, command=self.snapshot, **SharedDiscoBot.buttonConfig)
         self.snapButton.pack(side=tk.LEFT)
         
+        self.recordButton = tk.Button(self.buttonFrame, text="Record", width=7, **SharedDiscoBot.buttonConfig)
+        self.recordButton.config(command=self.toggleRecording)
+        self.recordButton.pack(side=tk.LEFT)
+        self.lastRecTime = 0
+        
         self.mainFrame.pack()
         
         self.vidFrame.pack(side=tk.TOP)
         self.buttonFrame.pack(side=tk.TOP)
+        
+        
         
         return
     
@@ -56,21 +66,46 @@ class VideoWindow(tk.Toplevel):
         if ret:
             stamp=int(time.time())
             filename="/home/david/robot/001caps/snap"+str(stamp)+".jpg" 
-            cv2.imwrite(filename, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            cv2.imwrite(filename, frame)
         else:
             print("NO FRAME FOR SNAPSHOT!")        
+        return 
+    
+    def toggleRecording(self):
+        
+        if self.recording:
+            self.vidOut.release()
+            self.recording = False
+            self.recordButton.config(text="Record")
+        else:
+            size = (int(self.cap.vid.get(3)), int(self.cap.vid.get(4)))
+            stamp=int(time.time())
+            filename="/home/david/robot/001caps/snap"+str(stamp)+".mp4" 
+            self.recording = True
+            self.vidOut = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), 29.97, size)            
+            self.recordButton.config(text="Stop")
         return 
     
     
     def refresh(self):
         ret, frame = self.cap.getFrame()
         if ret:
-            self.image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
+            self.image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
             self.canvas.create_image(0,0,image=self.image, anchor=tk.NW)
+            self.lastFrame = frame
+            
+            if self.recording:
+#             tm = time.time()
+#             if tm - self.lastRecTime >= 0.025:
+                self.vidOut.write(frame)
+#                 self.lastRecTime = tm
+        return
     
     def onClose(self):
         self.parent.videoOpen = False
         self.cap.release()
+        if self.vidOut != None:
+            self.vidOut.release()
         self.destroy()
         
     
@@ -100,7 +135,7 @@ class Vidcap():
         if self.vid.isOpened():
             ret, frame = self.vid.read()
             if ret:
-                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                return (ret, frame)
             else:
                 return (ret, None)
         else:

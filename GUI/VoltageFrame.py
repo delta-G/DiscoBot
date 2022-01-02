@@ -17,7 +17,7 @@
 
 import tkinter as tk
 import SharedDiscoBot
-import GUI.Gauge as Gauge
+# import GUI.Gauge as Gauge
 
 
 class VoltageFrame(tk.Frame):
@@ -28,12 +28,20 @@ class VoltageFrame(tk.Frame):
         self.controller = aController
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.frameConfig)
         
-        self.batVlabel = Gauge.Gauge(self, self.controller, "Battery", 'batteryVoltage')
-        self.motorVlabel = voltageLabel(self, self.controller, "Motor", 'motorVoltage')
+        self.batVlabel = voltageLabel(self, self.controller, "Bat", 'batteryVoltage')
+        self.motorVlabel = voltageLabel(self, self.controller, "Mot", 'motorVoltage')
         self.mainVlabel = voltageLabel(self, self.controller, "Main", 'mainVoltage')
         self.comVlabel = voltageLabel(self, self.controller, "Com", 'comVoltage')
         self.auxVlabel = voltageLabel(self, self.controller, "Aux", 'auxVoltage')
-        self.v12Vlabel = voltageLabel(self, self.controller, "12-Volt", 'v12Voltage')
+        self.v12Vlabel = voltageLabel(self, self.controller, "12V", 'v12Voltage')
+        
+#         widerth = 100
+#         self.batVlabel = Gauge.Gauge(self, self.controller, "Battery", 'batteryVoltage', aWidth = widerth, aMinval=0.0, aMaxval=20.0, aLowRed=3.0, aLowYellow=6.0, aHighYellow=14.0, aHighRed=17.0)
+#         self.motorVlabel = Gauge.Gauge(self, self.controller, "Motor", 'motorVoltage', aWidth = widerth, aMinval=6.0, aMaxval=12.0, aLowRed=7.0, aLowYellow=7.5, aHighYellow=10.5, aHighRed=11.0)
+#         self.mainVlabel = Gauge.Gauge(self, self.controller, "Main", 'mainVoltage', aWidth = widerth, aMinval=4.0, aMaxval=6.5, aLowRed=4.8, aLowYellow=5.0, aHighYellow=5.3, aHighRed=5.5)
+#         self.comVlabel = Gauge.Gauge(self, self.controller, "Com", 'comVoltage', aWidth = widerth, aMinval=4.0, aMaxval=6.5, aLowRed=4.8, aLowYellow=5.0, aHighYellow=5.3, aHighRed=5.5)
+#         self.auxVlabel = Gauge.Gauge(self, self.controller, "Aux", 'auxVoltage', aWidth = widerth, aMinval=4.0, aMaxval=6.5, aLowRed=4.8, aLowYellow=5.0, aHighYellow=5.3, aHighRed=5.5)
+#         self.v12Vlabel = Gauge.Gauge(self, self.controller, "12-Volt", 'v12Voltage', aWidth = widerth, aMinval=10.0, aMaxval=14.7, aLowRed=11.2, aLowYellow=12.0, aHighYellow=12.7, aHighRed=13.5)
         
         self.batVlabel.pack(side=tk.TOP, anchor=tk.W)
         self.motorVlabel.pack(side=tk.TOP, anchor=tk.W)
@@ -62,7 +70,7 @@ class voltageLabel(tk.Frame):
         self.controller = aController
         self.key = aKey
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
-        self.nameLabel = tk.Label(self, text=aText, width=7, anchor=tk.W, **SharedDiscoBot.labelConfig)
+        self.nameLabel = tk.Label(self, text=aText, width=4, anchor=tk.W, **SharedDiscoBot.labelConfig)
         self.valueLabel = tk.Label(self, text="void", **SharedDiscoBot.labelConfig)
         
         self.nameLabel.pack(side=tk.LEFT, anchor=tk.W)

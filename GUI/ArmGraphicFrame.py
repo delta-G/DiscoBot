@@ -58,6 +58,11 @@ class ArmGraphicFrame(tk.Frame):
         self.wristLabel.pack(side=tk.TOP)
         
         
+        self.driveAngle = 0.0
+        self.driveLineColor = "white"
+        self.driveIndicatorHeight = 50
+        self.driveIndicatorWidth = 50        
+        
         return 
     
     def launchCalibrationWindow(self, event):
@@ -210,10 +215,85 @@ class ArmGraphicFrame(tk.Frame):
         self.drawSegment(gimbalOffsetCoords, tiltCoords, "cyan")
         
         
+        #####   Draw Drive Angle indicator      
+        
+        
+        ls = self.controller.getProperty('leftMotorSpeed')
+        rs = self.controller.getProperty('rightMotorSpeed')
+        diameter = 50
+        circleColor = "white"
+        fill=None
+        circleOffset = 5
+        if (ls == 0) or (rs == 0):
+            circleColor = None
+            fill="red"
+        else:  
+            self.calculateDriveAngle()
+            
+            x = ((diameter / 2) * math.cos(self.driveAngle)) + (diameter / 2)
+            y = ((diameter / 2) * math.sin(self.driveAngle)) + (diameter / 2)
+            
+            
+            
+            self.canvas.create_line(((diameter / 2)+circleOffset), ((self.canvasHeight-(diameter / 2))-circleOffset), (x+circleOffset), (self.canvasHeight - y)-circleOffset, width=2, fill=self.driveLineColor)
+        
+        self.canvas.create_oval(circleOffset, (self.canvasHeight - diameter)-circleOffset, diameter+circleOffset, self.canvasHeight-circleOffset, outline=circleColor, width=2, fill=fill, stipple='gray50')
+        
+        
         
         return 
             
         
     
+        
+    def calculateDriveAngle(self):
+        ###  See the controller functions for RobotMainBrain
+        ###  in the driveWithOneStick function to understand
+        ###  how this works.  I'm going to calculate an angle
+        ###  and rotate it 45 degrees ccw to get back to the 
+        ###  stick position
+        ###  But we gotta rotate the other way so the axes reverse
+        ###  Just draw a damn picture if you don't get it
+        ###  left motor is on x axis and right motor on y 
+        ls = self.controller.getProperty('leftMotorSpeed') * 1.0
+        rs = self.controller.getProperty('rightMotorSpeed') * 1.0
+        self.driveAngle = math.pi / 4.0
+        if(ls == 0):
+            if(rs > 0):
+                self.driveAngle = math.pi / 2.0
+            elif(rs<0):
+                self.driveAngle = 3*math.pi/2.0
+                
+        else:
+            self.driveAngle = math.atan(rs/ls)
+        self.driveAngle = self.driveAngle + (math.pi / 4.0)
+        
+        if(ls<0):
+            self.driveAngle = self.driveAngle + (math.pi)
+        
+        if(self.driveAngle < 0):
+            self.driveAngle = self.driveAngle + (2 * math.pi)
+        
+        if(self.driveAngle > math.pi):
+            self.driveAngle = (3*math.pi) - self.driveAngle
+            self.driveLineColor = "red"
+        else:
+            self.driveLineColor = "white"
+        
+        return self.driveAngle
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ##############
         
     

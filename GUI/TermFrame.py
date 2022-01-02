@@ -71,7 +71,9 @@ class TermFrame(tk.Frame):
         self.asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ', **SharedDiscoBot.checkboxConfig)
         self.asCheck.select()
         self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom, **SharedDiscoBot.checkboxConfig)
+        self.comCheck.select()
         self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet, **SharedDiscoBot.checkboxConfig)
+        self.retCheck.select()
         self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb, **SharedDiscoBot.checkboxConfig)
         
         self.asCheck.pack(side=tk.LEFT, anchor=tk.W)
@@ -80,16 +82,9 @@ class TermFrame(tk.Frame):
         self.debCheck.pack(side=tk.LEFT, anchor=tk.W)
         
         self.comsend = GUI.ComSenderField.ComSenderField(self, self.gui.controller)
-        self.comsend.pack(side=tk.TOP)
+        self.comsend.pack(side=tk.TOP)        
         
-        self.controllerLabel = tk.Label(self, text="controllerLabel", **SharedDiscoBot.labelConfig)
-        self.controllerLabel.pack(side=tk.TOP)
-        
-        self.controllerLabel2 = tk.Label(self, text="controllerLabel2", **SharedDiscoBot.labelConfig)
-        self.controllerLabel2.pack(side=tk.TOP)       
-        
-        
-        self.log = tk.Text(self.logFrame, width=60, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set, **SharedDiscoBot.textboxConfig)
+        self.log = tk.Text(self.logFrame, width=50, height=10, padx=5, pady=5, takefocus=0, yscrollcommand=self.scrollbar.set, **SharedDiscoBot.textboxConfig)
         self.scrollbar.config(command=self.log.yview)
         self.log.pack()    
         
