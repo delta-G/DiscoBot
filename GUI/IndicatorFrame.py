@@ -43,12 +43,14 @@ class IndicatorFrame(tk.Frame):
     
     def getPortList(self):
         self.portList = glob.glob('/dev/tty[AU]*')
+        self.portList.append("---WiFi---")
         self.portList.append("---Check---")
         self.comPortSpinbox.config(values=self.portList)
         return
     
     def clearPortList(self):
-        self.portList = ["---Check---"]        
+        self.portList = ["---WiFi---"]
+        self.portList.append("---Check---")     
         self.comPortSpinbox.config(values=self.portList)
         return
     

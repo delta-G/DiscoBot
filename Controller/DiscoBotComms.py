@@ -17,6 +17,8 @@
 import serial
 import time
 import SharedDiscoBot
+import socket
+from _socket import MSG_DONTWAIT, SHUT_RDWR
 
 class DiscoBotComms:
     
@@ -25,6 +27,10 @@ class DiscoBotComms:
         self.controller = aController
         
         self.serOut = None
+        self.sockOut = None
+        self.sockArgs = ('192.168.1.75' , 1234)
+        
+        self.wifiMode = False
         
         self.commsOn = False
         
@@ -41,8 +47,16 @@ class DiscoBotComms:
     def initComms(self, aPort):
         
         if not self.commsOn:
-            try:                    
-                self.serOut = serial.Serial(aPort, 115200)
+            try: 
+                if(aPort == "---WiFi---"):
+                    self.wifiMode = True;
+                    self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+                    self.serOut = None
+                    
+                else:
+                    self.wifiMode = False;                                       
+                    self.serOut = serial.Serial(aPort, 115200)
+                    self.sockOut = None
     
             except Exception as ex:
                 self.commsOn=False
@@ -61,42 +75,18 @@ class DiscoBotComms:
         if self.commsOn:
             try:
                 loopStartTime = time.time()
-                while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
-                    c = self.serOut.read()          
+                if(self.wifiMode == True):
+                    line_read = self.sockOut.recvfrom(1024, MSG_DONTWAIT)[0]
+                    for c in line_read:
+                        self.handleCharacter(c)
+                else:
+                    while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
+                        c = self.serOut.read()          
 #                     print("READ ->", c)
-                    if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
-                        
-                        self.receivingReturn = False
-                        self.inputBuffer.append(ord(c))
-                        
-                        if len(self.inputBuffer) == self.inputBuffer[2]:
-                            if self.inputBuffer[-1] == ord('>'):
-                                self.returnParser(self.inputBuffer)
-                                self.inputBuffer = bytearray()
-                            else:
-                                self.inputBuffer = bytearray()
-                                                    
-                    elif c == b'<':
-#                         print("START OF PACKET")
-                        self.inputBuffer = bytearray()
-                        self.receivingReturn = True
-                    if self.receivingReturn == True:
-#                         print("READ ->", c)
-                        if c != None:                            
-                            if ord(c)<127:
-                                self.inputBuffer.append(ord(c))
-                            else:
-                                ### Bail out on non-ascii characters in an ascii command
-                                ### This indicates a comms error                                
-                                self.receivingReturn = False
-#                                 self.controller.logger.logString("COMMS_ERROR", 1)
-                                self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
-                                self.inputBuffer = bytearray()
-                                
-                        if c == b'>':
-                            self.receivingReturn = False
-                            self.returnParser(self.inputBuffer)
-                            self.inputBuffer = bytearray()
+                        self.handleCharacter(c)
+                   
+                
+                
                             
             except Exception as e:
                 err = e.args[0]
@@ -107,6 +97,43 @@ class DiscoBotComms:
                             
                                     
         return     
+    
+    def handleCharacter(self, aChar):
+        if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
+            
+            self.receivingReturn = False
+            self.inputBuffer.append(ord(aChar))
+            
+            if len(self.inputBuffer) == self.inputBuffer[2]:
+                if self.inputBuffer[-1] == ord('>'):
+                    self.returnParser(self.inputBuffer)
+                    self.inputBuffer = bytearray()
+                else:
+                    self.inputBuffer = bytearray()
+                                        
+        elif aChar == b'<':
+#                         print("START OF PACKET")
+            self.inputBuffer = bytearray()
+            self.receivingReturn = True
+        if self.receivingReturn == True:
+#                         print("READ ->", c)
+            if aChar != None:                            
+                if ord(aChar)<127:
+                    self.inputBuffer.append(ord(aChar))
+                else:
+                    ### Bail out on non-ascii characters in an ascii command
+                    ### This indicates a comms error                                
+                    self.receivingReturn = False
+#                                 self.controller.logger.logString("COMMS_ERROR", 1)
+                    self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
+                    self.inputBuffer = bytearray()
+                    
+            if aChar == b'>':
+                self.receivingReturn = False
+                self.returnParser(self.inputBuffer)
+                self.inputBuffer = bytearray()
+        return
+        
 
     
     def buffer(self, aMess):
@@ -114,29 +141,49 @@ class DiscoBotComms:
         return
     
     def flush(self):
-        self.serOut.write(self.outputBuffer)
+        if(self.wifiMode == True):
+            self.sockOut.send(self.outputBuffer)
+        else:        
+            self.serOut.write(self.outputBuffer)
+            self.serOut.flush()
+        
         self.outputBuffer = bytearray()
-        self.serOut.flush()
         return 
     
-    def send(self, aMess):        
+    def send(self, aMess):            
         self.buffer(aMess)
         self.flush()
         return
     
-    def write(self, aMess):
-        self.serOut.write(aMess)
+    def write(self, aMess):    
+        if(self.wifiMode == True):
+            self.sockOut.send(aMess)
+        else:
+            self.serOut.write(aMess)
         return 
     
-    def read(self):
-        return self.serOut.read()
+    def read(self):    
+        retval = None
+        if(self.wifiMode == True):
+            retval = self.sockOut.recv(256)
+        else:
+            retval = self.serOut.read()
+        return retval
     
-    def close(self):
-        if self.serOut != None:
-            self.serOut.flushInput()
-            self.serOut.flushOutput()
-            self.serOut.close()
-        self.commsOn=False
+    def close(self):    
+        if self.commsOn:
+            if(self.wifiMode == True):
+                if self.sockOut != None:
+                    self.sockOut.shutdown(SHUT_RDWR)
+                    self.sockOut.close()
+            else:
+                if self.serOut != None:
+                    self.serOut.flushInput()
+                    self.serOut.flushOutput()
+                    self.serOut.close()
+            self.commsOn=False
+        else:
+            self.controller.putstring("Comms are not on.")
         return 
     
     
