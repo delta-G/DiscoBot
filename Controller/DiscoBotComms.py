@@ -51,6 +51,7 @@ class DiscoBotComms:
                 if(aPort == "---WiFi---"):
                     self.wifiMode = True;
                     self.sockOut = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+                    self.sockOut.connect(self.sockArgs)
                     self.serOut = None
                     
                 else:
@@ -60,6 +61,7 @@ class DiscoBotComms:
     
             except Exception as ex:
                 self.commsOn=False
+                self.controller.putstring("--ERROR@initComms--")
                 self.controller.putstring(ex)  
                 self.controller.putstring('\n') 
             else:
@@ -76,24 +78,27 @@ class DiscoBotComms:
             try:
                 loopStartTime = time.time()
                 if(self.wifiMode == True):
-                    line_read = self.sockOut.recvfrom(1024, MSG_DONTWAIT)[0]
+                    line_read = self.sockOut.recvfrom(251, MSG_DONTWAIT)[0]
                     for c in line_read:
                         self.handleCharacter(c)
                 else:
                     while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
                         c = self.serOut.read()          
 #                     print("READ ->", c)
-                        self.handleCharacter(c)
+                        self.handleCharacter(ord(c))
                    
                 
                 
                             
             except Exception as e:
                 err = e.args[0]
-                print (e)
-                self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
-                self.controller.putstring("COMS-ERROR:")
-                self.controller.putstring(err)
+                if((self.wifiMode == True) and (err == 11)):    
+                    pass
+                else:                
+                    print (e)
+                    self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
+                    self.controller.putstring("COMS-ERROR:")
+                    self.controller.putstring(err)
                             
                                     
         return     
@@ -102,7 +107,7 @@ class DiscoBotComms:
         if (len(self.inputBuffer) >= 2) and ((self.inputBuffer[1] >= 0x12) and (self.inputBuffer[1] <= 0x14)):
             
             self.receivingReturn = False
-            self.inputBuffer.append(ord(aChar))
+            self.inputBuffer.append(aChar)
             
             if len(self.inputBuffer) == self.inputBuffer[2]:
                 if self.inputBuffer[-1] == ord('>'):
@@ -111,15 +116,15 @@ class DiscoBotComms:
                 else:
                     self.inputBuffer = bytearray()
                                         
-        elif aChar == b'<':
+        elif aChar == ord('<'):
 #                         print("START OF PACKET")
             self.inputBuffer = bytearray()
             self.receivingReturn = True
         if self.receivingReturn == True:
 #                         print("READ ->", c)
             if aChar != None:                            
-                if ord(aChar)<127:
-                    self.inputBuffer.append(ord(aChar))
+                if aChar<127:
+                    self.inputBuffer.append(aChar)
                 else:
                     ### Bail out on non-ascii characters in an ascii command
                     ### This indicates a comms error                                
@@ -128,7 +133,7 @@ class DiscoBotComms:
                     self.controller.logger.logByteArray("COMMS_ERROR", self.inputBuffer, 1)
                     self.inputBuffer = bytearray()
                     
-            if aChar == b'>':
+            if aChar == ord('>'):
                 self.receivingReturn = False
                 self.returnParser(self.inputBuffer)
                 self.inputBuffer = bytearray()

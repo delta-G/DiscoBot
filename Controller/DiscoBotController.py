@@ -239,11 +239,18 @@ class DiscoBotController:
     def connectToBot(self):
         if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")            
-            self.outPutRunner("<P123>")
-            time.sleep(0.2)
-#             self.socketConnected = True
-            self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")
-#             self.putstring ("Connected to Robot\n") 
+            if self.comms.wifiMode == True:
+                self.outPutRunner("<EP123>")
+                time.sleep(0.2)
+    #             self.socketConnected = True
+                self.outPutRunner("<B,E,RMB_RESP>")
+    #             self.putstring ("Connected to Robot\n") 
+            else:
+                self.outPutRunner("<P123>")
+                time.sleep(0.2)
+    #             self.socketConnected = True
+                self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")
+    #             self.putstring ("Connected to Robot\n") 
         
         return    
     
@@ -259,22 +266,22 @@ class DiscoBotController:
     
     
     def setLoRaMode(self, aMode):
-        
-        ### flush the radio
-        self.outPutRunner("<FFE>")        
-        ### give some time for transmission        
-        time.sleep(2.5)
-        ### send control code for new mode
-        self.outPutRunner("<lM" + aMode + ">")
-        ### flush radio 
-        self.outPutRunner("<FFE>")
-        ### give some time for other radio to adjust        
-        time.sleep(2.5)
-        ### return to normal operation   
-        if(aMode > 1):
-            self.comTimeOut = 10
-        else:
-            self.comTimeOut = 1
+        if self.comms.wifiMode == False:
+            ### flush the radio
+            self.outPutRunner("<FFE>")        
+            ### give some time for transmission        
+            time.sleep(2.5)
+            ### send control code for new mode
+            self.outPutRunner("<lM" + aMode + ">")
+            ### flush radio 
+            self.outPutRunner("<FFE>")
+            ### give some time for other radio to adjust        
+            time.sleep(2.5)
+            ### return to normal operation   
+            if(aMode > 1):
+                self.comTimeOut = 10
+            else:
+                self.comTimeOut = 1
         return
     
     
@@ -349,7 +356,7 @@ class DiscoBotController:
             
         if(self.joy.Start() and not self.connectedToBot and not self.lastStart):    
 #             self.putstring("Connecting to socket")    
-            self.putstring("<Connecting to socket>")                        
+            self.putstring("<Connecting to robot>")                        
             self.connectToBot()
             self.startSendingController()
             self.lastStart = True
@@ -582,6 +589,7 @@ class DiscoBotController:
             self.lastRMBheartBeat = time.time()
         elif aBuffer == "<RMB_RESP>":
             self.connectedToBot = True
+            self.putstring ("Connected to Robot\n")
             
 #         elif aBuffer.startswith("<SR,"):
 #             self.speedLog.write(aBuffer)
