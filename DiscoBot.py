@@ -16,6 +16,7 @@
 
 
 import os
+import subprocess
 import time
 import tkinter as tk
 
@@ -45,6 +46,12 @@ controller = Controller.DiscoBotController.DiscoBotController(None, logger)
 
 gui = GUI.DiscoBotGUI.DiscoBotGUI(root, controller)
 
+# oldDir = os.getcwd()
+os.chdir("/home/david/robot/DiscoBot")
+controller.putstring("DiscoBot - GIT ID -->")
+controller.putstring(subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip())
+controller.putstring("\n\n\n\n")
+# os.chdir(oldDir)
 
 try:
     
