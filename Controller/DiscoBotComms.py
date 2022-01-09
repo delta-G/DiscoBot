@@ -117,13 +117,12 @@ class DiscoBotComms:
                     self.inputBuffer = bytearray()
                                         
         elif aChar == ord('<'):
-#                         print("START OF PACKET")
             self.inputBuffer = bytearray()
             self.receivingReturn = True
+            
         if self.receivingReturn == True:
-#                         print("READ ->", c)
             if aChar != None:                            
-                if aChar<127:
+                if aChar<128:
                     self.inputBuffer.append(aChar)
                 else:
                     ### Bail out on non-ascii characters in an ascii command

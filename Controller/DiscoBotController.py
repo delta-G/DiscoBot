@@ -74,7 +74,6 @@ class DiscoBotController:
         
         self.properties = {}
         
-#         self.socketConnected = False 
         self.connectedToBot = False
         self.endProgram = False
         
@@ -234,23 +233,18 @@ class DiscoBotController:
                         
         return
     
-    ###  TODO:  
-    ### This should check for connection before declaring the socket connected.  
+ 
     def connectToBot(self):
         if self.comms.commsOn:
             self.putstring("Connecting to Robot\n")            
             if self.comms.wifiMode == True:
                 self.outPutRunner("<EP123>")
                 time.sleep(0.2)
-    #             self.socketConnected = True
                 self.outPutRunner("<B,E,RMB_RESP>")
-    #             self.putstring ("Connected to Robot\n") 
             else:
                 self.outPutRunner("<P123>")
                 time.sleep(0.2)
-    #             self.socketConnected = True
                 self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")
-    #             self.putstring ("Connected to Robot\n") 
         
         return    
     
@@ -420,11 +414,6 @@ class DiscoBotController:
         
         self.readStatusByte()
         
-#         if self.logFile is not None:
-#             for val in dumpMessage:
-#                 self.logFile.write(hex(val))
-#                 self.logFile.write(" ")
-#             self.logFile.write("\n")
         
         return 
     
@@ -495,11 +484,6 @@ class DiscoBotController:
        
         dumpMessage = aByteArray
         
-#         if self.logFile is not None:
-#             for val in dumpMessage:
-#                 self.logFile.write(hex(val))
-#                 self.logFile.write(" ")
-#             self.logFile.write("\n")
         
         self.armStatusByte = dumpMessage[3]
         whichSet = dumpMessage[4]
@@ -602,10 +586,10 @@ class DiscoBotController:
         elif aBuffer.startswith("<E  NewClient @"):
             self.currentSSID = aBuffer[16 : aBuffer.rfind(',')]
             self.currentRssi = aBuffer[aBuffer.rfind(',') : aBuffer.rfind('>')]
-        elif aBuffer.startswith("<##"):
-            if self.showDebug:
-                self.putstring(aBuffer)
-            pass
+        elif aBuffer.startswith("<!"):
+            self.putstring("ERROR!! -> ")
+            self.putstring(aBuffer)
+            self.logger.logString("ERROR!! -> " + aBuffer, 99)
         else:
             self.putstring ("returnBuffer --> ") 
             self.putstring( aBuffer)  
@@ -627,12 +611,6 @@ class DiscoBotController:
     def returnParser(self, aByteArray):
         
         self.logger.logByteArray("RET-->", aByteArray)
-#         if self.logFile is not None:
-#             self.sendToLog("RET--> "  + "\n")
-#             for val in aByteArray:
-#                 self.logFile.write(hex(val))
-#                 self.logFile.write(" ")
-#             self.logFile.write("\n")
             
         if len(aByteArray) >= 3:
             if (aByteArray[0] == ord('<')):
@@ -778,12 +756,6 @@ class DiscoBotController:
         
         self.comms.write(rawMessage)
         self.logger.logByteArray("RAW -->", rawMessage)
-#         if self.logFile is not None:
-#             self.logFile.write("RAW -->")
-#             for val in rawMessage:
-#                 self.logFile.write(hex(val))
-#                 self.logFile.write(" ")
-#             self.logFile.write("\n")
         
         return
     
