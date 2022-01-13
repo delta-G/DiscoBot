@@ -29,7 +29,6 @@ class VideoWindow(tk.Toplevel):
         self.parent = aParent
         self.vidSource = aVidSource
         tk.Toplevel.__init__(self, width=200, height=200, **SharedDiscoBot.highlightFrameConfig)
-#         self.resizable(0,0)
         self.protocol("WM_DELETE_WINDOW", self.onClose)
         
         self.mainFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
@@ -42,7 +41,7 @@ class VideoWindow(tk.Toplevel):
         self.lastFrame = None
         
         self.canvas = tk.Canvas(self.vidFrame, width=self.cap.width, height=self.cap.height, **SharedDiscoBot.canvasConfig)
-        self.canvas.pack(side=tk.TOP)
+        self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
         self.snapButton = tk.Button(self.buttonFrame, text="Snap", width=5, command=self.snapshot, **SharedDiscoBot.buttonConfig)
         self.snapButton.pack(side=tk.LEFT)
@@ -50,14 +49,11 @@ class VideoWindow(tk.Toplevel):
         self.recordButton = tk.Button(self.buttonFrame, text="Record", width=7, **SharedDiscoBot.buttonConfig)
         self.recordButton.config(command=self.toggleRecording)
         self.recordButton.pack(side=tk.LEFT)
-        self.lastRecTime = 0
         
-        self.mainFrame.pack()
+        self.mainFrame.pack(fill=tk.BOTH, expand=True)
         
-        self.vidFrame.pack(side=tk.TOP)
-        self.buttonFrame.pack(side=tk.TOP)
-        
-        
+        self.buttonFrame.pack(side=tk.BOTTOM, anchor=tk.S)
+        self.vidFrame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
         
         return
     
@@ -90,15 +86,36 @@ class VideoWindow(tk.Toplevel):
     def refresh(self):
         ret, frame = self.cap.getFrame()
         if ret:
-            self.image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
-            self.canvas.create_image(0,0,image=self.image, anchor=tk.NW)
-            self.lastFrame = frame
+            
+            imgw = frame.shape[1]
+            imgh = frame.shape[0]
+            imgr = imgw / imgh
+            
+            ##  The 22 and 62 are from the padding on the x and y sides.  Need to get rid of magic numbers. 
+            winw = self.vidFrame.winfo_width() - 22
+            winh = self.vidFrame.winfo_height() - 62
+            winr = winw / winh
+            
+            neww = imgw
+            newh = imgh            
+            
+            ## if ratio is too small then width is constraining.  If ratio is too large then height is small and constraining
+            if(winr < imgr):
+                neww = winw
+                newh = winw/imgr
+            elif(winr > imgr):
+                newh = winh
+                neww = winh*imgr
+            
+            newsize = (int(neww), int(newh))            
+            reFrame = cv2.resize(frame, newsize)           
+            
+            self.image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv2.cvtColor(reFrame, cv2.COLOR_BGR2RGB)))
+            self.canvas.create_image(winw/2,winh/2,image=self.image, anchor=tk.CENTER)
+            self.lastFrame = reFrame
             
             if self.recording:
-#             tm = time.time()
-#             if tm - self.lastRecTime >= 0.025:
                 self.vidOut.write(frame)
-#                 self.lastRecTime = tm
         return
     
     def onClose(self):
