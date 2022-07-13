@@ -589,6 +589,7 @@ class DiscoBotController:
         elif aBuffer.startswith("<!"):
             self.putstring("ERROR!! -> ")
             self.putstring(aBuffer)
+            self.putstring(" -> " + SharedDiscoBot.errorText[ord(aBuffer[2])])
             self.logger.logString("ERROR!! -> " + aBuffer, 99)
         else:
             self.putstring ("returnBuffer --> ") 

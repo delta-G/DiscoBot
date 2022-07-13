@@ -47,6 +47,15 @@ checkboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':1,  'highligh
 spinboxConfig = {'bg':'black', 'fg':'white', 'highlightthickness':1,  'highlightbackground':colors['highlight']}
 
 
+errorText = {1:"Self Test Fail", 
+                 10:"Bad Raw Input", 
+                 11:"xpander SPI fail", 
+                 12:"powerXpander SPI fail", 
+                 13:"powerADC SPI fail",
+                 19:"Fake Error Code",
+                 101:"Arm Boot Timeout",
+                 127:"Bad Error Code"
+                 }
 
 
 #####END
