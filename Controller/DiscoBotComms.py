@@ -85,11 +85,8 @@ class DiscoBotComms:
                     while self.serOut.inWaiting() and time.time() - loopStartTime < 1:
                         c = self.serOut.read()          
 #                     print("READ ->", c)
-                        self.handleCharacter(ord(c))
-                   
-                
-                
-                            
+                        self.handleCharacter(ord(c))    
+                        
             except Exception as e:
                 err = e.args[0]
                 if((self.wifiMode == True) and (err == 11)):    
@@ -176,16 +173,24 @@ class DiscoBotComms:
     
     def close(self):    
         if self.commsOn:
-            if(self.wifiMode == True):
-                if self.sockOut != None:
-                    self.sockOut.shutdown(SHUT_RDWR)
-                    self.sockOut.close()
+            try:
+                if(self.wifiMode == True):
+                    if self.sockOut != None:
+                        self.sockOut.shutdown(SHUT_RDWR)
+                        self.sockOut.close()
+                else:
+                    if self.serOut != None:
+                        self.serOut.flushInput()
+                        self.serOut.flushOutput()
+                        self.serOut.close()
+                        
+            except Exception as ex:
+                self.controller.putstring("--ERROR@COMMS Close--")
+                self.controller.putstring(ex)
+                self.controller.putstring('\n')
+            
             else:
-                if self.serOut != None:
-                    self.serOut.flushInput()
-                    self.serOut.flushOutput()
-                    self.serOut.close()
-            self.commsOn=False
+                self.commsOn=False
         else:
             self.controller.putstring("Comms are not on.")
         return 

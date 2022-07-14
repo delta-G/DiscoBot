@@ -22,8 +22,11 @@ import GUI.VoltageFrame
 
 class IndicatorFrame(tk.Frame):
     
-    def propController(self):        
-        self.controller.connectJoystick()    
+    def propController(self):   
+        if (self.controller.joy == None) or (not self.controller.joy.connected()):
+            self.controller.connectJoystick()
+        else:
+            self.controller.stopSendingController()
         return 
     
     def propCommsInit(self):
@@ -214,7 +217,7 @@ class IndicatorFrame(tk.Frame):
     
     def hbLabelDoubleClickAction(self, event):
         
-        self.controller.stopSendingController()
+        self.controller.connectToBot()
         
         return 
     

@@ -220,8 +220,7 @@ class DiscoBotController:
         return
      
     def connectJoystick(self):
-        if self.joy == None:
-            
+        if self.joy == None:            
             try:
                 self.joy = JoyReader.JoyReader()   
                 while not self.joy.connected():
@@ -235,17 +234,30 @@ class DiscoBotController:
     
  
     def connectToBot(self):
-        if self.comms.commsOn:
-            self.putstring("Connecting to Robot\n")            
-            if self.comms.wifiMode == True:
-                self.outPutRunner("<EP123>")
-                time.sleep(0.2)
-                self.outPutRunner("<B,E,RMB_RESP>")
-            else:
-                self.outPutRunner("<P123>")
-                time.sleep(0.2)
-                self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")
+        if not self.connectedToBot:
+            self.putstring("<Connecting to robot>")
+            if self.comms.commsOn:
+                self.putstring("Connecting to Robot\n")            
+                if self.comms.wifiMode == True:
+                    self.outPutRunner("<EP123>")
+                    time.sleep(0.2)
+                    self.outPutRunner("<B,E,RMB_RESP>")
+                else:
+                    self.outPutRunner("<P123>")
+                    time.sleep(0.2)
+                    self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")                        
+#         self.connectToBot()
+            self.startSendingController()
+            self.lastStart = True
         
+        else:
+            self.startSendingController()
+            self.sendRawController()
+            self.lastXboxSendTime = time.time()
+            self.responseReceived = False
+            self.lastStart = True
+            
+            
         return    
     
     def killConnection(self):
@@ -255,7 +267,8 @@ class DiscoBotController:
             self.connectedToBot = False           
         else :
             self.putstring ("The connection is not open\n")   
-            self.comms.close()             
+            self.comms.close()
+            self.connectedToBot = False             
         return
     
     
@@ -324,7 +337,16 @@ class DiscoBotController:
                             self.responseReceived = False
 #                         else:
 #                             self.outPutRunner("<R,R><FFE>")
-        
+        else:
+            if self.connectedToBot and self.sendingController:
+                if ((time.time() - self.lastXboxSendTime >= self.comTimeOut) or (self.responseReceived)):
+                    self.outPutRunner("<R,R><FFE>")
+                    if not self.responseReceived:
+                        self.logger.logString("MISSED RESPONSE No Controller")
+                    self.lastXboxSendTime = time.time()
+                    self.responseReceived = False
+                    
+                
     ### COMMS WITH ROBOT
         if self.comms.connected():
             self.comms.runComms()
@@ -348,20 +370,10 @@ class DiscoBotController:
         if not self.joy.Start():
             self.lastStart = False
             
-        if(self.joy.Start() and not self.connectedToBot and not self.lastStart):    
-#             self.putstring("Connecting to socket")    
-            self.putstring("<Connecting to robot>")                        
+        if(self.joy.Start() and not self.lastStart):                         
             self.connectToBot()
-            self.startSendingController()
             self.lastStart = True
         
-        if(self.joy.Start() and self.connectedToBot and not self.lastStart):
-            self.startSendingController()
-            self.sendRawController()
-            self.lastXboxSendTime = time.time()
-            self.responseReceived = False
-            self.lastStart = True
-                    
         ### Back Button or lost connection ends program
         if self.joy.Back():
             self.killConnection()
