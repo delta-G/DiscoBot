@@ -167,9 +167,11 @@ class DiscoBotController:
         self.motorLeft = 0
         self.properties['throttleLevel'] = 0
         
-        self.invertShoulder = True
-        self.invertElbow = True
-        self.invertWrist = False
+#####   I don't think these ever get used anywere.  If you see this later and there's not been an 
+#####   error about it then clean it up.  
+#         self.invertShoulder = True
+#         self.invertElbow = True
+#         self.invertWrist = False
         
         self.lastStart = 0
         self.lastY = 0
@@ -188,9 +190,9 @@ class DiscoBotController:
         self.ELBOW = 2
         self.WRIST = 3
         self.ROTATE = 4
-        self.GRIP = 5
-        self.PAN = 7
+        self.GRIP = 5        
         self.TILT = 6
+        self.PAN = 7
         
         #########   DiscoBotJoint   ( name , length, offset, minMicros, minAngle, maxMicros, maxAngle)
         self.armJoints = [Controller.DiscoBotJoint.DiscoBotJoint("base", 37, 0, 750, -0.0, 2350, 3.14),
@@ -199,8 +201,8 @@ class DiscoBotController:
                           Controller.DiscoBotJoint.DiscoBotJoint("wrist", 165, 31, 650, -1.2, 2400, 2.09),
                           Controller.DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
                           Controller.DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
-                          Controller.DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 600, 3.1415, 2350, 0),
-                          Controller.DiscoBotJoint.DiscoBotJoint("tilt", 0, 80, 600, 0.8727, 1470, -0.5236)]
+                          Controller.DiscoBotJoint.DiscoBotJoint("tilt", 0, 0, 600, 3.1415, 2350, 0),
+                          Controller.DiscoBotJoint.DiscoBotJoint("pan", 0, 80, 600, 0.8727, 1470, -0.5236)]
 
         self.servoInfo = []
         for i in range(8):
@@ -352,7 +354,7 @@ class DiscoBotController:
             self.comms.runComms()
             
         
-        if (time.time() - self.lastRMBheartBeat >= 10) and (time.time() - self.RMBheartBeatWarningTime >= 10):
+        if (self.connectedToBot) and (time.time() - self.lastRMBheartBeat >= 10) and (time.time() - self.RMBheartBeatWarningTime >= 10):
             self.putstring ("*****   MISSING RMB HEARTBEAT "),
             self.putstring (time.time() - self.lastRMBheartBeat),
             self.putstring ("  Seconds  ****\n")

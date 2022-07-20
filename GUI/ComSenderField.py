@@ -16,17 +16,13 @@
 
 
 import tkinter as tk
-import time
 
 import SharedDiscoBot
 
 class ComSenderField(tk.Frame):
     
     def sendCommand(self):
-#         outPutRunner sleeps for us now
-#         time.sleep(0.2)
         self.controller.outPutRunner(self.entry.get())
-#         time.sleep(0.2)
     
     def __init__(self, aParent, aController):
         
