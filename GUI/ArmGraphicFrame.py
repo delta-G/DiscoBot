@@ -69,7 +69,7 @@ class ArmGraphicFrame(tk.Frame):
         
         if not self.gui.calibrationWindowActive:
             self.gui.calibrationWindowActive = True
-            armCalWindow = ArmCalWindow.ArmCalibrationWindowClass(self.gui, self.controller)
+            armCalWindow = GUI.ArmCalWindow.ArmCalibrationWindowClass(self.gui, self.controller)
             
         
 #         global calibrationWindow
