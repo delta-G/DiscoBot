@@ -195,14 +195,14 @@ class DiscoBotController:
         self.PAN = 7
         
         #########   DiscoBotJoint   ( name , length, offset, minMicros, minAngle, maxMicros, maxAngle)
-        self.armJoints = [Controller.DiscoBotJoint.DiscoBotJoint("base", 37, 0, 750, -0.0, 2350, 3.14),
+        self.armJoints = [Controller.DiscoBotJoint.DiscoBotJoint("base", 37, 0, 751, -0.0, 2350, 3.14),
                           Controller.DiscoBotJoint.DiscoBotJoint("shoulder", 103, 0, 544, -0.24, 2400, 2.86),
                           Controller.DiscoBotJoint.DiscoBotJoint("elbow", 97, 0, 544, 2.67, 2400, -0.33),
-                          Controller.DiscoBotJoint.DiscoBotJoint("wrist", 165, 31, 650, -1.2, 2400, 2.09),
+                          Controller.DiscoBotJoint.DiscoBotJoint("wrist", 165, 31, 651, -1.2, 2400, 2.09),
                           Controller.DiscoBotJoint.DiscoBotJoint("rotate", 0, 0, 564, -0.34907, 2400, 3.316126),
-                          Controller.DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1680, 1.923, 2400, 3.1415),
-                          Controller.DiscoBotJoint.DiscoBotJoint("tilt", 0, 0, 600, 3.1415, 2350, 0),
-                          Controller.DiscoBotJoint.DiscoBotJoint("pan", 0, 80, 600, 0.8727, 1470, -0.5236)]
+                          Controller.DiscoBotJoint.DiscoBotJoint("grip", 0, 0, 1681, 1.923, 2400, 3.1415),
+                          Controller.DiscoBotJoint.DiscoBotJoint("pan", 0, 0, 601, 3.1415, 2350, 0),
+                          Controller.DiscoBotJoint.DiscoBotJoint("tilt", 0, 80, 601, 0.8727, 1470, -0.5236)]
 
         self.servoInfo = []
         for i in range(8):
@@ -539,14 +539,13 @@ class DiscoBotController:
     
     def handleArmCalDump(self, aByteArray):
         
-        for i in range(6):
-            inTuple = struct.unpack_from('ffHH', aByteArray[((12*i)+3):((12*i)+15)])
-            self.armJoints[i].minAngle = inTuple[0]
-            self.armJoints[i].maxAngle = inTuple[1]
-            self.armJoints[i].minMicros = inTuple[2]
-            self.armJoints[i].maxMicros = inTuple[3]
-        
-        
+        i = aByteArray[3]
+        inTuple = struct.unpack_from('ffHH', aByteArray[4:16])
+        self.armJoints[i].minAngle = inTuple[0]
+        self.armJoints[i].maxAngle = inTuple[1]
+        self.armJoints[i].minMicros = inTuple[2]
+        self.armJoints[i].maxMicros = inTuple[3]
+                
         return 
     
     
@@ -648,7 +647,7 @@ class DiscoBotController:
                             if aByteArray[2] == 22:
                                 self.handleArmDump(aByteArray)
                                 self.setResponseRecieved()
-                            elif aByteArray[2] == 76:
+                            elif aByteArray[2] == 17:
                                 self.handleArmCalDump(aByteArray) 
                 else:
                     decodedText = aByteArray.decode("ascii")

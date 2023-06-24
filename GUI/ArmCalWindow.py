@@ -42,8 +42,8 @@ class ArmCalibrationWindowClass(tk.Toplevel):
     
     
     def getCalibrations(self):
-        self.controller.stopSendingController()
-        self.controller.outPutRunner("<A,Rc>")
+        # self.controller.stopSendingController()
+        self.controller.outPutRunner("<A,RcA>")
         return
     
     def onClose(self):
