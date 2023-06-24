@@ -71,11 +71,14 @@ class TermFrame(tk.Frame):
         self.asCheck = tk.Checkbutton(self.checkFrame, variable=self.autoscroll, text='Auto-Scroll   ', **SharedDiscoBot.checkboxConfig)
         self.asCheck.select()
         self.comCheck = tk.Checkbutton(self.checkFrame, text="Commands   ", variable=self.showCommands, command=self.propCom, **SharedDiscoBot.checkboxConfig)
-        self.comCheck.select()
+        if self.controller.showCommands:        
+            self.comCheck.select()
         self.retCheck = tk.Checkbutton(self.checkFrame, text="Return   ", variable=self.showReturns, command=self.propRet, **SharedDiscoBot.checkboxConfig)
-        self.retCheck.select()
+        if self.controller.showReturns:
+            self.retCheck.select()
         self.debCheck = tk.Checkbutton(self.checkFrame, text="Debug   ", variable=self.showDebug, command=self.propDeb, **SharedDiscoBot.checkboxConfig)
-        
+        if self.controller.showDebug:
+            self.debCheck.select()
         self.asCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.comCheck.pack(side=tk.LEFT, anchor=tk.W)
         self.retCheck.pack(side=tk.LEFT, anchor=tk.W)

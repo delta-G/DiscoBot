@@ -247,7 +247,9 @@ class DiscoBotController:
                 else:
                     self.outPutRunner("<P123>")
                     time.sleep(0.2)
-                    self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")                        
+                    self.outPutRunner("<B,E,RMB_RESP><R,F><FFE>")    
+            else:
+                self.putstring("COMMS NOT ON")                    
 #         self.connectToBot()
             self.startSendingController()
             self.lastStart = True
@@ -298,8 +300,8 @@ class DiscoBotController:
         if self.comms.connected():
             self.comms.send(cs)                  
             self.logger.logString("OUT--> " + str(cs), 2)  
-        if self.showCommands:
-            self.putstring("COM--> " + str(cs) + '\n')       
+            if self.showCommands:
+                self.putstring("COM--> " + str(cs) + '\n')       
         return
     
     def stopSendingController(self):
@@ -365,8 +367,11 @@ class DiscoBotController:
         else:
             self.rmbHeartbeatWarningLevel = SharedDiscoBot.colors['green']                    
             
-        return True
+        return not self.endProgram
     
+    def endDiscoBot(self):
+        self.killConnection()
+        self.endProgram = True
     
     def guideMode(self):
         if not self.joy.Start():
@@ -378,8 +383,7 @@ class DiscoBotController:
         
         ### Back Button or lost connection ends program
         if self.joy.Back():
-            self.killConnection()
-            self.endProgram = True       
+            self.endDiscoBot()       
         
         return
     
@@ -603,7 +607,7 @@ class DiscoBotController:
         elif aBuffer.startswith("<!"):
             self.putstring("ERROR!! -> ")
             self.putstring(aBuffer)
-            self.putstring(" -> " + SharedDiscoBot.errorText[ord(aBuffer[2])])
+            self.putstring(" -> " + SharedDiscoBot.errorText[ord(aBuffer[2])] + "\n")
             self.logger.logString("ERROR!! -> " + aBuffer, 99)
         else:
             self.putstring ("returnBuffer --> ") 

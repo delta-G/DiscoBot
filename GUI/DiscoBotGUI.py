@@ -18,6 +18,8 @@ import SharedDiscoBot
 
 import tkinter as tk
 
+import GUI.MenuBar
+
 import GUI.ServoPane
 import GUI.TermFrame
 import GUI.IndicatorFrame
@@ -43,6 +45,9 @@ class DiscoBotGUI(tk.Frame):
         
         
         self.parent.config(padx=5, pady=5)
+        
+        self.menubar = GUI.MenuBar.MenuBar(self.parent, self.controller)
+        self.parent.configure(menu=self.menubar)
         
         self.leftSideFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)
         self.rightSideFrame = tk.Frame(self, **SharedDiscoBot.frameConfig)

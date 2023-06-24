@@ -26,6 +26,8 @@ colors = {
 
 defaultFont = "Veranda 12 bold"
 
+menuConfig = {'bg':'black', 'fg':'white', 'activebackground':'blue'}
+
 canvasConfig = {'bg':'black', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
 
 labelConfig = {'bg':'black' , 'fg':'white', 'highlightthickness':1, 'highlightbackground':colors['highlight']}
@@ -54,6 +56,7 @@ errorText = {1:"Self Test Fail",
                  13:"powerADC SPI fail",
                  19:"Fake Error Code",
                  101:"Arm Boot Timeout",
+                 102:"Arm Bad N",
                  127:"Bad Error Code"
                  }
 
