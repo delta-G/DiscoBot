@@ -616,7 +616,7 @@ class DiscoBotController:
 #                 if ord(c) < 33:
 #                     self.putstring(ord(c))
 #                     self.putstring(',')
-            self.putstring('\n')      
+            self.putstring('\n')    
         return              
     
     def setResponseRecieved(self):
@@ -651,7 +651,12 @@ class DiscoBotController:
                             elif aByteArray[2] == 76:
                                 self.handleArmCalDump(aByteArray) 
                 else:
-                    self.parseReturnString(aByteArray.decode("ascii"))
+                    decodedText = aByteArray.decode("ascii")
+                    if self.showReturns:
+                        self.putstring("RET ->")  
+                        self.putstring(decodedText)
+                        self.putstring("\n")
+                    self.parseReturnString(decodedText)
 #                     print ('..')
                         
         return 
