@@ -291,7 +291,7 @@ class DiscoBotController:
             ### give some time for other radio to adjust        
             time.sleep(2.5)
             ### return to normal operation   
-            if(aMode > 1):
+            if(int(aMode) > 1):
                 self.comTimeOut = 10
             else:
                 self.comTimeOut = 1
