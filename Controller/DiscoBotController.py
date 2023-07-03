@@ -99,6 +99,8 @@ class DiscoBotController:
         
         self.comTimeOut = 1.0
         
+        self.lastWifiRSSI = 0
+        
         self.lastBotSNR = 0
         self.lastBotRSSI = 0
         
@@ -425,10 +427,14 @@ class DiscoBotController:
         temp = (dumpMessage[14] << 8) + dumpMessage[15]        
         self.properties['rightMotorSpeed'] = self.make16bitSigned(temp)
         self.properties['rightMotorOut'] = dumpMessage[16]
-        self.lastBotSNR = dumpMessage[17]
-        self.lastBotRSSI = -dumpMessage[18]
-        self.lastBaseSNR = dumpMessage[19]
-        self.lastBaseRSSI = -dumpMessage[20]
+        
+        if self.comms.wifiMode:
+            self.lastWifiRSSI = int.from_bytes(dumpMessage[17:21], byteorder='big', signed=True)
+        else:        
+            self.lastBotSNR = dumpMessage[17]
+            self.lastBotRSSI = -dumpMessage[18]
+            self.lastBaseSNR = dumpMessage[19]
+            self.lastBaseRSSI = -dumpMessage[20]
         
         self.readStatusByte()
         

@@ -224,7 +224,7 @@ class ArmGraphicFrame(tk.Frame):
         circleColor = "white"
         fill=None
         circleOffset = 5
-        if (ls == 0) or (rs == 0):
+        if (ls == 0) and (rs == 0):
             circleColor = None
             fill="red"
         else:  

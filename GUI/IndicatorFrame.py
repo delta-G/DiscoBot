@@ -187,8 +187,16 @@ class IndicatorFrame(tk.Frame):
 
         
 #         self.baseSigLabel.config(text="SNR - RSSI")
-        self.botSigLabel.config(text="Bot " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI))
-        self.baseSigLabel.config(text="Base " + str(self.controller.lastBaseSNR) + " , " + str(self.controller.lastBaseRSSI))
+        if self.controller.comms.isWiFiMode():
+            self.botSigLabel.config(text="WiFi Mode")
+            self.baseSigLabel.config(text=f"RSSI: {self.controller.lastWifiRSSI: 3d}")
+            self.comModeSpinbox.config(state='disabled')
+            self.comModeButton.config(state='disabled')
+        else:
+            self.botSigLabel.config(text="Bot " + str(self.controller.lastBotSNR) + " , " + str(self.controller.lastBotRSSI))
+            self.baseSigLabel.config(text="Base " + str(self.controller.lastBaseSNR) + " , " + str(self.controller.lastBaseRSSI))
+            self.comModeSpinbox.config(state='normal')
+            self.comModeButton.config(state='normal')
         
 #         self.distLabel.config(text="d= " + str(self.controller.sonarDistance))
         

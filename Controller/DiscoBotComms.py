@@ -203,3 +203,6 @@ class DiscoBotComms:
             return SharedDiscoBot.colors['red']
             
     
+    def isWiFiMode(self):
+        return self.wifiMode
+    

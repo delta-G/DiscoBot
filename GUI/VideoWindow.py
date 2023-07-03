@@ -20,6 +20,7 @@ import PIL.Image, PIL.ImageTk
 import SharedDiscoBot
 import cv2
 import time
+import math
 
 class VideoWindow(tk.Toplevel):
     
@@ -35,7 +36,7 @@ class VideoWindow(tk.Toplevel):
         self.vidFrame = tk.Frame(self.mainFrame, pady=30, padx=10, **SharedDiscoBot.frameConfig)
         self.buttonFrame = tk.Frame(self.mainFrame, **SharedDiscoBot.frameConfig)
         
-        self.cap = Vidcap(self.vidSource)
+        self.cap = Vidcap(self.controller, self.vidSource)
         self.recording = False 
         self.vidOut = None 
         self.lastFrame = None
@@ -137,8 +138,9 @@ class VideoWindow(tk.Toplevel):
     
     
 class Vidcap():
-    def __init__(self, vidSource=0):
+    def __init__(self, aController, vidSource=0):
         self.vid = cv2.VideoCapture(vidSource)
+        self.controller = aController
         
         if not self.vid.isOpened():
             print("VIDEO FAILED TO OPEN")
@@ -146,12 +148,17 @@ class Vidcap():
         self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
         
+        self.telemetryColor = (20,255,57)
+        
+        self.armLineThickness = 2
+        
         return 
     
     def getFrame(self):
         if self.vid.isOpened():
             ret, frame = self.vid.read()
             if ret:
+                self.addTelemetry(frame)
                 return (ret, frame)
             else:
                 return (ret, None)
@@ -173,6 +180,172 @@ class Vidcap():
             self.vid.release()
             return 
         
+    def convertCoords(self, aStart, aXYAtup):
+        x = aStart[0] + aXYAtup[0]
+        y = aStart[1] - aXYAtup[1]
+        return(int(x), int(y))
+        
+    def addTelemetry (self, aFrame):
+        
+        widthFraction = 4
+        heightFraction = 4
+        
+        width = int(self.vid.get(3))
+        height = int(self.vid.get(4))
+        
+        totalHeightPossible = self.controller.armJoints[0].length + self.controller.armJoints[1].length + self.controller.armJoints[2].length + self.controller.armJoints[3].length
+        
+        
+        startingPoint = (int(width - (width/(widthFraction * 2))) , int(height/heightFraction))
+        
+        ###  Height of the window / height of the arm
+        sizeRatio = (1.0 * (height/heightFraction)) / (1.0 * (totalHeightPossible))
+        
+        ## X Y coordinate and approach angle XYA
+        basePointXYA = (0, 0, 1.5708)
+        
+        shoulderPoint = (basePointXYA[0], basePointXYA[1], 1.5708) 
+        elbowPoint = self.controller.armJoints[1].findEndXYandApproach(shoulderPoint, self.controller.servoInfo[1][0], sizeRatio)
+        wristPoint = self.controller.armJoints[2].findEndXYandApproach(elbowPoint, self.controller.servoInfo[2][0], sizeRatio)
+        gripperWristPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.armJoints[3].offset, self.controller.servoInfo[3][0], sizeRatio)
+        gripperTipPoint = self.controller.armJoints[3].findEndXYandApproach(wristPoint, self.controller.servoInfo[3][0], sizeRatio)
+        
+        cv2.line(aFrame, startingPoint, self.convertCoords(startingPoint, shoulderPoint), self.telemetryColor , self.armLineThickness)
+        cv2.line(aFrame, self.convertCoords(startingPoint, shoulderPoint), self.convertCoords(startingPoint, elbowPoint), self.telemetryColor , self.armLineThickness)
+        cv2.line(aFrame, self.convertCoords(startingPoint, elbowPoint), self.convertCoords(startingPoint, wristPoint), self.telemetryColor , self.armLineThickness)
+        cv2.line(aFrame, self.convertCoords(startingPoint, wristPoint), self.convertCoords(startingPoint, gripperWristPoint),self.telemetryColor , self.armLineThickness)
+        cv2.line(aFrame, self.convertCoords(startingPoint, gripperWristPoint), self.convertCoords(startingPoint, gripperTipPoint), self.telemetryColor , self.armLineThickness)
+        
+        gimbalOffsetPoint = self.controller.armJoints[3].findOffsetPoint(wristPoint, self.controller.armJoints[7].offset, self.controller.servoInfo[3][0], sizeRatio)
+        gimbalOffsetCoords = self.convertCoords(startingPoint, gimbalOffsetPoint)
+        
+        
+        gimbalTiltAngle = gripperWristPoint[2] + ((self.controller.armJoints[7].microsToAngle(self.controller.servoInfo[7][0])) - (math.pi/2))
+        tiltX = ((25) * (math.cos(gimbalTiltAngle))) + gimbalOffsetCoords[0]
+        tiltY = ((25) * (-math.sin(gimbalTiltAngle))) + gimbalOffsetCoords[1]
+        tiltCoords = (int(tiltX), int(tiltY))
+        
+        cv2.line(aFrame, self.convertCoords(startingPoint, wristPoint), gimbalOffsetCoords, self.telemetryColor, self.armLineThickness)
+        cv2.line(aFrame, gimbalOffsetCoords, tiltCoords, self.telemetryColor, self.armLineThickness)
+        
+        
+        
+        #### Directional Circle
+        
+        circleCenter = (startingPoint[0], startingPoint[1] + 40)
+        circleDiameter = 25
+        
+        cv2.circle(aFrame, circleCenter, circleDiameter, self.telemetryColor, 1)
+        
+        
+        ### Tic Marks
+        
+        
+        numberOfTics = 16
+        ticSeparation = 2 * math.pi / numberOfTics
+        
+        for tic in range(numberOfTics):
+            ticLength = 2
+            if tic % 4 == 0:
+                ticLength = 6
+            elif tic % 4 == 2:
+                ticLength = 4
+            
+            ticAngle = ticSeparation * tic
+            ticBegin = ( int((circleDiameter) * math.cos(ticAngle)) + circleCenter[0], int((circleDiameter) * math.sin(ticAngle)) + circleCenter[1])
+        
+            ticEnd = (int((circleDiameter + ticLength) * math.cos(ticAngle)) + circleCenter[0], int((circleDiameter + ticLength) * math.sin(ticAngle)) + circleCenter[1])
+            
+            cv2.line(aFrame, ticBegin, ticEnd, self.telemetryColor, 1)
+            
+        
+        
+        
+        
+        
+        ###  Base Angle
+        baseAngle = -(self.controller.armJoints[0].microsToAngle(self.controller.servoInfo[0][0]))
+        armSegEnd = (int((circleDiameter-8) * math.cos(baseAngle)) + circleCenter[0] ,  int((circleDiameter-8) * math.sin(baseAngle)) + circleCenter[1])
+        
+        cv2.line(aFrame, circleCenter, armSegEnd, self.telemetryColor, 2)
+        
+        ####  Camera Angle
+        gimbalPanAngle = baseAngle + ((self.controller.armJoints[6].microsToAngle(self.controller.servoInfo[6][0])) - (math.pi/2))
+        
+        gimbalSegBegin = ( int((circleDiameter - 4) * math.cos(gimbalPanAngle)) + circleCenter[0], int((circleDiameter - 4) * math.sin(gimbalPanAngle)) + circleCenter[1])
+        
+        gimbalSegEnd = (int((circleDiameter) * math.cos(gimbalPanAngle)) + circleCenter[0], int((circleDiameter) * math.sin(gimbalPanAngle)) + circleCenter[1])
+        
+        cv2.line(aFrame, gimbalSegBegin, gimbalSegEnd, self.telemetryColor, 2)
+        
+        
+        #### Drive Angle
+        
+        ls = self.controller.getProperty('leftMotorSpeed')
+        rs = self.controller.getProperty('rightMotorSpeed')
+        
+        if not ((ls==0) and (rs==0)):
+            driveAngle = math.pi / 4.0
+            ## guard against divide by 0
+            if(ls == 0):
+                if(rs > 0):
+                    driveAngle = math.pi / 2.0
+                elif(rs<0):
+                    driveAngle = 3*math.pi/2.0
+            else:
+                driveAngle = math.atan(rs/ls) 
+            
+            ### Rotate to stick frame (see ArmGraphicFrame)
+            driveAngle = driveAngle + (math.pi/4.0)
+            
+            if(ls<0):
+                driveAngle = driveAngle + math.pi 
+            
+            if driveAngle < 0:
+                driveAngle = driveAngle + (2*math.pi)
+                
+            driveAngle = -driveAngle
+            
+            driveSegBegin = ( int((circleDiameter) * math.cos(driveAngle)) + circleCenter[0], int((circleDiameter) * math.sin(driveAngle)) + circleCenter[1])
+        
+            driveSegEnd = (int((circleDiameter + 10) * math.cos(driveAngle)) + circleCenter[0], int((circleDiameter + 10) * math.sin(driveAngle)) + circleCenter[1])
+            
+            cv2.line(aFrame, driveSegBegin, driveSegEnd, self.telemetryColor, 2)
+        
+        
+        ##### TEXT SECTION
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        textSeparation = 10
+        textStart = (circleCenter[0] + 10 , circleCenter[1] + int(circleDiameter * 1.5) )
+        
+        cv2.putText(aFrame, f"BATT: {self.controller.getProperty('batteryVoltage'):.2f}V", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+        
+        textStart = (textStart[0] , textStart[1] + textSeparation)
+        cv2.putText(aFrame, f"THR: {self.controller.getProperty('throttleLevel'):03d}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+        
+        textStart = (textStart[0] , textStart[1] + textSeparation)
+        cv2.putText(aFrame, f"MODE: {self.controller.getProperty('driveMode')}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+        
+        if self.controller.comms.isWiFiMode():
+            textStart = (textStart[0] , textStart[1] + textSeparation)
+            cv2.putText(aFrame, f"RSSI: {self.controller.lastWifiRSSI}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+        else:
+            textStart = (textStart[0] -5 , textStart[1] + textSeparation)
+            cv2.putText(aFrame, "BOT:", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            textStart = (textStart[0] +5, textStart[1] + textSeparation)
+            cv2.putText(aFrame, f"SNR: {self.controller.lastBotSNR}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            textStart = (textStart[0], textStart[1] + textSeparation)
+            cv2.putText(aFrame, f"RSSI: {self.controller.lastBotRSSI}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            textStart = (textStart[0] -5 , textStart[1] + textSeparation)
+            cv2.putText(aFrame, "BASE:", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            textStart = (textStart[0] +5, textStart[1] + textSeparation)
+            cv2.putText(aFrame, f"SNR: {self.controller.lastBaseSNR}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            textStart = (textStart[0], textStart[1] + textSeparation)
+            cv2.putText(aFrame, f"RSSI: {self.controller.lastBaseRSSI}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+            
+          
+        
+        return 
         
         
 ###  TODO:  See https://stackoverflow.com/questions/14140495/how-to-capture-a-video-and-audio-in-python-from-a-camera-or-webcam
