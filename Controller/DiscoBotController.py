@@ -134,6 +134,7 @@ class DiscoBotController:
         self.properties['comVoltage'] = 1.23
         self.properties['auxVoltage'] = 1.23
         self.properties['v12Voltage'] = 1.23
+        self.properties['currentSensor'] = 1.23
         
         
         self.properties['leftMotorCount'] = 0
@@ -587,6 +588,10 @@ class DiscoBotController:
         temp = (aByteArray[13] << 8) | aByteArray[14]
         self.properties['v12Voltage'] = temp/1000.0
         
+        temp = (aByteArray[15] << 8) | aByteArray[16]
+        amps = (temp - 2500) / 136
+        self.properties['currentSensor'] = amps
+        
         return 
     
     
@@ -643,7 +648,7 @@ class DiscoBotController:
                         if (aByteArray[1] == 0x13) and (aByteArray[2] == 22):
                             self.handleRawDataDump(aByteArray)
                             self.setResponseRecieved()
-                        elif (aByteArray[1] == 0x13) and (aByteArray[2] == 16):
+                        elif (aByteArray[1] == 0x13) and (aByteArray[2] == 18):
                             self.handleVoltageDump(aByteArray)
                             self.setResponseRecieved()                            
                         elif (aByteArray[1] == 0x13) and ((aByteArray[2] == 10) or (aByteArray[2] == 30)):

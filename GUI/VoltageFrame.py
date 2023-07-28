@@ -34,6 +34,7 @@ class VoltageFrame(tk.Frame):
         self.comVlabel = voltageLabel(self, self.controller, "Com", 'comVoltage')
         self.auxVlabel = voltageLabel(self, self.controller, "Aux", 'auxVoltage')
         self.v12Vlabel = voltageLabel(self, self.controller, "12V", 'v12Voltage')
+        self.currentSensorLabel = voltageLabel(self, self.controller, "Amps", 'currentSensor')
         
 #         widerth = 100
 #         self.batVlabel = Gauge.Gauge(self, self.controller, "Battery", 'batteryVoltage', aWidth = widerth, aMinval=0.0, aMaxval=20.0, aLowRed=3.0, aLowYellow=6.0, aHighYellow=14.0, aHighRed=17.0)
@@ -43,7 +44,8 @@ class VoltageFrame(tk.Frame):
 #         self.auxVlabel = Gauge.Gauge(self, self.controller, "Aux", 'auxVoltage', aWidth = widerth, aMinval=4.0, aMaxval=6.5, aLowRed=4.8, aLowYellow=5.0, aHighYellow=5.3, aHighRed=5.5)
 #         self.v12Vlabel = Gauge.Gauge(self, self.controller, "12-Volt", 'v12Voltage', aWidth = widerth, aMinval=10.0, aMaxval=14.7, aLowRed=11.2, aLowYellow=12.0, aHighYellow=12.7, aHighRed=13.5)
         
-        self.batVlabel.pack(side=tk.TOP, anchor=tk.W)
+        self.batVlabel.pack(side=tk.TOP, anchor=tk.W)        
+        self.currentSensorLabel.pack(side=tk.TOP, anchor=tk.W)
         self.motorVlabel.pack(side=tk.TOP, anchor=tk.W)
         self.mainVlabel.pack(side=tk.TOP, anchor=tk.W)
         self.comVlabel.pack(side=tk.TOP, anchor=tk.W)
@@ -59,6 +61,7 @@ class VoltageFrame(tk.Frame):
         self.comVlabel.refresh()
         self.auxVlabel.refresh()
         self.v12Vlabel.refresh()
+        self.currentSensorLabel.refresh()
         return 
     
 
@@ -71,7 +74,7 @@ class voltageLabel(tk.Frame):
         self.key = aKey
         tk.Frame.__init__(self, self.parent, **SharedDiscoBot.highlightFrameConfig)
         self.nameLabel = tk.Label(self, text=aText, width=4, anchor=tk.W, **SharedDiscoBot.labelConfig)
-        self.valueLabel = tk.Label(self, text="void", **SharedDiscoBot.labelConfig)
+        self.valueLabel = tk.Label(self, width=5, text="void", **SharedDiscoBot.labelConfig)
         
         self.nameLabel.pack(side=tk.LEFT, anchor=tk.W)
         self.valueLabel.pack(side=tk.LEFT, anchor=tk.W)        
@@ -79,7 +82,7 @@ class voltageLabel(tk.Frame):
         return 
     
     def refresh(self):
-        self.valueLabel.config(text='{0:>02.3f}'.format(self.controller.getProperty(self.key)))
+        self.valueLabel.config(text='{0:>02.2f}'.format(self.controller.getProperty(self.key)))
         return
     
 
