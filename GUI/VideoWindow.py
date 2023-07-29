@@ -321,6 +321,9 @@ class Vidcap():
         cv2.putText(aFrame, f"BATT: {self.controller.getProperty('batteryVoltage'):.2f}V", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
         
         textStart = (textStart[0] , textStart[1] + textSeparation)
+        cv2.putText(aFrame, f"Amps: {self.controller.getProperty('currentSensor'):.2f}A", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
+        
+        textStart = (textStart[0] , textStart[1] + textSeparation)
         cv2.putText(aFrame, f"THR: {self.controller.getProperty('throttleLevel'):03d}", textStart, font, 0.3, self.telemetryColor, 1, cv2.LINE_AA)
         
         textStart = (textStart[0] , textStart[1] + textSeparation)
